@@ -226,29 +226,15 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 		if (*s && len == strlen(*s) && !strncmp(buf, *s, len))
 			break;
 	}
-
-#ifdef CONFIG_FAST_BOOT
-	if (len == 4 && !strncmp(buf, "dmem", len)) {
-		pr_info("%s: fake shut down!!!\n", __func__);
-		fake_shut_down = true;
-		state = PM_SUSPEND_MEM;
-	}
-#endif
-
-	if (state < PM_SUSPEND_MAX && *s) {
+	if (state < PM_SUSPEND_MAX && *s)
 #ifdef CONFIG_EARLYSUSPEND
 		if (state == PM_SUSPEND_ON || valid_state(state)) {
 			error = 0;
 			request_suspend_state(state);
 		}
-#ifdef CONFIG_FAST_BOOT
-		if (fake_shut_down)
-			wakelock_force_suspend();
-#endif
 #else
 		error = enter_state(state);
 #endif
-	}
 #endif
 
  Exit:
