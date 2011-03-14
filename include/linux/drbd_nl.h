@@ -34,7 +34,9 @@ NL_PACKET(disk_conf, 3,
 	NL_INTEGER(	89,	T_MAY_IGNORE,	disk_timeout)
 )
 
-NL_PACKET(detach, 4, )
+NL_PACKET(detach, 4,
+	NL_BIT(		88,	T_MANDATORY,	detach_force)
+)
 
 NL_PACKET(net_conf, 5,
 	NL_STRING(	8,	T_MANDATORY,	my_addr,	128)
