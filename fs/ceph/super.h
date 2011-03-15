@@ -221,7 +221,7 @@ struct ceph_dentry_info {
  * The locking for D_COMPLETE is a bit odd:
  *  - we can clear it at almost any time (see ceph_d_prune)
  *  - it is only meaningful if:
- *    - we hold dir inode i_ceph_lock
+ *    - we hold dir inode i_lock
  *    - we hold dir FILE_SHARED caps
  *    - the dentry D_COMPLETE is set
  */

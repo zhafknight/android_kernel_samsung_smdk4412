@@ -1085,44 +1085,6 @@ static int ceph_snapdir_d_revalidate(struct dentry *dentry,
 }
 
 /*
- * Set/clear/test dir complete flag on the dir's dentry.
- */
-void ceph_dir_set_complete(struct inode *inode)
-{
-	struct dentry *dentry = d_find_any_alias(inode);
-	
-	if (dentry && ceph_dentry(dentry) &&
-	    ceph_test_mount_opt(ceph_sb_to_client(dentry->d_sb), DCACHE)) {
-		dout(" marking %p (%p) complete\n", inode, dentry);
-		set_bit(CEPH_D_COMPLETE, &ceph_dentry(dentry)->flags);
-	}
-	dput(dentry);
-}
-
-void ceph_dir_clear_complete(struct inode *inode)
-{
-	struct dentry *dentry = d_find_any_alias(inode);
-
-	if (dentry && ceph_dentry(dentry)) {
-		dout(" marking %p (%p) complete\n", inode, dentry);
-		set_bit(CEPH_D_COMPLETE, &ceph_dentry(dentry)->flags);
-	}
-	dput(dentry);
-}
-
-bool ceph_dir_test_complete(struct inode *inode)
-{
-	struct dentry *dentry = d_find_any_alias(inode);
-
-	if (dentry && ceph_dentry(dentry)) {
-		dout(" marking %p (%p) NOT complete\n", inode, dentry);
-		clear_bit(CEPH_D_COMPLETE, &ceph_dentry(dentry)->flags);
-	}
-	dput(dentry);
-	return false;
-}
-
-/*
  * When the VFS prunes a dentry from the cache, we need to clear the
  * complete flag on the parent directory.
  *
@@ -1132,7 +1094,7 @@ static void ceph_d_prune(struct dentry *dentry)
 {
 	struct ceph_dentry_info *di;
 
-	dout("ceph_d_prune %p\n", dentry);
+	dout("d_release %p\n", dentry);
 
 	/* do we have a valid parent? */
 	if (!dentry->d_parent || IS_ROOT(dentry))
