@@ -1,0 +1,254 @@
+1df8b64670c1a8e848ff514d3640fffeb14e2435 brcmsmac: Fix WARNING caused by lack of calls to dma_mapping_error()
+df2f07099760702c9f3664230263b6be3142b7d7 brcmsmac: increase timer reference count for new timers only
+d5217650d6e48503466a9192e2cd72c91c696f50 brcmfmac: Fix big endian host configuration data.
+7c4a26d507774d22b7e6eb792046c203f71a0ab0 brcmfmac: fix big endian bug in i-scan.
+cf04317227d0c53d931a0b963e7ac6f7f0125e8a brcmfmac: fix a double spin_unlock_irqrestore issue in dpc
+b948a85c1f26d48395de8c6c7e392f008f1be666 brcm80211: fmac: fix missing completion events issue
+1cc2699057bafc512137272e1e848640bad14a41 brcm80211: fmac: fix SDIO function 0 register r/w issue
+6ead629b27269c553c9092c47cd8f5ab0309ee3b brcmsmac: "INTERMEDIATE but not AMPDU" only when tracing
+badc4f07622f0f7093a201638f45e85765f1b5e4 brcm80211: smac: resume transmit fifo upon receiving frames
+01a282980937f9ca55a3cb06b9c6ff1cc49ea396 Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-next into for-davem
+8e6cffb3b42f03a47a56ede928b006f117628646 brmc80211: dont use jiffies for BSS TSF
+74dd1521d0b4f940cdd3ce7b9d988836bef589b8 Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-next into for-davem
+769009b89d8c29c410a99eee3cd63764b1fff869 brcm80211: smac: cleanup couple of debug output statements
+b0c359b2f68e982ac9334a5f2c04c3a67dee4d50 brcm80211: smac: remove firmware requests from init_module syscall
+e64a4b708fd5b719b54f7f969895b66bcba71486 brcm80211: fmac: remove firmware requests from init_module syscall
+549040abbc03e87bdee2964fea5e4c827471d4df brcm80211: fmac: initialize host interface drivers regardless result
+1d9c1796bc448d76429e0937ef69e4f29cd1adad brcm80211: fmac: use counters in brcmf_bus structure
+ac94f196a5fed4915b82d71b9b111867d78df992 brcm80211: fmac: remove brcmf_usb_attrib structure
+3bc7e29c984ffda0b6133c2b34233023ff36f370 brcm80211: fmac: remove unnecessary NULL pointer check
+051d3b50430160a86cbe4a2deef219c8038bd03f Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-next into for-davem
+b4017c5368f992fb8fb3a2545a0977082c6664e4 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+8701ff0a88bcfc8c7dced3842919ad8d016a6835 Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless
+fda82417884eecd9f2c8b4e6bb2039def0da7ec4 brcm80211: fmac: use correct firmware filename
+d4ca00992ce0809e8cfdc452aa3f972e3be72654 brcm80211: fmac: fix a couple checking after dereference bugs
+2b0a53d51b5f263bb581bbdb40ebb9f7e09609b1 brcm80211: smac: only print block-ack timeout message at trace level
+85091fc0a75653e239dc8379658515e577544927 brcm80211: smac: fix endless retry of A-MPDU transmissions
+52e1409f72d629644b496db80c119e04ebabad90 brcm80211: fmac: make sdio firmware filename specific
+71bb244ba2fd5390eefe4ee9054abdb3f8b05922 brcm80211: fmac: add USB support for bcm43235/6/8 chipsets
+cf44066a3836847a74f6a0817c680726b796239f brcm80211: fmac: use spinlock calls saving irq flags in brcmf_enq_event()
+bcbec9e777cc66fbbeb386c42d8af680fc941da7 brcm80211: fmac: change allocation flag in brcmf_enq_event() function
+1bb1f38462bcf58cf98d8f7bedf2bfefd394f940 brcm80211: fmac: update bus state in common driver part
+c0e89f084b5089acdfdda1cb45c88896fa0f5139 brcm80211: fmac: only return success in brcmf_sdbrcm_bus_init() when true
+f3d7cdc3b41804096a9df9c5d7a9439ef192f36a brcm80211: fmac: move module entry points to dhd_linux.c
+0a332e4678e4e4f0030f10827980c72d32300274 brcm80211: fmac: use specific types in struct brcmf_bus
+89fdb468e201c16b31d3337b68993bc9f763a5a0 brcm80211: fmac: make sure cancel_work_sync only called after INIT_WORK
+2315992c2a6f395dd3dfd4ba50a164d5f3ded84d brcm80211: fmac: resolve smatch issues in brcmfmac code
+137dabed34a13f90e068327b98329331367c9b46 brcm80211: smac: remove smatch warnings from brcmsmac code
+5e379203c7788b7af01150bfadbc74d2797a2ef4 brcm80211: smac: fix endless retry of A-MPDU transmissions
+01343537e6da3398ecea205ff1d579e4dc226b93 brcm80211: smac: remove redundant assignments from txpwrctrl_pwr_setup_nphy
+1570e53c14ff21ec5e23c1a7fe814c09aa950dbc brcm80211: smac: fix unintended fallthru in wlc_phy_radio_init_2057()
+23677ce3172fcb93522a1df077d21019e73ee1e3 drivers/net: Remove boolean comparisons to true/false
+8926574c4d0055ca4c4a02d1f6b2c249d01a0621 Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-next into for-davem
+874239f51f8759f3955630fa5da5cf13cd6567d5 Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless
+bfeb4dbc5cb36ae774fabe7b0e0d559e621a2ccd brcmfmac: Trivial typo of "couldn" to "could" fix
+02f77195db6ce252d5488b6d48d8edc1c5e2aa30 brcm80211: Use pr_fmt and pr_<level>
+c2e6d5abab73df316d2ae7caa6d902c143b2d52d brcm80211: Use brcmu_dbg_hex_dump
+18aad4f8e11530fd7e41d0faea0752c3a0ce799c brcm80211: Convert printk(KERN_DEBUG to pr_debug
+8fb1eb8b221f1cf81128b7f681b5a5112bfcd3a2 brcmfmac: Remove useless #ifdef DEBUG
+1e02382979dd422e3b1bdb45545a0699497e3692 brcm80211: Add and use brcmX_dbg_dump_hex
+d6400c29abcd218bcc9be5d09f76e0770e25face brcmfmac: Convert printk(KERN_DEBUG to pr_debug
+8ae746543c8370fd04c28aaf8f185c1687b0e694 brcm80211: Use normal DEBUG define
+3eb1fa7e0021bc03be1bf7f68b1913d959e29512 brcm80211: make ethtool_ops const
+f96b08a7e6f69c0f0a576554df3df5b1b519c479 brcmsmac: fix tx queue flush infinite loop
+5addc0de28f5e286f9d121112c4222250807b5a5 brcmfmac: work-around gcc 4.7 build issue
+7e9e7fa414e47fccc6127f23bc866cbcc7e27dcb brcmsmac: remove PCI suspend/resume from bcma driver
+7d5869e78f4c9d32f834dadefbb7dcb3c9d4d85f bcma: connect the bcma bus suspend/resume to the bcma driver suspend/resume
+7c17d86a8502c2e30c2eea777ed1b830aa3b447b Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+61bd5e5683244a564ecfe31c73575ee0bc708ccc brcmsmac: fix reading of PCI sprom contents
+c40701eacbaebcfe3fb6fac8ef3da653021c212c brcm80211: Don't leak 'vbuffer' in brcmf_sdbrcm_write_vars()
+57adc1fcbae2c13104ce291b40f23e40a414fa87 Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-next into for-davem
+3db1cd5c05f35fb43eb134df6f321de4e63141f2 net: fix assignment of 0/1 to bool variables.
+f72ae31e6f0442936c23287d34500fb93b7ac7b8 brcm80211: fmac: add Kconfig option for SDIO bus support
+54a86cc596cea4f1bc84a53f326fa27583af1633 brcm80211: fmac: exclude unnecessary header files
+382a9e0f31235e4efd63977646da5c84e73febf7 brcm80211: fmac: move idle macros to dhd_sdio.c
+8763349b7d49c314efd624d0b3cef27a4a383846 brcm80211: fmac: move debug level macros to dhd_dbg.h
+fcf094f414f9e9c088f6c2aa9e19a59f7b41e1f5 brcm80211: fmac: abstract ctrl frames interface function pointers
+b9692d17e842fadb8c18faf24f550db80886763e brcm80211: fmac: abstract bus_txdata interface function pointer
+99a0b8ff9105d9b78e7e4e6aaa077264707e4e1c brcm80211: fmac: abstract bus_init interface function pointer
+a8a363ac3b0cc947c5153d5b2e46c07bb496958b brcm80211: fmac: move common layer bus interface context to dhd_bus.h
+a9ffda88be7416b8336f644806c2b3ed3ce08b26 brcm80211: fmac: abstract bus_stop interface function pointer
+6e3c712807237ab2b50e860d94dc8f15a81d03cd brcm80211: fmac: move sdio related macros to sdio_host.h
+2447ffb0bdf89d14c9a9503e33b32b73d3040fee brcm80211: fmac: stop referencing brcmf_sdio in common layer
+712ac5b37a3348cac4e040c551a6ca6186d33682 brcm80211: fmac: stop referencing brcmf_pub in bus layer
+c8bf34849f92c5894a3d7e12573d3789d7851f23 brcm80211: fmac: move tx flow ctrl flag to bus layer
+9c1a043ae688151444578f15208233143526bb88 brcm80211: fmac: move packet realloc stats to struct brcmf_bus
+719f2733baa1e6a6a782c5109bfe054431db4259 brcm80211: fmac: move dongle statistics to struct brcmf_bus
+4033927cb891863ffdd689554051e205d74675bf brcm80211: fmac: remove duplicate statistics from driver data structure
+3fb1d8d2dad35f5094350c175b778b78df894284 brcm80211: fmac: move driver up status to struct brcmf_bus
+b01a6b3ca714e2bb86ee387aee487c7360363c93 brcm80211: fmac: move maxctl to struct brcmf_bus
+28a1a3bdaf4cce5ee8e473c332e2f371888341bb brcm80211: fmac: move sdio used statistics to struct brcmf_sdio
+d5625ee66f82162acb7189c1974e688ebc178cf3 brcm80211: fmac: change function proto_hdrpull parameter
+228bb43d5d82549c43eee29e12d7632d4df4e4df brcm80211: fmac: change function rx_frame parameter
+b63487ed3d7d8bc08c966eac0543e8f3f70b7fb4 brcm80211: fmac: change function brcmf_c_prec_enq parameter
+c995788f4761f175f811cbeabb2f88ab8565ec1e brcm80211: fmac: change function txcomplete parameter
+2b4590569ead15fb88a83c1d8a07e3ca5507f4c6 brcm80211: fmac: change function txflowcontrol parameter
+5f947ad942a72e7f96942da97d719dd62037dbc2 brcm80211: fmac: change function brcmf_detach parameter
+ed683c986f6fff6b9d9fe2adc8b11e0b0be7c085 brcm80211: fmac: change function bus_start parameter
+55a63bcc4cdeabf76f7e42a76d0c59dbe37d0d64 brcm80211: fmac: change function add_if parameter
+fbf59108f9e13e19cef7a0291a522906c0b0f8e4 brcm80211: fmac: register a dummy irq handler for SDIO function 2
+1ae00421e72da52d35e994244abf768ffc7dffc6 brcm80211: fmac: remove oneline proto block functions
+d08b6a3759818eed78057a8bafebc630dbe9a9ba brcm80211: fmac: unify common layer driver data structure
+aa1f2f0a3218a9b6ce979fca3d6ebdb1c5544dd8 brcm80211: smac: precendence bug in wlc_phy_attach()
+00d2ec0c5f5ae8507931efd8feb174f30370c12e brcmsmac: Replace kmalloc/memset with kzalloc
+eb032f03cbf7ac7baf78ae89a832100561bf0e29 brcm80211: smac: register with bcma for specific 802.11 core revisions
+e922602edad30d1f225c32c1cddd80fb3740a8d3 brcm80211: smac: cleanup buscore handling in aiutils.c
+99559f136559e6822f20fcf1b63e6910df126941 brcm80211: smac: cleanup si_info structure definition
+3b758a68402fc5b1c2dbc246595dbdc062bf0da9 brcm80211: smac: remove mapped core related function from aiutils.c
+e3d5af56e1a50c9bc3c24810e6b25df91d37bc77 brcm80211: smac: remove ai_switch_core() function
+937642f55ef7f8b9dcb202754d53853c7b36e15f brcm80211: smac: remove interrupt disable callback functionality
+a232c8a12a0fe55a2e671d24626c98a21b57a332 brcm80211: smac: INTROFF/INTRESTORE macros removed
+291ed3dcd5334c7987272494373751f86e5b61ee brcm80211: smac: remove empty or unused functions from pmu.c
+646e2615d21d6438e033fd28888b8a6a62cda851 brcm80211: smac: remove register access macro definitions
+c8086745215435281ca319b5243bf8b11a366ef3 brcm80211: smac: use bcma core access functions in aiutils.c
+8d30b708b82ffa98e04197547e89fd8f18313ce2 brcm80211: smac: use bcma core access functions in pmu.c
+b14f16747f143b330d0cef84ff2c590c3f1744a4 brcm80211: smac: use bcma core access function in srom.c
+373c78e19d6c00ff87fc251584d8bab65150e751 brcm80211: smac: use bcma core access functions in otp.c
+d3126c52eb7f3239b45481facc4078b08ed1027c brcm80211: smac: change ai_findcoreidx() to ai_findcore()
+b0327ffa8cfe69ce2d380200c2097b86c6b3efd9 brcm80211: smac: use bcma core access functions in nicpci.c
+a8779e4a8e7f0f90ae169393cd72105134ce7c7b brcm80211: smac: use bcma core control functions
+834d5846d1b17114530e2f4e4e0e5a415065f1f8 brcm80211: smac: remove unused functions and/or prototypes
+7d8e18e456466c2247abe0658e4add598f85c98e brcm80211: smac: replace ai_corereg() function with ai_cc_reg()
+ad5db1317c04ece569d18c692f8e49453c552d1e brcm80211: smac: remove SI_FAST() macro usage
+4b006b11ca18995677c5f1cd03cc9c42fbe80693 brcm80211: smac: use bcma functions for register access in phy code
+e81da6501b433f757baa981a4e02fd9956cd3147 brcm80211: smac: use bcma function for register access in dma.c
+2e81b9b19f20286425fed3b54df9b81189444cee brcm80211: smac: use DMA-API calls for descriptor allocations
+16d2812e9eaaa47ca952ea81e34b4f400c861dfc brcm80211: smac: use bcma core register access functions for 802.11 core
+5204563ab841fbb5d6ef683635682e155a0a9e84 brcm80211: smac: remove enumeration rom parsing function
+28a5344261753fadb1731b82c5eeecca708a877c brcm80211: smac: change ai_attach interface taking a bcma_bus object
+cbc80db2922112cf3c77a6121827ad662ea78c2d brcm80211: smac: rename struct si_info field pbus to pcibus
+b63337a0344d7ebf3c8d710b1327d0b61c0f6f03 brcm80211: smac: change attach interfaces in main.c for bcma support
+2e756560a8a47ce754b852d0bc1ff7549433d0eb brcm80211: smac: change from pci device driver to bcma device driver
+b2ffec46ea230acac52170dd0a747526328d25fe brcm80211: smac: use inline access functions for struct si_pub fields
+2e397c303807fadcf65f4e070603107453db4352 brcm80211: smac: move fields from struct si_pub to struct si_info
+c9eb65a4865a915e93847be19a546d47816d88e4 brcm80211: smac: remove unused fields from struct si_pub definition
+ffb2756511a90091185e9be0652cc10eee0890d0 brcm80211: fmac: remove drive strength code for unsupported chips
+ce2d7d7e8fd88191f5d1c92a8b33aeb0cb12ea34 brcm80211: fmac: add bcm4330 support
+e40aed0638ac84d63a2ff33502e215ac81010a89 brcm80211: fmac: fix firmware shared structures version
+d76d1c8c1deebe0c71872ac4e500d6a2233f80ff brcm80211: fmac: save bus interface structure in function 2 device
+ad9547c0413686a23e48793665a9ebd3e65c474c brcm80211: fmac: small memory leak on error
+e957abb60e293761d47d647b811d8547ebfbf5c3 brcm80211: avoid code duplication on set tx power
+d3f311349adde6ac533f9acdee45c49ce20cdb12 brcm80211: fix usage of set tx power
+94c2fb82bd7c9055bec8e410c387befce33d1299 brcm80211: fmac: change function bus_stop parameter
+c0a7962ae72c9ebf42f623719a46c8f472f44067 brcm80211: fmac: remove function brcmf_bus_get_device
+fa20b91143c616d402f1ed61f27693477279d0c6 brcm80211: fmac: change function bus_init parameter
+bf347bb9768ab0da028a0d9f92142df738211deb brcm80211: fmac: change function bus_txdata parameter
+47a1ce78d544b9fb3b776a62de3c084cf0020fda brcm80211: fmac: change function bus_txctl parameter
+532cdd3b99b7a89fdc128c2b58abea780f3bbb4d brcm80211: fmac: change function bus_rxctl parameter
+cad2b26b1010d0694d2f08d408486451b9f919d2 brcm80211: fmac: stop using brcmf_pub in brcmf_sdbrcm_bus_watchdog
+8d169aa00d0356f915e84dbdf6c9be381cce34a4 brcm80211: fmac: move busstate to struct brcmf_bus
+655713be2cf1a69990eb510f3641e9ef05648f51 brcm80211: fmac: introduce common bus interface struct brcmf_bus
+e92eedf4e080fc0bd98e892cb9d31d2163ae8b29 brcm80211: fmac: rename structure brcmf_bus to brcmf_sdio
+4175b88bd22022a60de175f94fdb303bed087eb9 brcm80211: fmac: remove unused parameter of brcmf_sdbrcm_probe
+4f96bf1910491e3d8e41915239080422e9810662 brcm80211: fmac: remove function brcmf_c_init
+3392c888bbe6fb939dea952ea90bea4dc969c234 brcm80211: fmac: move module init/exit to sdio layer
+0c094c77ce9c338adc08d6d71b2d92a7761992b8 brcm80211: fmac: discard packet received when net device not registered
+a52dd17d20be1fb6a111468f3ca8bfa0af7c0903 brcm80211: fmac: rename wait queue name to match using function
+8054321b7cb8c685f21762268b20dc590dab2a8d brcm80211: fmac: remove alignment check from brcmf_sdioh_request_buffer()
+be667669ec01d514b3820f8c74d9336115be6aa7 brcm80211: smac: added support for mac80211 filter flags
+8906c43cb160abc89c3d7e0721cacb8bc54be927 brcm80211: smac: fix channel frequency
+8dd939cade92647a7c87db5ae895a6e120258320 brcm80211: fmac: change firmware/nvram name to be more generic
+4c6e869d2ee7ca489b7049c17c9afe7b68bebecc brcm80211: fmac: simplify the brcmf_sdioh_request_buffer() function
+5e8e13b94c7ace2ed8b2aed253211290b329eb5c brcm80211: fmac: remove width parameter from brcmf_sdioh_request_buffer
+5adfeb632c52a6c15e98fa6465bdade6fff915d9 brcm80211: fmac: separate receiving skb chain from other receive path
+3030794fcae9b07d62a9ff7649a413dff0c88e01 brcm80211: smac: remove skb next pointer usage from the driver
+0b45bf74f91e781b74bfadb8bb08ef341b6befd3 brcm80211: fmac: cleanup receive path using proper skb_queue functions
+515db09338704a6ad7d27b5f1e33820d3052edd2 Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux
+1f1d528977162a1a04aaecdc7f08a5b715a58810 brcm80211: smac: Use kmemdup rather than duplicating its implementation
+8505a7e652c8a37bdacfd9d6ad5096c793f55ceb brcmsmac: Use current logging styles
+6d377cdbe3d35d67468fcfe7473fc3f0f74fa647 brcmsmac: fix warning in _initvars_srom_pci
+e78946e198b9cf2656dceb5ea2c21759f469a125 brcm80211: fmac: release bss struct returned from cfg80211_inform_bss
+99b72cde632b67603f4c7f18e8ff23a57b484478 brcm80211: fmac: remove PCMCIA core related code
+046808daf9f6b8c5275861330d4f8c2e6cfe3c31 brcm80211: fmac: add function to free the glom skb queue
+53ee4bc46784ad53d0a9be52e8d687dd4e89a055 brcm80211: util: remove pointer traversal from brcmu_pkt_buf_free_skb
+9a95e60e0610bb8ec39c74d2c8546514a76428df brcm80211: util: move brcmu_pkttotlen() function to brcmfmac
+02a588a2e3b9e0156f306a542bb6cd29ba42e1b9 brcm80211: smac: combine promiscuous mode functionality
+ad3b8b39189689dbff84c8a8edf024511b087f87 brcm80211: util: use sk_buff_head in precedence queue functions
+ad4d71f69ebe2acab75d0a8a66ab9f7609151cce brcm80211: smac: remove usage of brcmu_pkttotlen
+122d36fd5ac99305d294012044198894648bf0f8 brcm80211: fmac: remove id retrieve code
+d77e70ff5ace175f19447a1965691a794c27de24 brcm80211: fmac: add resetcore function for bcm4330 chip
+086a2e0a63eef367dab9b4499ba0cfe3a309ec94 brcm80211: fmac: add coredisable function for bcm4330 chip
+523894f2672b9832da9f9fcce3043f1720ca42f4 brcm80211: fmac: add corerev function for bcm4330 chip
+6ca687d9461b25ce2339ba1809ec13ef459d4661 brcm80211: fmac: add iscoreup function for bcm4330 chip
+e9ca530a7b183691d9799fd40772c2cd398b494a brcm80211: smac: don't modify sta parameters when adding sta
+a0f24c8a9328b58c2881e6a1c139110700a1a584 brcm80211: smac: remove duplicate definition of D11_PHY_HDR_LEN
+b7eec4233c348447e3f2d653f6c64128f2457c94 brcm80211: smac: replace own access category definitions with mac80211 enum
+bfd8284b6523203e5218864d74b82571df80534f brcm80211: smac: remove code under unused macro definitions
+9752915e3ead9ce794744dde3a1c7f6f49a1e936 brcm80211: smac: fix endianess issue for OTP memory access
+99ba15cd75ed22e4ae86804ca2982a724e8102c2 brcm80211: fmac: optimize chip core info management
+61213be4cc2201b58786464000113ecbfc9d2c99 brcm80211: fmac: replace private SB macros with ssb_regs version
+e12afb6c5d13ebff64d4a2feb97cce0c2d7e1128 brcm80211: fmac: move chip drive strength related code to sdio_chip.c
+a8a6c04586233e12551552c292797cb56b31dade brcm80211: fmac: move chip detach function to sdio_chip.c
+2bc78e10d841f81ea7a2b25bc0481ea4af06437e brcm80211: fmac: move chip reset core function to sdio_chip.c
+454d2a8816d6bc6594d3d475392290623af63656 brcm80211: fmac: abstract chip core revision function
+d8f64a425b3a79e7d276e438ad7246c916a4b195 brcm80211: fmac: abstract chip iscoreup function
+a97e4fc5ae4b00187b25a8216a61b2105efa9c60 brcm80211: fmac: chip attach code flow clean up
+98ce903519b4874673e75ba80657c4114b933bac brcm80211: fmac: remove duplicate regiter set in chip attach path
+960908dceabf40d7335170d26dbf13f63b240c67 brcm80211: fmac: move dongle gpio reset code to chip attach function
+966414da2d5a0c957d331e3f06255ec2277acb65 brcm80211: fmac: disable dongle arm core in bus core setup function
+2d4a9af172814b76bf2ad5da2213ea42d111893b brcm80211: fmac: move core disable function to sdio_chip.c
+5b45e54e77cc29a760461ca64cf143ffa49493b6 brcm80211: fmac: abstract chip buscore setup function
+e63ac6b888eed345f5b93751649515d6436abed2 brcm80211: fmac: move bus core prep code to sdio_chip.c
+a83369b6e1e7285edd5217601a0618b9a43bdc4b brcm80211: fmac: move chip recognition function to sdio_chip.c
+718897eb3f90a47a56acb504762d521388a3231c brcm80211: fmac: remove unnecessary 4329 chip specific code
+5e819059a20b0fc5a71875f28b4cae359e38d85a Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless
+028f78d43d80dcb8b1142ea38606067151dd3d51 brcm80211: smac: change buffer endianess convert function interface
+d1a5b6fbecc52323acf05fa7881267071933c92e brcm80211: fmac: remove state from brcmf_if in fullmac
+e1b835865c58e44ad16e5c85d1dc727991e2b0b3 brcm80211: fmac: store brcmf_if in net device private data
+15d45b6fbd01ecebc5a77b1e06ae7ebffad8018a brcm80211: fmac: use brcmf_add_if for all net devices
+3fd172d30b59d9b73cb35ab263a1f0173dae974c brcm80211: smac: use sk_buff list for handling frames in receive path
+81d2e2d148c2263f29a971d027f04c6e2c87e0d2 brcm80211: smac: rename buffer endianess conversion functions
+1525662ac280e61feb1af7778881241b542dc075 brcm80211: smac: changed check to confirm STA only support
+dc460127898cab9014fb06281e0bad37b198bd83 brcm80211: smac: mute transmit on ops_start
+2646c46d56792bdb370784d1cd6e696a7b3bbf67 brcm80211: smac: modified Mac80211 callback interface
+c6c44893c864429a7c6a4f7942dfb3ee182b4ad1 brcm80211: smac: fixed inconsistency in transmit mute
+a8bc4917ed6bd6101569630708baaac14504ab8c brcm80211: smac: bugfix for tx mute in brcms_b_init()
+43ac09722f8e8f69cb528877c4b853cf9b96d9d7 brcm80211: smac: removed down-on-rf-kill functionality
+28237002e726bfaeb3ab682ec5574d697a15e00d brcm80211: smac: removed down-on-watchdog MPC functionality
+4412953061def953a6458f9f1b277e442f83c919 brcm80211: smac: removed MPC related variables
+0bf1f883fd0ad0b6f55974aad6682de43f7305dd brcm80211: smac: removed MPC related code
+dfded557d8c0ff9f66c6d6c4959596148db05c8e brcm80211: fmac: use brcmf_del_if for all net devices
+ece960eae81c604aa14a1bf431eda34f4fe71c0c brcm80211: fmac: allow wd timer to be disabled when bus down
+b83db862ffb871e3131e5d2160c741b288eea9aa brcm80211: fmac: use sk_buff list for handling frames in receive path
+09c7dfa0f01e906671f303061babb7e6ddce2c92 brcm80211: util: remove function brcmu_format_hex() from brcmutil
+20e5ca16397648811a9e1ad531360c843e005a57 brcm80211: util: move brcmu_pktfrombuf() function to brcmfmac
+1433c59bcc404cd4bd54333d23ce06242d8e32b7 brcm80211: smac: remove phy api bypass in rate.h
+094b199bf707a41bc6748f0c2f0a23ecf5d2ccd6 brcm80211: smac: some local function made static in main.c
+888153b3db3fb10a048768c0c262951e2bc19719 brcm80211: smac: avoid sprom endianess conversions for crc8 check
+32cb68bf57b726f4b9161cdc110ffe45134aab69 brcm80211: smac: remove obsolete srom variables from n-phy
+c261bdf8acad56717cae233709808d8d9291ce36 brcm80211: smac: indicate severe problems to Mac80211
+0527781eb00550226d638b9be23d246c7ba796f6 brcm80211: fmac: changed two scan related structures
+6f09be0ad534160a1931f0c0f92e18a48bd888f9 brmc80211: fmac: reworked next_bss()
+d34bf64fd32abfe8141c7206ca6da92832b4fe94 brcm80211: fmac: annotated little endian struct with _le
+3b64bd3e4d0ae667062893a6ef30326f7103144e brcm80211: smac: removed support for SROM rev < 8
+6b1a89afbf97f40797255b9543d441ce361dbb52 brcm80211: smac: drop "40MHz intolerant" flag from HT capability info
+230382140e043903aa1138bb7ca095d7d23fd164 brcm80211: removed duplicate defines
+73ffc2fcd53a041fdee1bade5ae471ce704be26d brcm80211: cleanup defines in main.c
+ae8e46723f803057daff392bdc93332be2f0ec98 brcm80211: smac: eliminate a null pointer dereference in dma.c
+452962366c11a9126fabac8cb28af49c27464408 staging: Add module.h to more drivers implicitly using it.
+ee40fa0656a730491765545ff7550f3c1ceb0fbc drivers/net: Add export.h to files using EXPORT_SYMBOL/THIS_MODULE
+b7a57e762ecf5d9971549ab3f9eb66b559840e72 net: wireless: brcm80210: include module.h
+d8f6cd03de79530a7b8234d2c33a71f83d5b14b0 brcm80211: removed file wifi.c
+447606514450655885c5369782d7baa2478916a7 brcm80211: moved function brcmu_format_flags
+53a2277d2ad411b440d2f102ced7bebef42c2fd7 brcm80211: moved function brcmu_mkiovar
+3de67818e7e7ef95c8f7eac665dd29454c07b48b brcm80211: moved function brcmu_chspec_malformed
+f8e4b412c9df596557baf36f9d9635fd4f55a2a0 brcm80211: moved function brcmu_parse_tlvs
+b0551fb7e01d76165367ce77ddfcb80009b31427 brcm80211: moved function brcmu_chipname
+ef6ac17a20a424fdfb049ae475d62b92c192d1bc brcm80211: moved power conversion functions
+f53b170f465d52546c33faa962c3d2609a6bf5b3 brcm80211: removed unused functions
+a718e2fed1a31239922d06d7877fc3436eb05288 brcm80211: fmac: fixed weird indentation
+c68cdc0ff6da538226bd440ecc6a005e74e0ace6 brcm80211: use endian annotation for scan time configuration
+f588bc0c0b98cec3183333e52e3a28df2a3fc0c1 brcm80211: use endian annotation for roaming related parameters
+c4e382d23969e97e9d07d1dc7a5b96d068170479 brcm80211: use endian annotations for assoc ie length request
+40c8e95af02d29a488d6a6b127f562d9210e6005 brcm80211: use endian annotation for pmk related structure
+668310754f32b6c0a421361a3e45767a4b5f5c05 brcm80211: use endian annotations in scan related function
+1062904c9b053ed4f2b77900aacc122f68febb0b brcm80211: fix annotations in TOE configuration functions
+b5036243c122996d524235536542187dd3138aee brcm80211: rename variable in _brcmf_set_multicast_list()
+f7264adb9a0ec492c3f6ee2a476a9ad9027317f9 brcm80211: add endian annotation to packet filter structures
+df4492f89499fa5ba45f8fdfe1f100b4112f5368 brcm80211: fix sparse endianess error in mac80211_if.c
+af5349581c01780824d3229fc958354c1f7e9c91 brcm80211: remove sparse warning in fullmac debug function
+94bdc2a2d487b1d51f024dba5db0bc34013d7706 brcm80211: cleanup function prototypes
+2a7fc5b1c17a6055fe2753ebacaf43b5780bcf99 brcm80211: smac: decreased timer callback irq level
+be69c4ef462a476523f89c74e7db29f6ad207a1a brcm80211: smac: removed redundant timer function parameters
+722c9930f209dc428c1e568bd2c0f4cbd3b30dbd net: wireless: brcm80211: replace ndo_set_multicast_list  with ndo_set_rx_mode
+5b435de0d786869c95d1962121af0d7df2542009 net: wireless: add brcm80211 drivers
