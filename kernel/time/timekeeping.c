@@ -641,9 +641,14 @@ static void update_sleep_time(struct timespec t)
  * Takes a timespec offset measuring a suspend interval and properly
  * adds the sleep offset to the timekeeping variables.
  */
-static void __t
-imekeeping_inject_sleeptime(struct timespec *delta)
+static void __timekeeping_inject_sleeptime(struct timespec *delta)
 {
+	if (!timespec_valid(delta)) {
+		printk(KERN_WARNING "__timekeeping_inject_sleeptime: Invalid "
+					"sleep delta value!\n");
+		return;
+	}
+
 	timekeeper.xtime = timespec_add(timekeeper.xtime, *delta);
 	timekeeper.wall_to_monotonic =
 			timespec_sub(timekeeper.wall_to_monotonic, *delta);
