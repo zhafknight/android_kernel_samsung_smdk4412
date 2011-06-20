@@ -395,7 +395,6 @@ struct inodes_stat_t {
 #include <linux/shrinker.h>
 #include <linux/atomic.h>
 
-#include <asm/atomic.h>
 #include <asm/byteorder.h>
 
 struct export_operations;
