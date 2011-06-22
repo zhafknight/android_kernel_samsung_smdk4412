@@ -4464,6 +4464,9 @@ static inline void sched_submit_work(struct task_struct *tsk)
 
 asmlinkage void schedule(void)
 {
+	struct task_struct *tsk = current;
+
+	sched_submit_work(tsk);
 	__schedule();
 }
 EXPORT_SYMBOL(schedule);
