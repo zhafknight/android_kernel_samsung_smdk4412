@@ -3046,8 +3046,8 @@ void drbd_init_set_defaults(struct drbd_conf *mdev)
 	atomic_set(&mdev->rs_sect_in, 0);
 	atomic_set(&mdev->rs_sect_ev, 0);
 	atomic_set(&mdev->ap_in_flight, 0);
+	atomic_set(&mdev->md_io_in_use, 0);
 
-	mutex_init(&mdev->md_io_mutex);
 	mutex_init(&mdev->data.mutex);
 	mutex_init(&mdev->meta.mutex);
 	sema_init(&mdev->data.work.s, 0);
@@ -3727,8 +3727,10 @@ void drbd_md_sync(struct drbd_conf *mdev)
 	if (!get_ldev_if_state(mdev, D_FAILED))
 		return;
 
-	mutex_lock(&mdev->md_io_mutex);
-	buffer = (struct meta_data_on_disk *)page_address(mdev->md_io_page);
+	buffer = drbd_md_get_buffer(mdev);
+	if (!buffer)
+		goto out;
+
 	memset(buffer, 0, 512);
 
 	buffer->la_size = cpu_to_be64(drbd_get_capacity(mdev->this_bdev));
@@ -3759,7 +3761,8 @@ void drbd_md_sync(struct drbd_conf *mdev)
 	 * since we updated it on metadata. */
 	mdev->ldev->md.la_size_sect = drbd_get_capacity(mdev->this_bdev);
 
-	mutex_unlock(&mdev->md_io_mutex);
+	drbd_md_put_buffer(mdev);
+out:
 	put_ldev(mdev);
 }
 
@@ -3779,8 +3782,9 @@ int drbd_md_read(struct drbd_conf *mdev, struct drbd_backing_dev *bdev)
 	if (!get_ldev_if_state(mdev, D_ATTACHING))
 		return ERR_IO_MD_DISK;
 
-	mutex_lock(&mdev->md_io_mutex);
-	buffer = (struct meta_data_on_disk *)page_address(mdev->md_io_page);
+	buffer = drbd_md_get_buffer(mdev);
+	if (!buffer)
+		goto out;
 
 	if (!drbd_md_sync_page_io(mdev, bdev, bdev->md.md_offset, READ)) {
 		/* NOTE: can't do normal error processing here as this is
@@ -3841,7 +3845,8 @@ int drbd_md_read(struct drbd_conf *mdev, struct drbd_backing_dev *bdev)
 		mdev->sync_conf.al_extents = 127;
 
  err:
-	mutex_unlock(&mdev->md_io_mutex);
+	drbd_md_put_buffer(mdev);
+ out:
 	put_ldev(mdev);
 
 	return rv;
