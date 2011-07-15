@@ -36,6 +36,8 @@
 #include <net/sock.h>
 #include <linux/in.h>
 #include <linux/list.h>
+#include <linux/ratelimit.h>
+#include <linux/export.h>
 
 #include "rds.h"
 
