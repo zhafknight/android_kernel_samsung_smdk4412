@@ -23,7 +23,7 @@
 #include <linux/kgdb.h>
 #include <linux/ftrace.h>
 
-#include <asm/atomic.h>
+#include <linux/atomic.h>
 #include <asm/uaccess.h>
 
 #ifdef CONFIG_KGDB

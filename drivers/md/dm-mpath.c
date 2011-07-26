@@ -21,7 +21,7 @@
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 #include <scsi/scsi_dh.h>
-#include <asm/atomic.h>
+#include <linux/atomic.h>
 
 #define DM_MSG_PREFIX "multipath"
 #define DM_PG_INIT_DELAY_MSECS 2000

@@ -13,7 +13,7 @@
 #include <linux/kernel.h>
 #include <linux/bitops.h>
 
-#include <asm/atomic.h>
+#include <linux/atomic.h>
 #include <asm/intrinsics.h>
 
 #define arch_spin_lock_init(x)			((x)->lock = 0)
