@@ -1924,7 +1924,6 @@ static sector_t sync_request(mddev_t *mddev, sector_t sector_nr,
 	int i;
 	int max_sync;
 	sector_t sync_blocks;
-
 	sector_t sectors_skipped = 0;
 	int chunks_skipped = 0;
 
@@ -2073,10 +2072,28 @@ static sector_t sync_request(mddev_t *mddev, sector_t sector_nr,
 
 			for (j=0; j<conf->copies;j++) {
 				int d = r10_bio->devs[j].devnum;
+				mdk_rdev_t *rdev;
+				sector_t sector, first_bad;
+				int bad_sectors;
 				if (!conf->mirrors[d].rdev ||
 				    !test_bit(In_sync, &conf->mirrors[d].rdev->flags))
 					continue;
 				/* This is where we read from */
+				rdev = conf->mirrors[d].rdev;
+				sector = r10_bio->devs[j].addr;
+
+				if (is_badblock(rdev, sector, max_sync,
+						&first_bad, &bad_sectors)) {
+					if (first_bad > sector)
+						max_sync = first_bad - sector;
+					else {
+						bad_sectors -= (sector
+								- first_bad);
+						if (max_sync > bad_sectors)
+							max_sync = bad_sectors;
+						continue;
+					}
+				}
 				bio = r10_bio->devs[0].bio;
 				bio->bi_next = biolist;
 				biolist = bio;
@@ -2163,12 +2180,28 @@ static sector_t sync_request(mddev_t *mddev, sector_t sector_nr,
 
 		for (i=0; i<conf->copies; i++) {
 			int d = r10_bio->devs[i].devnum;
+			sector_t first_bad, sector;
+			int bad_sectors;
+
 			bio = r10_bio->devs[i].bio;
 			bio->bi_end_io = NULL;
 			clear_bit(BIO_UPTODATE, &bio->bi_flags);
 			if (conf->mirrors[d].rdev == NULL ||
 			    test_bit(Faulty, &conf->mirrors[d].rdev->flags))
 				continue;
+			sector = r10_bio->devs[i].addr;
+			if (is_badblock(conf->mirrors[d].rdev,
+					sector, max_sync,
+					&first_bad, &bad_sectors)) {
+				if (first_bad > sector)
+					max_sync = first_bad - sector;
+				else {
+					bad_sectors -= (sector - first_bad);
+					if (max_sync > bad_sectors)
+						max_sync = max_sync;
+					continue;
+				}
+			}
 			atomic_inc(&conf->mirrors[d].rdev->nr_pending);
 			atomic_inc(&r10_bio->remaining);
 			bio->bi_next = biolist;
@@ -2176,7 +2209,7 @@ static sector_t sync_request(mddev_t *mddev, sector_t sector_nr,
 			bio->bi_private = r10_bio;
 			bio->bi_end_io = end_sync_read;
 			bio->bi_rw = READ;
-			bio->bi_sector = r10_bio->devs[i].addr +
+			bio->bi_sector = sector +
 				conf->mirrors[d].rdev->data_offset;
 			bio->bi_bdev = conf->mirrors[d].rdev->bdev;
 			count++;
@@ -2433,6 +2466,7 @@ static int run(mddev_t *mddev)
 				 (conf->raid_disks / conf->near_copies));
 
 	list_for_each_entry(rdev, &mddev->disks, same_set) {
+
 		disk_idx = rdev->raid_disk;
 		if (disk_idx >= conf->raid_disks
 		    || disk_idx < 0)
