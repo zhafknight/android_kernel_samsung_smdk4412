@@ -143,8 +143,6 @@ xfs_file_fsync(
 
 	xfs_iflags_clear(ip, XFS_ITRUNCATED);
 
-	xfs_ioend_wait(ip);
-
 	if (mp->m_flags & XFS_MOUNT_BARRIER) {
 		/*
 		 * If we have an RT and/or log subvolume we need to make sure
@@ -725,7 +723,7 @@ xfs_file_aio_write_checks(
  * the dio layer.  To avoid the problem with aio, we also need to wait for
  * outstanding IOs to complete so that unwritten extent conversion is completed
  * before we try to map the overlapping block. This is currently implemented by
- * hitting it with a big hammer (i.e. xfs_ioend_wait()).
+ * hitting it with a big hammer (i.e. inode_dio_wait()).
  *
  * Returns with locks held indicated by @iolock and errors indicated by
  * negative return values.
@@ -790,7 +788,7 @@ xfs_file_dio_aio_write(
 	 * otherwise demote the lock if we had to flush cached pages
 	 */
 	if (unaligned_io)
-		xfs_ioend_wait(ip);
+		inode_dio_wait(inode);
 	else if (*iolock == XFS_IOLOCK_EXCL) {
 		xfs_rw_ilock_demote(ip, XFS_IOLOCK_EXCL);
 		*iolock = XFS_IOLOCK_SHARED;
