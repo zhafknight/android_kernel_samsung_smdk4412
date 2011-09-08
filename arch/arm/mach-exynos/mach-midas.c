@@ -168,6 +168,8 @@ struct s3cfb_extdsp_lcd {
 #include <mach/gc1-jack.h>
 #endif
 
+#include "common.h"
+
 #include "board-mobile.h"
 
 /* Following are default values for UCON, ULCON and UFCON UART registers */
@@ -3627,6 +3629,7 @@ MACHINE_START(SMDK4212, "SMDK4x12")
 	.atag_offset	= S5P_PA_SDRAM + 0x100,
 	.init_irq	= exynos4_init_irq,
 	.map_io		= midas_map_io,
+	.smp            = smp_ops(exynos_smp_ops),
 	.handle_irq     = gic_handle_irq,
 	.init_machine	= midas_machine_init,
 	.timer		= &exynos4_timer,
