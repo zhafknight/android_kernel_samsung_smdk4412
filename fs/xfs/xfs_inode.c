@@ -1153,7 +1153,7 @@ xfs_ialloc(
 	/*
 	 * Log the new values stuffed into the inode.
 	 */
-	xfs_trans_ijoin_ref(tp, ip, XFS_ILOCK_EXCL);
+	xfs_trans_ijoin(tp, ip, XFS_ILOCK_EXCL);
 	xfs_trans_log_inode(tp, ip, flags);
 
 	/* now that we have an i_mode we can setup inode ops and unlock */
@@ -1587,22 +1587,9 @@ xfs_itruncate_finish(
 		error = xfs_bmap_finish(tp, &free_list, &committed);
 		ntp = *tp;
 		if (committed)
-			xfs_trans_ijoin(ntp, ip);
-
-		if (error) {
-			/*
-			 * If the bmap finish call encounters an error, return
-			 * to the caller where the transaction can be properly
-			 * aborted.  We just need to make sure we're not
-			 * holding any resources that we were not when we came
-			 * in.
-			 *
-			 * Aborting from this point might lose some blocks in
-			 * the file system, but oh well.
-			 */
-			xfs_bmap_cancel(&free_list);
-			return error;
-		}
+			xfs_trans_ijoin(tp, ip, 0);
+		if (error)
+			goto out_bmap_cancel;
 
 		if (committed) {
 			/*
@@ -1616,7 +1603,7 @@ xfs_itruncate_finish(
 		error = xfs_trans_commit(*tp, 0);
 		*tp = ntp;
 
-		xfs_trans_ijoin(ntp, ip);
+		xfs_trans_ijoin(tp, ip, 0);
 
 		if (error)
 			return error;

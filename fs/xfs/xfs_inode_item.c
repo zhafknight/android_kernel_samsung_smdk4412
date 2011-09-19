@@ -663,10 +663,8 @@ xfs_inode_item_unlock(
 
 	lock_flags = iip->ili_lock_flags;
 	iip->ili_lock_flags = 0;
-	if (lock_flags) {
-		xfs_iunlock(iip->ili_inode, lock_flags);
-		IRELE(iip->ili_inode);
-	}
+	if (lock_flags)
+		xfs_iunlock(ip, lock_flags);
 }
 
 /*
