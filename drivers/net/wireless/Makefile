@@ -66,3 +66,7 @@ obj-$(CONFIG_BCM43241)	+= bcmdhd/
 obj-$(CONFIG_BCM4334)   += btlock/
 # obj-$(CONFIG_BCM4334)	+= bcm4334/
 # obj-$(CONFIG_BCM4330)	+= bcm4330/
+obj-$(CONFIG_BRCMFMAC) += brcm80211/
+obj-$(CONFIG_BRCMUMAC) += brcm80211/
+obj-$(CONFIG_BRCMSMAC) += brcm80211/
+
