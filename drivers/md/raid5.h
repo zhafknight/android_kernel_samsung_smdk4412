@@ -436,7 +436,7 @@ struct r5conf {
 	/* When taking over an array from a different personality, we store
 	 * the new thread here until we fully activate the array.
 	 */
-	struct mdk_thread_s	*thread;
+	struct md_thread	*thread;
 };
 
 /*
