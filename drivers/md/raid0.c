@@ -28,7 +28,7 @@
 
 static int raid0_congested(void *data, int bits)
 {
-	mddev_t *mddev = data;
+	struct mddev *mddev = data;
 	raid0_conf_t *conf = mddev->private;
 	struct md_rdev **devlist = conf->devlist;
 	int raid_disks = conf->strip_zone[0].nb_dev;
@@ -48,7 +48,7 @@ static int raid0_congested(void *data, int bits)
 /*
  * inform the user of the raid configuration
 */
-static void dump_zones(mddev_t *mddev)
+static void dump_zones(struct mddev *mddev)
 {
 	int j, k, h;
 	sector_t zone_size = 0;
@@ -78,7 +78,7 @@ static void dump_zones(mddev_t *mddev)
 	printk(KERN_INFO "**********************************\n\n");
 }
 
-static int create_strip_zones(mddev_t *mddev, raid0_conf_t **private_conf)
+static int create_strip_zones(struct mddev *mddev, raid0_conf_t **private_conf)
 {
 	int i, c, err;
 	sector_t curr_zone_end, sectors;
@@ -300,7 +300,7 @@ static int raid0_mergeable_bvec(struct request_queue *q,
 				struct bvec_merge_data *bvm,
 				struct bio_vec *biovec)
 {
-	mddev_t *mddev = q->queuedata;
+	struct mddev *mddev = q->queuedata;
 	sector_t sector = bvm->bi_sector + get_start_sect(bvm->bi_bdev);
 	int max;
 	unsigned int chunk_sectors = mddev->chunk_sectors;
@@ -319,7 +319,7 @@ static int raid0_mergeable_bvec(struct request_queue *q,
 		return max;
 }
 
-static sector_t raid0_size(mddev_t *mddev, sector_t sectors, int raid_disks)
+static sector_t raid0_size(struct mddev *mddev, sector_t sectors, int raid_disks)
 {
 	sector_t array_sectors = 0;
 	struct md_rdev *rdev;
@@ -333,7 +333,7 @@ static sector_t raid0_size(mddev_t *mddev, sector_t sectors, int raid_disks)
 	return array_sectors;
 }
 
-static int raid0_run(mddev_t *mddev)
+static int raid0_run(struct mddev *mddev)
 {
 	raid0_conf_t *conf;
 	int ret;
@@ -383,7 +383,7 @@ static int raid0_run(mddev_t *mddev)
 	return md_integrity_register(mddev);
 }
 
-static int raid0_stop(mddev_t *mddev)
+static int raid0_stop(struct mddev *mddev)
 {
 	raid0_conf_t *conf = mddev->private;
 
@@ -418,7 +418,7 @@ static struct strip_zone *find_zone(struct raid0_private_data *conf,
  * remaps the bio to the target device. we separate two flows.
  * power 2 flow and a general flow for the sake of perfromance
 */
-static struct md_rdev *map_sector(mddev_t *mddev, struct strip_zone *zone,
+static struct md_rdev *map_sector(struct mddev *mddev, struct strip_zone *zone,
 				sector_t sector, sector_t *sector_offset)
 {
 	unsigned int sect_in_chunk;
@@ -454,7 +454,7 @@ static struct md_rdev *map_sector(mddev_t *mddev, struct strip_zone *zone,
 /*
  * Is io distribute over 1 or more chunks ?
 */
-static inline int is_io_in_chunk_boundary(mddev_t *mddev,
+static inline int is_io_in_chunk_boundary(struct mddev *mddev,
 			unsigned int chunk_sects, struct bio *bio)
 {
 	if (likely(is_power_of_2(chunk_sects))) {
@@ -467,7 +467,7 @@ static inline int is_io_in_chunk_boundary(mddev_t *mddev,
 	}
 }
 
-static int raid0_make_request(mddev_t *mddev, struct bio *bio)
+static int raid0_make_request(struct mddev *mddev, struct bio *bio)
 {
 	unsigned int chunk_sects;
 	sector_t sector_offset;
@@ -527,13 +527,13 @@ bad_map:
 	return 0;
 }
 
-static void raid0_status(struct seq_file *seq, mddev_t *mddev)
+static void raid0_status(struct seq_file *seq, struct mddev *mddev)
 {
 	seq_printf(seq, " %dk chunks", mddev->chunk_sectors / 2);
 	return;
 }
 
-static void *raid0_takeover_raid45(mddev_t *mddev)
+static void *raid0_takeover_raid45(struct mddev *mddev)
 {
 	struct md_rdev *rdev;
 	raid0_conf_t *priv_conf;
@@ -567,7 +567,7 @@ static void *raid0_takeover_raid45(mddev_t *mddev)
 	return priv_conf;
 }
 
-static void *raid0_takeover_raid10(mddev_t *mddev)
+static void *raid0_takeover_raid10(struct mddev *mddev)
 {
 	raid0_conf_t *priv_conf;
 
@@ -608,7 +608,7 @@ static void *raid0_takeover_raid10(mddev_t *mddev)
 	return priv_conf;
 }
 
-static void *raid0_takeover_raid1(mddev_t *mddev)
+static void *raid0_takeover_raid1(struct mddev *mddev)
 {
 	raid0_conf_t *priv_conf;
 
@@ -634,7 +634,7 @@ static void *raid0_takeover_raid1(mddev_t *mddev)
 	return priv_conf;
 }
 
-static void *raid0_takeover(mddev_t *mddev)
+static void *raid0_takeover(struct mddev *mddev)
 {
 	/* raid0 can take over:
 	 *  raid4 - if all data disks are active.
@@ -665,7 +665,7 @@ static void *raid0_takeover(mddev_t *mddev)
 	return ERR_PTR(-EINVAL);
 }
 
-static void raid0_quiesce(mddev_t *mddev, int state)
+static void raid0_quiesce(struct mddev *mddev, int state)
 {
 }
 
