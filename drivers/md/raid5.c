@@ -5594,7 +5594,7 @@ static void *raid4_takeover(struct mddev *mddev)
 	return ERR_PTR(-EINVAL);
 }
 
-static struct mdk_personality raid5_personality;
+static struct md_personality raid5_personality;
 
 static void *raid6_takeover(struct mddev *mddev)
 {
@@ -5643,7 +5643,7 @@ static void *raid6_takeover(struct mddev *mddev)
 }
 
 
-static struct mdk_personality raid6_personality =
+static struct md_personality raid6_personality =
 {
 	.name		= "raid6",
 	.level		= 6,
@@ -5665,7 +5665,7 @@ static struct mdk_personality raid6_personality =
 	.quiesce	= raid5_quiesce,
 	.takeover	= raid6_takeover,
 };
-static struct mdk_personality raid5_personality =
+static struct md_personality raid5_personality =
 {
 	.name		= "raid5",
 	.level		= 5,
@@ -5688,7 +5688,7 @@ static struct mdk_personality raid5_personality =
 	.takeover	= raid5_takeover,
 };
 
-static struct mdk_personality raid4_personality =
+static struct md_personality raid4_personality =
 {
 	.name		= "raid4",
 	.level		= 4,
