@@ -2209,7 +2209,6 @@ static sector_t sync_request(struct mddev *mddev, sector_t sector_nr, int *skipp
 		bio->bi_next = NULL;
 		bio->bi_flags &= ~(BIO_POOL_MASK-1);
 		bio->bi_flags |= 1 << BIO_UPTODATE;
-		bio->bi_comp_cpu = -1;
 		bio->bi_rw = READ;
 		bio->bi_vcnt = 0;
 		bio->bi_idx = 0;
