@@ -2010,7 +2010,7 @@ void ceph_invalidate_dir_request(struct ceph_mds_request *req)
 	struct ceph_inode_info *ci = ceph_inode(inode);
 
 	dout("invalidate_dir_request %p (D_COMPLETE, lease(s))\n", inode);
-	spin_lock(&ci->i_ceph_lock);
+	spin_lock(&inode->i_lock);
 	ceph_dir_clear_complete(inode);
 	ci->i_release_count++;
 	spin_unlock(&ci->i_ceph_lock);

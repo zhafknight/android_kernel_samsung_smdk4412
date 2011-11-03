@@ -858,9 +858,9 @@ static void ceph_set_dentry_offset(struct dentry *dn)
 
 	di = ceph_dentry(dn);
 
-	spin_lock(&ci->i_ceph_lock);
+	spin_lock(&inode->i_lock);
 	if (!ceph_dir_test_complete(inode)) {
-		spin_unlock(&ci->i_ceph_lock);
+		spin_unlock(&inode->i_lock);
 		return;
 	}
 	di->offset = ceph_inode(inode)->i_max_offset++;
