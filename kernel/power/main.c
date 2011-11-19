@@ -325,20 +325,14 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 		if (*s && len == strlen(*s) && !strncmp(buf, *s, len))
 			break;
 	}
-	if (state < PM_SUSPEND_MAX && *s)
-#ifdef CONFIG_EARLYSUSPEND
-		if (state == PM_SUSPEND_ON || valid_state(state)) {
-			error = 0;
-			request_suspend_state(state);
-		}
-#else
+	if (state < PM_SUSPEND_MAX && *s) {
 		error = enter_state(state);
 		if (error) {
 			suspend_stats.fail++;
 			dpm_save_failed_errno(error);
 		} else
 			suspend_stats.success++;
-#endif
+	}
 #endif
 
  Exit:
