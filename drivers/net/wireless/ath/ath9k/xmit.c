@@ -1907,7 +1907,7 @@ int ath_tx_start(struct ieee80211_hw *hw, struct sk_buff *skb,
 	if (txq == sc->tx.txq_map[q] &&
 	    ++txq->pending_frames > ATH_MAX_QDEPTH && !txq->stopped) {
 		ieee80211_stop_queue(sc->hw, q);
-		txq->stopped = 1;
+		txq->stopped = true;
 	}
 	spin_unlock_bh(&txq->axq_lock);
 
@@ -1968,7 +1968,7 @@ static void ath_tx_complete(struct ath_softc *sc, struct sk_buff *skb,
 
 		if (txq->stopped && txq->pending_frames < ATH_MAX_QDEPTH) {
 			ieee80211_wake_queue(sc->hw, q);
-			txq->stopped = 0;
+			txq->stopped = false;
 		}
 		spin_unlock_bh(&txq->axq_lock);
 	}

@@ -56,9 +56,9 @@ static int rtl92cu_init_sw_vars(struct ieee80211_hw *hw)
 	const struct firmware *firmware;
 	int err;
 
-	rtlpriv->dm.dm_initialgain_enable = 1;
+	rtlpriv->dm.dm_initialgain_enable = true;
 	rtlpriv->dm.dm_flag = 0;
-	rtlpriv->dm.disable_framebursting = 0;
+	rtlpriv->dm.disable_framebursting = false;
 	rtlpriv->dm.thermalvalue = 0;
 	rtlpriv->rtlhal.pfirmware = vmalloc(0x4000);
 	if (!rtlpriv->rtlhal.pfirmware) {

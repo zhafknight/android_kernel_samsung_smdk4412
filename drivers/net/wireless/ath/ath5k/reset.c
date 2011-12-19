@@ -1042,7 +1042,7 @@ int ath5k_hw_reset(struct ath5k_hw *ah, enum nl80211_iftype op_mode,
 	 */
 	if (fast && (ah->ah_radio != AR5K_RF2413) &&
 	(ah->ah_radio != AR5K_RF5413))
-		fast = 0;
+		fast = false;
 
 	/* Disable sleep clock operation
 	 * to avoid register access delay on certain
@@ -1068,7 +1068,7 @@ int ath5k_hw_reset(struct ath5k_hw *ah, enum nl80211_iftype op_mode,
 	if (ret && fast) {
 		ATH5K_DBG(ah->ah_sc, ATH5K_DEBUG_RESET,
 			"DMA didn't stop, falling back to normal reset\n");
-		fast = 0;
+		fast = false;
 		/* Non fatal, just continue with
 		 * normal reset */
 		ret = 0;
