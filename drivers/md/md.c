@@ -7417,7 +7417,6 @@ static int remove_and_add_spares(struct mddev *mddev)
 		sysfs_notify(&mddev->kobj, NULL,
 			     "degraded");
 
-
 	list_for_each_entry(rdev, &mddev->disks, same_set) {
 		if (rdev->raid_disk >= 0 &&
 		    !test_bit(In_sync, &rdev->flags) &&
