@@ -1,0 +1,65 @@
+[1mdiff --cc block/blk-ioc.c[m
+[1mindex 9be30fe,8bebf06..0000000[m
+[1m--- a/block/blk-ioc.c[m
+[1m+++ b/block/blk-ioc.c[m
+[36m@@@ -82,35 -84,33 +84,52 @@@[m [mvoid exit_io_context(struct task_struc[m
+  [m
+  struct io_context *alloc_io_context(gfp_t gfp_flags, int node)[m
+  {[m
+[31m -	struct io_context *ioc;[m
+[32m +	struct io_context *ret;[m
+  [m
+[32m++<<<<<<< HEAD[m
+[32m +	ret = kmem_cache_alloc_node(iocontext_cachep, gfp_flags, node);[m
+[32m +	if (ret) {[m
+[32m +		atomic_long_set(&ret->refcount, 1);[m
+[32m +		atomic_set(&ret->nr_tasks, 1);[m
+[32m +		spin_lock_init(&ret->lock);[m
+[32m +		ret->ioprio_changed = 0;[m
+[32m +		ret->ioprio = 0;[m
+[32m +		ret->last_waited = 0; /* doesn't matter... */[m
+[32m +		ret->nr_batch_requests = 0; /* because this is 0 */[m
+[32m +		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);[m
+[32m +		INIT_HLIST_HEAD(&ret->cic_list);[m
+[32m +		ret->ioc_data = NULL;[m
+[32m +#if defined(CONFIG_BLK_CGROUP) || defined(CONFIG_BLK_CGROUP_MODULE)[m
+[32m +		ret->cgroup_changed = 0;[m
+[32m +#endif[m
+[32m +	}[m
+[32m++=======[m
+[32m+ 	ioc = kmem_cache_alloc_node(iocontext_cachep, gfp_flags | __GFP_ZERO,[m
+[32m+ 				    node);[m
+[32m+ 	if (unlikely(!ioc))[m
+[32m+ 		return NULL;[m
+[32m+ [m
+[32m+ 	/* initialize */[m
+[32m+ 	atomic_long_set(&ioc->refcount, 1);[m
+[32m+ 	atomic_set(&ioc->nr_tasks, 1);[m
+[32m+ 	spin_lock_init(&ioc->lock);[m
+[32m+ 	INIT_RADIX_TREE(&ioc->radix_root, GFP_ATOMIC | __GFP_HIGH);[m
+[32m+ 	INIT_HLIST_HEAD(&ioc->cic_list);[m
+[32m++>>>>>>> 42ec57a... block: misc ioc cleanups[m
+  [m
+[31m -	return ioc;[m
+[32m +	return ret;[m
+  }[m
+  [m
+[31m- /*[m
+[31m-  * If the current task has no IO context then create one and initialise it.[m
+[31m-  * Otherwise, return its existing IO context.[m
+[32m+ /**[m
+[32m+  * current_io_context - get io_context of %current[m
+[32m+  * @gfp_flags: allocation flags, used if allocation is necessary[m
+[32m+  * @node: allocation node, used if allocation is necessary[m
+   *[m
+[31m-  * This returned IO context doesn't have a specifically elevated refcount,[m
+[31m-  * but since the current task itself holds a reference, the context can be[m
+[31m-  * used in general code, so long as it stays within `current` context.[m
+[32m+  * Return io_context of %current.  If it doesn't exist, it is created with[m
+[32m+  * @gfp_flags and @node.  The returned io_context does NOT have its[m
+[32m+  * reference count incremented.  Because io_context is exited only on task[m
+[32m+  * exit, %current can be sure that the returned io_context is valid and[m
+[32m+  * alive as long as it is executing.[m
+   */[m
+  struct io_context *current_io_context(gfp_t gfp_flags, int node)[m
+  {[m
