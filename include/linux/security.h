@@ -2077,16 +2077,16 @@ static inline int security_inode_init_security(struct inode *inode,
 						initxattrs initxattrs,
 						void *fs_data)
 {
-       return 0;
+	return 0;
 }
 
-static inline int security_new_inode_init_security(struct inode *inode,
-						struct inode *dir,
-						const struct qstr *qstr,
-						initxattrs initxattrs,
-						void *fs_data)
+static inline int security_old_inode_init_security(struct inode *inode,
+						   struct inode *dir,
+						   const struct qstr *qstr,
+						   char **name, void **value,
+						   size_t *len)
 {
-	return 0;
+	return -EOPNOTSUPP;
 }
 
 static inline int security_inode_create(struct inode *dir,
