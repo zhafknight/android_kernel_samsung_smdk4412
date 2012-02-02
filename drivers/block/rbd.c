@@ -2282,7 +2282,7 @@ static inline size_t copy_token(const char **buf,
  */
 static int rbd_add_parse_args(struct rbd_device *rbd_dev,
 			      const char *buf,
-			      char *mon_addrs,
+			      const char **mon_addrs,
 			      size_t *mon_addrs_size,
 			      char *options,
 			      size_t options_size)
@@ -2291,10 +2291,13 @@ static int rbd_add_parse_args(struct rbd_device *rbd_dev,
 
 	/* The first four tokens are required */
 
-	len = copy_token(&buf, mon_addrs, *mon_addrs_size);
-	if (!len || len >= *mon_addrs_size)
+	len = next_token(&buf);
+	if (!len)
 		return -EINVAL;
 	*mon_addrs_size = len + 1;
+	*mon_addrs = buf;
+
+	buf += len;
 
 	len = copy_token(&buf, options, options_size);
 	if (!len || len >= options_size)
@@ -2335,8 +2338,8 @@ static ssize_t rbd_add(struct bus_type *bus,
 		       size_t count)
 {
 	struct rbd_device *rbd_dev;
-	char *mon_addrs = NULL;
-	size_t mon_addrs_size;
+	const char *mon_addrs = NULL;
+	size_t mon_addrs_size = 0;
 	char *options = NULL;
 	struct ceph_osd_client *osdc;
 	int rc = -ENOMEM;
@@ -2346,9 +2349,6 @@ static ssize_t rbd_add(struct bus_type *bus,
 
 	rbd_dev = kzalloc(sizeof(*rbd_dev), GFP_KERNEL);
 	if (!rbd_dev)
-		goto err_nomem;
-	mon_addrs = kmalloc(count, GFP_KERNEL);
-	if (!mon_addrs)
 		goto err_nomem;
 	options = kmalloc(count, GFP_KERNEL);
 	if (!options)
@@ -2370,8 +2370,7 @@ static ssize_t rbd_add(struct bus_type *bus,
 	sprintf(rbd_dev->name, "%s%d", RBD_DRV_NAME, rbd_dev->id);
 
 	/* parse add command */
-	mon_addrs_size = count;
-	rc = rbd_add_parse_args(rbd_dev, buf, mon_addrs, &mon_addrs_size,
+	rc = rbd_add_parse_args(rbd_dev, buf, &mon_addrs, &mon_addrs_size,
 				options, count);
 	if (rc)
 		goto err_put_id;
@@ -2418,7 +2417,6 @@ err_out_bus:
 
 	rbd_bus_del_dev(rbd_dev);
 	kfree(options);
-	kfree(mon_addrs);
 	return rc;
 
 err_out_blkdev:
@@ -2429,7 +2427,6 @@ err_put_id:
 	rbd_id_put(rbd_dev);
 err_nomem:
 	kfree(options);
-	kfree(mon_addrs);
 	kfree(rbd_dev);
 
 	dout("Error adding device %s\n", buf);
