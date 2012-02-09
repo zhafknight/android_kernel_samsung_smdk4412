@@ -150,8 +150,7 @@ no_protect:
 
 	case ERFOFF:
 
-		if ((changesource == RF_CHANGE_BY_HW)
-		    && (ppsc->hwradiooff == false)) {
+		if ((changesource == RF_CHANGE_BY_HW) && !ppsc->hwradiooff) {
 			ppsc->hwradiooff = true;
 		}
 

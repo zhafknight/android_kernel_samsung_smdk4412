@@ -506,7 +506,7 @@ bool rtl92s_phy_rf6052_config(struct ieee80211_hw *hw)
 			break;
 		}
 
-		if (rtstatus != true) {
+		if (!rtstatus) {
 			printk(KERN_ERR "Radio[%d] Fail!!", rfpath);
 			goto fail;
 		}
