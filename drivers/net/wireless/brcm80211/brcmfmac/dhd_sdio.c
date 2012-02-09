@@ -3462,9 +3462,6 @@ static int brcmf_sdbrcm_bus_init(struct device *dev)
 
 		brcmf_sdcard_cfg_write(bus->sdiodev, SDIO_FUNC_1,
 				       SBSDIO_WATERMARK, 8, &err);
-
-		/* Set bus state according to enable result */
-		bus_if->state = BRCMF_BUS_DATA;
 	} else {
 		/* Disable F2 again */
 		enable = SDIO_FUNC_ENABLE_1;
