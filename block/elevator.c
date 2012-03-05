@@ -573,25 +573,6 @@ void elv_drain_elevator(struct request_queue *q)
 	}
 }
 
-void elv_quiesce_start(struct request_queue *q)
-{
-	if (!q->elevator)
-		return;
-
-	spin_lock_irq(q->queue_lock);
-	queue_flag_set(QUEUE_FLAG_ELVSWITCH, q);
-	spin_unlock_irq(q->queue_lock);
-
-	blk_drain_queue(q, false);
-}
-
-void elv_quiesce_end(struct request_queue *q)
-{
-	spin_lock_irq(q->queue_lock);
-	queue_flag_clear(QUEUE_FLAG_ELVSWITCH, q);
-	spin_unlock_irq(q->queue_lock);
-}
-
 void __elv_add_request(struct request_queue *q, struct request *rq, int where)
 {
 	trace_block_rq_insert(q, rq);
@@ -917,7 +898,7 @@ static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
 	/*
 	 * Turn on BYPASS and drain all requests w/ elevator private data
 	 */
-	elv_quiesce_start(q);
+	blk_queue_bypass_start(q);
 
 	/*
 	 * Remember old elevator.
@@ -943,7 +924,7 @@ static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
 	 * finally exit old elevator and turn off BYPASS.
 	 */
 	elevator_exit(old_elevator);
-	elv_quiesce_end(q);
+	blk_queue_bypass_end(q);
 
 	blk_add_trace_msg(q, "elv switch: %s", e->elevator_type->elevator_name);
 
@@ -957,7 +938,7 @@ fail_register:
 	elevator_exit(e);
 	q->elevator = old_elevator;
 	elv_register_queue(q);
-	elv_quiesce_end(q);
+	blk_queue_bypass_end(q);
 
 	return err;
 }
