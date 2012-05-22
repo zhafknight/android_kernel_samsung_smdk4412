@@ -740,4 +740,5 @@ config SLP_PROCESS_MON
 	  with sysfs.
 
 source "drivers/misc/altera-stapl/Kconfig"
+source "drivers/misc/mei/Kconfig"
 endmenu
