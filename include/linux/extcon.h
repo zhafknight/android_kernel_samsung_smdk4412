@@ -28,12 +28,6 @@
 #define SUPPORTED_CABLE_MAX	32
 #define CABLE_NAME_MAX		30
 
-/* Check cable state whether cable is attached/detached now */
-#define IS_ATTACH(cur, prev, mask)	\
-	(((cur & mask) != 0) && ((prev & mask) == 0))
-#define IS_DETACH(cur, prev, mask)	\
-	(((cur & mask) == 0) && ((prev & mask) != 0))
-
 /*
  * The standard cable name is to help support general notifier
  * and notifee device drivers to share the common names.
@@ -178,7 +172,7 @@ struct extcon_specific_cable_nb {
 	unsigned long previous_value;
 };
 
-#ifdef CONFIG_EXTCON
+#if IS_ENABLED(CONFIG_EXTCON)
 
 /*
  * Following APIs are for notifiers or configurations.
@@ -321,7 +315,8 @@ static inline int extcon_register_interest(struct extcon_specific_cable_nb *obj,
 	return 0;
 }
 
-static inline int extcon_unregister_interest(struct extcon_specific_cable_nb *obj)
+static inline int extcon_unregister_interest(struct extcon_specific_cable_nb
+						    *obj)
 {
 	return 0;
 }
