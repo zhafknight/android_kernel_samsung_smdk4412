@@ -28,7 +28,6 @@
 #define io_p2v(n)		__io_address(n)
 
 #include <mach/db8500-regs.h>
-#include <mach/db5500-regs.h>
 
 #ifndef __ASSEMBLY__
 
