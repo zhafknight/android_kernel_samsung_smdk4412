@@ -25,7 +25,6 @@
 
 #include "drmP.h"
 #include "drm.h"
-#include "exynos_drm.h"
 #include "exynos_drm_drv.h"
 #include "exynos_drm_gem.h"
 
@@ -61,7 +60,8 @@ out:
 	return NULL;
 }
 
-static struct sg_table *exynos_gem_map_dma_buf(struct dma_buf_attachment *attach,
+static struct sg_table *
+		exynos_gem_map_dma_buf(struct dma_buf_attachment *attach,
 					enum dma_data_direction dir)
 {
 	struct exynos_drm_gem_obj *gem_obj = attach->dmabuf->priv;
@@ -132,6 +132,8 @@ static void exynos_dmabuf_release(struct dma_buf *dmabuf)
 static void *exynos_gem_dmabuf_kmap_atomic(struct dma_buf *dma_buf,
 						unsigned long page_num)
 {
+	/* TODO */
+
 	return NULL;
 }
 
@@ -139,19 +141,21 @@ static void exynos_gem_dmabuf_kunmap_atomic(struct dma_buf *dma_buf,
 						unsigned long page_num,
 						void *addr)
 {
-
+	/* TODO */
 }
 
 static void *exynos_gem_dmabuf_kmap(struct dma_buf *dma_buf,
 					unsigned long page_num)
 {
+	/* TODO */
+
 	return NULL;
 }
 
 static void exynos_gem_dmabuf_kunmap(struct dma_buf *dma_buf,
 					unsigned long page_num, void *addr)
 {
-
+	/* TODO */
 }
 
 static struct dma_buf_ops exynos_dmabuf_ops = {
@@ -182,7 +186,7 @@ struct drm_gem_object *exynos_dmabuf_prime_import(struct drm_device *drm_dev,
 	struct exynos_drm_gem_obj *exynos_gem_obj;
 	struct exynos_drm_gem_buf *buffer;
 	struct page *page;
-	int ret;
+	int ret, i = 0;
 
 	DRM_DEBUG_PRIME("%s\n", __FILE__);
 
@@ -232,30 +236,13 @@ struct drm_gem_object *exynos_dmabuf_prime_import(struct drm_device *drm_dev,
 	}
 
 	sgl = sgt->sgl;
+	buffer->dma_addr = sg_dma_address(sgl);
 
-	if (sgt->nents == 1) {
-		buffer->dma_addr = sg_dma_address(sgt->sgl);
-		buffer->size = sg_dma_len(sgt->sgl);
-
-		/* always physically continuous memory if sgt->nents is 1. */
-		exynos_gem_obj->flags |= EXYNOS_BO_CONTIG;
-	} else {
-		unsigned int i = 0;
-
-		buffer->dma_addr = sg_dma_address(sgl);
-		while (i < sgt->nents) {
-			buffer->pages[i] = sg_page(sgl);
-			buffer->size += sg_dma_len(sgl);
-			sgl = sg_next(sgl);
-			i++;
-		}
-
-		/*
-		 * this case could be CONTIG or NONCONTIG type but now CONTIG.
-		 * we have to find a way that exporter can notify the type of
-		 * its own buffer to importer. TODO
-		 */
-		exynos_gem_obj->flags |= EXYNOS_BO_NONCONTIG;
+	while (i < sgt->nents) {
+		buffer->pages[i] = sg_page(sgl);
+		buffer->size += sg_dma_len(sgl);
+		sgl = sg_next(sgl);
+		i++;
 	}
 
 	exynos_gem_obj->buffer = buffer;
@@ -263,7 +250,7 @@ struct drm_gem_object *exynos_dmabuf_prime_import(struct drm_device *drm_dev,
 	exynos_gem_obj->base.import_attach = attach;
 
 	DRM_DEBUG_PRIME("dma_addr = 0x%x, size = 0x%lx\n", buffer->dma_addr,
-				buffer->size);
+								buffer->size);
 
 	return &exynos_gem_obj->base;
 
