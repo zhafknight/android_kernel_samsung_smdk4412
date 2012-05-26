@@ -220,7 +220,7 @@ static struct binder_transaction_log_entry *binder_transaction_log_add(
 
 struct binder_context {
 	struct binder_node *binder_context_mgr_node;
-	uid_t binder_context_mgr_uid;
+	kuid_t binder_context_mgr_uid;
 	const char *name;
 };
 
@@ -397,7 +397,7 @@ struct binder_transaction {
 	unsigned int	flags;
 	long	priority;
 	long	saved_priority;
-	uid_t	sender_euid;
+	kuid_t	sender_euid;
 };
 
 static void
@@ -3016,7 +3016,7 @@ retry:
 		}
 		tr.code = t->code;
 		tr.flags = t->flags;
-		tr.sender_euid = t->sender_euid;
+		tr.sender_euid = from_kuid(current_user_ns(), t->sender_euid);
 
 		if (t->from) {
 			struct task_struct *sender = t->from->proc->tsk;
