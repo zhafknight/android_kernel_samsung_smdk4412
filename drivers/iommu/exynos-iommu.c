@@ -24,11 +24,10 @@
 #include <linux/errno.h>
 #include <linux/list.h>
 #include <linux/memblock.h>
+#include <linux/export.h>
 
 #include <asm/cacheflush.h>
 #include <asm/pgtable.h>
-
-#include <plat/sysmmu.h>
 
 #include <mach/sysmmu.h>
 
@@ -111,6 +110,29 @@ static unsigned long *page_entry(unsigned long *sent, unsigned long iova)
 {
 	return (unsigned long *)__va(lv2table_base(sent)) + lv2ent_offset(iova);
 }
+
+enum exynos_sysmmu_inttype {
+	SYSMMU_PAGEFAULT,
+	SYSMMU_AR_MULTIHIT,
+	SYSMMU_AW_MULTIHIT,
+	SYSMMU_BUSERROR,
+	SYSMMU_AR_SECURITY,
+	SYSMMU_AR_ACCESS,
+	SYSMMU_AW_SECURITY,
+	SYSMMU_AW_PROTECTION, /* 7 */
+	SYSMMU_FAULT_UNKNOWN,
+	SYSMMU_FAULTS_NUM
+};
+
+/*
+ * @itype: type of fault.
+ * @pgtable_base: the physical address of page table base. This is 0 if @itype
+ *                is SYSMMU_BUSERROR.
+ * @fault_addr: the device (virtual) address that the System MMU tried to
+ *             translated. This is 0 if @itype is SYSMMU_BUSERROR.
+ */
+typedef int (*sysmmu_fault_handler_t)(enum exynos_sysmmu_inttype itype,
+			unsigned long pgtable_base, unsigned long fault_addr);
 
 static unsigned short fault_reg_offset[SYSMMU_FAULTS_NUM] = {
 	REG_PAGE_FAULT_ADDR,
