@@ -3883,7 +3883,6 @@ static int chunk_aligned_read(struct mddev *mddev, struct bio * raid_bio)
 		raid_bio->bi_next = (void*)rdev;
 		align_bi->bi_bdev =  rdev->bdev;
 		align_bi->bi_flags &= ~(1 << BIO_SEG_VALID);
-		/* No reshape active, so we can trust rdev->data_offset */
 
 		if (!bio_fits_rdev(align_bi) ||
 		    is_badblock(rdev, align_bi->bi_sector, align_bi->bi_size>>9,
