@@ -4,7 +4,7 @@
  * Support of SDHCI platform devices for spear soc family
  *
  * Copyright (C) 2010 ST Microelectronics
- * Viresh Kumar<viresh.kumar@st.com>
+ * Viresh Kumar <viresh.linux@gmail.com>
  *
  * Inspired by sdhci-pltfm.c
  *
@@ -266,5 +266,5 @@ static void __exit sdhci_exit(void)
 module_exit(sdhci_exit);
 
 MODULE_DESCRIPTION("SPEAr Secure Digital Host Controller Interface driver");
-MODULE_AUTHOR("Viresh Kumar <viresh.kumar@st.com>");
+MODULE_AUTHOR("Viresh Kumar <viresh.linux@gmail.com>");
 MODULE_LICENSE("GPL v2");
