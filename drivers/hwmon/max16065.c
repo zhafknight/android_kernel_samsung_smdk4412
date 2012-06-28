@@ -709,7 +709,7 @@ static void __exit max16065_exit(void)
 	i2c_del_driver(&max16065_driver);
 }
 
-MODULE_AUTHOR("Guenter Roeck <guenter.roeck@ericsson.com>");
+MODULE_AUTHOR("Guenter Roeck <linux@roeck-us.net>");
 MODULE_DESCRIPTION("MAX16065 driver");
 MODULE_LICENSE("GPL");
 

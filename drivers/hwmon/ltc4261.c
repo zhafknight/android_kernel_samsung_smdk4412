@@ -306,7 +306,7 @@ static void __exit ltc4261_exit(void)
 	i2c_del_driver(&ltc4261_driver);
 }
 
-MODULE_AUTHOR("Guenter Roeck <guenter.roeck@ericsson.com>");
+MODULE_AUTHOR("Guenter Roeck <linux@roeck-us.net>");
 MODULE_DESCRIPTION("LTC4261 driver");
 MODULE_LICENSE("GPL");
 
