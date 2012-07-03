@@ -2899,8 +2899,9 @@ static sector_t sync_request(struct mddev *mddev, sector_t sector_nr,
 				 */
 				continue;
 			}
-			/* Unless we are doing a full sync, we only need
-			 * to recover the block if it is set in the bitmap
+			/* Unless we are doing a full sync, or a replacement
+			 * we only need to recover the block if it is set in
+			 * the bitmap
 			 */
 			must_sync = bitmap_start_sync(mddev->bitmap, sect,
 						      &sync_blocks, 1);
