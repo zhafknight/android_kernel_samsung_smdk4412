@@ -1737,6 +1737,7 @@ static void raid5_end_read_request(struct bio * bi, int error)
 	} else {
 		const char *bdn = bdevname(rdev->bdev, b);
 		int retry = 0;
+		int set_bad = 0;
 
 		clear_bit(R5_UPTODATE, &sh->dev[i].flags);
 		atomic_inc(&rdev->read_errors);
@@ -1748,7 +1749,8 @@ static void raid5_end_read_request(struct bio * bi, int error)
 				mdname(conf->mddev),
 				(unsigned long long)s,
 				bdn);
-		else if (conf->mddev->degraded >= conf->max_degraded)
+		else if (conf->mddev->degraded >= conf->max_degraded) {
+			set_bad = 1;
 			printk_ratelimited(
 				KERN_WARNING
 				"md/raid:%s: read error not correctable "
@@ -1756,8 +1758,9 @@ static void raid5_end_read_request(struct bio * bi, int error)
 				mdname(conf->mddev),
 				(unsigned long long)s,
 				bdn);
-		else if (test_bit(R5_ReWrite, &sh->dev[i].flags))
+		} else if (test_bit(R5_ReWrite, &sh->dev[i].flags)) {
 			/* Oh, no!!! */
+			set_bad = 1;
 			printk_ratelimited(
 				KERN_WARNING
 				"md/raid:%s: read error NOT corrected!! "
@@ -1765,7 +1768,7 @@ static void raid5_end_read_request(struct bio * bi, int error)
 				mdname(conf->mddev),
 				(unsigned long long)s,
 				bdn);
-		else if (atomic_read(&rdev->read_errors)
+		} else if (atomic_read(&rdev->read_errors)
 			 > conf->max_nr_stripes)
 			printk(KERN_WARNING
 			       "md/raid:%s: Too many read errors, failing device %s.\n",
@@ -1777,7 +1780,11 @@ static void raid5_end_read_request(struct bio * bi, int error)
 		else {
 			clear_bit(R5_ReadError, &sh->dev[i].flags);
 			clear_bit(R5_ReWrite, &sh->dev[i].flags);
-			md_error(conf->mddev, rdev);
+			if (!(set_bad
+			      && test_bit(In_sync, &rdev->flags)
+			      && rdev_set_badblocks(
+				      rdev, sh->sector, STRIPE_SECTORS, 0)))
+				md_error(conf->mddev, rdev);
 		}
 	}
 	rdev_dec_pending(rdev, conf->mddev);
