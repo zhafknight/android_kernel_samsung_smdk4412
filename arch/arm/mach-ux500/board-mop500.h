@@ -9,6 +9,7 @@
 
 /* For NOMADIK_NR_GPIO */
 #include <mach/irqs.h>
+#include <linux/amba/mmci.h>
 
 /* Snowball specific GPIO assignments, this board has no GPIO expander */
 #define SNOWBALL_ACCEL_INT1_GPIO	163
@@ -66,7 +67,7 @@
  * because the AB8500 GPIO pins are enumbered starting from 1, so the value in
  * parens matches the GPIO pin number in the data sheet.
  */
-#define MOP500_AB8500_GPIO(x)		(MOP500_EGPIO_END + (x) - 1)
+#define MOP500_AB8500_PIN_GPIO(x)	(MOP500_EGPIO_END + (x) - 1)
 /*Snowball AB8500 GPIO */
 #define SNOWBALL_VSMPS2_1V8_GPIO	MOP500_AB8500_PIN_GPIO(1)	/* SYSCLKREQ2/GPIO1 */
 #define SNOWBALL_PM_GPIO1_GPIO		MOP500_AB8500_PIN_GPIO(2)	/* SYSCLKREQ3/GPIO2 */
@@ -78,11 +79,13 @@
 
 struct device;
 struct i2c_board_info;
+extern struct mmci_platform_data mop500_sdi0_data;
+extern struct mmci_platform_data mop500_sdi4_data;
 
-extern void mop500_sdi_init(void);
-extern void snowball_sdi_init(void);
-extern void hrefv60_sdi_init(void);
-extern void mop500_sdi_tc35892_init(void);
+extern void mop500_sdi_init(struct device *parent);
+extern void snowball_sdi_init(struct device *parent);
+extern void hrefv60_sdi_init(struct device *parent);
+extern void mop500_sdi_tc35892_init(struct device *parent);
 void __init mop500_u8500uib_init(void);
 void __init mop500_stuib_init(void);
 void __init mop500_pinmaps_init(void);

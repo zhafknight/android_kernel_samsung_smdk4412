@@ -24,6 +24,7 @@
 #include <mach/setup.h>
 #include <mach/devices.h>
 #include <mach/usb.h>
+#include <mach/db8500-regs.h>
 
 #include "devices-db8500.h"
 #include "ste-dma40-db8500.h"
@@ -136,6 +137,10 @@ static struct platform_device *platform_devs[] __initdata = {
 	&db8500_prcmu_device,
 };
 
+static struct platform_device *of_platform_devs[] __initdata = {
+	&u8500_dma40_device,
+};
+
 static resource_size_t __initdata db8500_gpio_base[] = {
 	U8500_GPIOBANK0_BASE,
 	U8500_GPIOBANK1_BASE,
@@ -148,13 +153,13 @@ static resource_size_t __initdata db8500_gpio_base[] = {
 	U8500_GPIOBANK8_BASE,
 };
 
-static void __init db8500_add_gpios(void)
+static void __init db8500_add_gpios(struct device *parent)
 {
 	struct nmk_gpio_platform_data pdata = {
 		.supports_sleepmode = true,
 	};
 
-	dbx500_add_gpios(ARRAY_AND_SIZE(db8500_gpio_base),
+	dbx500_add_gpios(parent, ARRAY_AND_SIZE(db8500_gpio_base),
 			 IRQ_DB8500_GPIO0, &pdata);
 	dbx500_add_pinctrl(parent, "pinctrl-db8500");
 }
@@ -181,17 +186,71 @@ static int usb_db8500_tx_dma_cfg[] = {
 	DB8500_DMA_DEV39_USB_OTG_OEP_8
 };
 
+static const char *db8500_read_soc_id(void)
+{
+	void __iomem *uid = __io_address(U8500_BB_UID_BASE);
+
+	return kasprintf(GFP_KERNEL, "%08x%08x%08x%08x%08x",
+			 readl((u32 *)uid+1),
+			 readl((u32 *)uid+1), readl((u32 *)uid+2),
+			 readl((u32 *)uid+3), readl((u32 *)uid+4));
+}
+
+static struct device * __init db8500_soc_device_init(void)
+{
+	const char *soc_id = db8500_read_soc_id();
+
+	return ux500_soc_device_init(soc_id);
+}
+
 /*
  * This function is called from the board init
  */
-void __init u8500_init_devices(void)
+struct device * __init u8500_init_devices(void)
 {
-	db8500_add_rtc();
-	db8500_add_gpios();
-	db8500_add_usb(usb_db8500_rx_dma_cfg, usb_db8500_tx_dma_cfg);
+	struct device *parent;
+	int i;
 
-	platform_device_register_simple("cpufreq-u8500", -1, NULL, 0);
+	parent = db8500_soc_device_init();
+
+	db8500_add_rtc(parent);
+	db8500_add_gpios(parent);
+	db8500_add_usb(parent, usb_db8500_rx_dma_cfg, usb_db8500_tx_dma_cfg);
+
+	platform_device_register_data(parent,
+		"cpufreq-u8500", -1, NULL, 0);
+
+	for (i = 0; i < ARRAY_SIZE(platform_devs); i++)
+		platform_devs[i]->dev.parent = parent;
+
 	platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 
-	return ;
+	return parent;
+}
+
+/* TODO: Once all pieces are DT:ed, remove completely. */
+struct device * __init u8500_of_init_devices(void)
+{
+	struct device *parent;
+	int i;
+
+	parent = db8500_soc_device_init();
+
+	db8500_add_usb(parent, usb_db8500_rx_dma_cfg, usb_db8500_tx_dma_cfg);
+
+	platform_device_register_data(parent,
+		"cpufreq-u8500", -1, NULL, 0);
+
+	for (i = 0; i < ARRAY_SIZE(of_platform_devs); i++)
+		of_platform_devs[i]->dev.parent = parent;
+
+	/*
+	 * Devices to be DT:ed:
+	 *   u8500_dma40_device  = todo
+	 *   db8500_pmu_device   = done
+	 *   db8500_prcmu_device = done
+	 */
+	platform_add_devices(of_platform_devs, ARRAY_SIZE(of_platform_devs));
+
+	return parent;
 }
