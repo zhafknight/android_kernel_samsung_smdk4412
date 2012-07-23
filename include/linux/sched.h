@@ -1409,7 +1409,7 @@ struct task_struct {
 	int (*notifier)(void *priv);
 	void *notifier_data;
 	sigset_t *notifier_mask;
-	struct hlist_head task_works;
+	struct callback_head *task_works;
 
 	struct audit_context *audit_context;
 #ifdef CONFIG_AUDITSYSCALL
@@ -1550,7 +1550,6 @@ struct task_struct {
 	unsigned long timer_slack_ns;
 	unsigned long default_timer_slack_ns;
 
-	struct list_head	*scm_work_list;
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
 	/* Index of current stored address in ret_stack */
 	int curr_ret_stack;

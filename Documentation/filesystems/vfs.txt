@@ -341,8 +341,8 @@ This describes how the VFS can manipulate an inode in your
 filesystem. As of kernel 2.6.22, the following members are defined:
 
 struct inode_operations {
-	int (*create) (struct inode *,struct dentry *, umode_t, struct nameidata *);
-	struct dentry * (*lookup) (struct inode *,struct dentry *, struct nameidata *);
+	int (*create) (struct inode *,struct dentry *, umode_t, bool);
+	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
 	int (*link) (struct dentry *,struct inode *,struct dentry *);
 	int (*unlink) (struct inode *,struct dentry *);
 	int (*symlink) (struct inode *,struct dentry *,const char *);
@@ -364,7 +364,9 @@ struct inode_operations {
 	ssize_t (*listxattr) (struct dentry *, char *, size_t);
 	int (*removexattr) (struct dentry *, const char *);
 	void (*update_time)(struct inode *, struct timespec *, int);
-	void (*truncate_range)(struct inode *, loff_t, loff_t);
+	int (*atomic_open)(struct inode *, struct dentry *,
+				struct file *, unsigned open_flag,
+				umode_t create_mode, int *opened);
 };
 
 Again, all methods are called without any locks being held, unless
@@ -477,8 +479,13 @@ otherwise noted.
   	an inode.  If this is not defined the VFS will update the inode itself
   	and call mark_inode_dirty_sync.
 
-  truncate_range: a method provided by the underlying filesystem to truncate a
-  	range of blocks , i.e. punch a hole somewhere in a file.
+  atomic_open: called on the last component of an open.  Using this optional
+  	method the filesystem can look up, possibly create and open the file in
+  	one atomic operation.  If it cannot perform this (e.g. the file type
+  	turned out to be wrong) it may signal this by returning 1 instead of
+  	usual 0 or -ve .  This method is only called if the last
+  	component is negative or needs lookup.  Cached positive dentries are
+  	still handled by f_op->open().
 
 The Address Space Object
 ========================
@@ -764,7 +771,7 @@ struct file_operations
 ----------------------
 
 This describes how the VFS can manipulate an open file. As of kernel
-2.6.22, the following members are defined:
+3.5, the following members are defined:
 
 struct file_operations {
 	struct module *owner;
@@ -794,6 +801,8 @@ struct file_operations {
 	int (*flock) (struct file *, int, struct file_lock *);
 	ssize_t (*splice_write)(struct pipe_inode_info *, struct file *, size_t, unsigned int);
 	ssize_t (*splice_read)(struct file *, struct pipe_inode_info *, size_t, unsigned int);
+	int (*setlease)(struct file *, long arg, struct file_lock **);
+	long (*fallocate)(struct file *, int mode, loff_t offset, loff_t len);
 };
 
 Again, all methods are called without any locks being held, unless
@@ -862,6 +871,11 @@ otherwise noted.
   splice_read: called by the VFS to splice data from file to a pipe. This
 	       method is used by the splice(2) system call
 
+  setlease: called by the VFS to set or release a file lock lease.
+	    setlease has the file_lock_lock held and must not sleep.
+
+  fallocate: called by the VFS to preallocate blocks or punch a hole.
+
 Note that the file operations are implemented by the specific
 filesystem in which the inode resides. When opening a device node
 (character or block special) most filesystems will call special
@@ -888,7 +902,7 @@ the VFS uses a default. As of kernel 2.6.22, the following members are
 defined:
 
 struct dentry_operations {
-	int (*d_revalidate)(struct dentry *, struct nameidata *);
+	int (*d_revalidate)(struct dentry *, unsigned int);
 	int (*d_hash)(const struct dentry *, const struct inode *,
 			struct qstr *);
 	int (*d_compare)(const struct dentry *, const struct inode *,
@@ -907,11 +921,11 @@ struct dentry_operations {
 	dcache. Most filesystems leave this as NULL, because all their
 	dentries in the dcache are valid
 
-	d_revalidate may be called in rcu-walk mode (nd->flags & LOOKUP_RCU).
+	d_revalidate may be called in rcu-walk mode (flags & LOOKUP_RCU).
 	If in rcu-walk mode, the filesystem must revalidate the dentry without
 	blocking or storing to the dentry, d_parent and d_inode should not be
-	used without care (because they can go NULL), instead nd->inode should
-	be used.
+	used without care (because they can change and, in d_inode case, even
+	become NULL under us).
 
 	If a situation is encountered that rcu-walk cannot handle, return
 	-ECHILD and it will be called again in ref-walk mode.
