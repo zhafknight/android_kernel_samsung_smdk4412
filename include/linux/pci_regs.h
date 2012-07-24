@@ -126,7 +126,8 @@
 #define  PCI_IO_RANGE_TYPE_MASK	0x0fUL	/* I/O bridging type */
 #define  PCI_IO_RANGE_TYPE_16	0x00
 #define  PCI_IO_RANGE_TYPE_32	0x01
-#define  PCI_IO_RANGE_MASK	(~0x0fUL)
+#define  PCI_IO_RANGE_MASK	(~0x0fUL) /* Standard 4K I/O windows */
+#define  PCI_IO_1K_RANGE_MASK	(~0x03UL) /* Intel 1K I/O windows */
 #define PCI_SEC_STATUS		0x1e	/* Secondary status register, only bit 14 used */
 #define PCI_MEMORY_BASE		0x20	/* Memory range behind */
 #define PCI_MEMORY_LIMIT	0x22
@@ -521,6 +522,12 @@
 #define PCI_EXP_RTSTA		32	/* Root Status */
 #define PCI_EXP_RTSTA_PME	0x10000 /* PME status */
 #define PCI_EXP_RTSTA_PENDING	0x20000 /* PME pending */
+/*
+ * Note that the following PCI Express 'Capability Structure' registers
+ * were introduced with 'Capability Version' 0x2 (v2).  These registers
+ * do not exist on devices with Capability Version 1.  Use pci_pcie_cap2()
+ * to use these fields safely.
+ */
 #define PCI_EXP_DEVCAP2		36	/* Device Capabilities 2 */
 #define  PCI_EXP_DEVCAP2_ARI	0x20	/* Alternative Routing-ID */
 #define  PCI_EXP_DEVCAP2_LTR	0x800	/* Latency tolerance reporting */
