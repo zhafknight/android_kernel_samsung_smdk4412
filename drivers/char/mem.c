@@ -27,9 +27,9 @@
 #include <linux/splice.h>
 #include <linux/pfn.h>
 #include <linux/export.h>
+#include <linux/io.h>
 
 #include <asm/uaccess.h>
-#include <asm/io.h>
 
 #ifdef CONFIG_IA64
 # include <linux/efi.h>
@@ -42,6 +42,8 @@
 #include <linux/platform_device.h>
 #endif
 #endif
+
+#define DEVPORT_MINOR	4
 
 static inline unsigned long size_inside_page(unsigned long start,
 					     unsigned long size)
@@ -966,8 +968,16 @@ static int __init chr_dev_init(void)
 	for (minor = 1; minor < ARRAY_SIZE(devlist); minor++) {
 		if (!devlist[minor].name)
 			continue;
+
+
+		/*
+		 * Create /dev/port? 
+		 */
+		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
+			continue;
+
 #if defined(CONFIG_S3C_MEM) && defined(CONFIG_VIDEO_SAMSUNG_USE_DMA_MEM)
-		dev = device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
+		device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
 			      NULL, devlist[minor].name);
 
 		if (devlist[minor].dev_info == &s3c_mem_cma_dev_bdi)
