@@ -1993,7 +1993,7 @@ static int open_cur_inode_file(struct send_ctx *sctx)
 {
 	int ret = 0;
 	struct btrfs_key key;
-	struct vfsmount *mnt;
+	struct path path;
 	struct inode *inode;
 	struct dentry *dentry;
 	struct file *filp;
@@ -2020,10 +2020,11 @@ static int open_cur_inode_file(struct send_ctx *sctx)
 		goto out;
 	}
 
-	mnt = mntget(sctx->mnt);
-	filp = dentry_open(dentry, mnt, O_RDONLY | O_LARGEFILE, current_cred());
+	path.mnt = sctx->mnt;
+	path.dentry = dentry;
+	filp = dentry_open(&path, O_RDONLY | O_LARGEFILE, current_cred());
+	dput(dentry);
 	dentry = NULL;
-	mnt = NULL;
 	if (IS_ERR(filp)) {
 		ret = PTR_ERR(filp);
 		goto out;
@@ -2676,7 +2677,7 @@ static int process_recorded_refs(struct send_ctx *sctx)
 	struct ulist_iterator uit;
 	struct ulist_node *un;
 	struct fs_path *valid_path = NULL;
-	u64 ow_inode;
+	u64 ow_inode = 0;
 	u64 ow_gen;
 	int did_overwrite = 0;
 	int is_orphan = 0;
@@ -3553,7 +3554,7 @@ static int send_write(struct send_ctx *sctx, u64 offset, u32 len)
 	int ret = 0;
 	struct fs_path *p;
 	loff_t pos = offset;
-	int readed;
+	int readed = 0;
 	mm_segment_t old_fs;
 
 	p = fs_path_alloc(sctx);
