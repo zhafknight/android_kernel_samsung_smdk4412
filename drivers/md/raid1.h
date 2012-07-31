@@ -9,6 +9,7 @@ struct mirror_info {
 	 * we try to keep sequential reads one the same device
 	 */
 	sector_t	next_seq_sect;
+	sector_t	seq_start;
 };
 
 /*
