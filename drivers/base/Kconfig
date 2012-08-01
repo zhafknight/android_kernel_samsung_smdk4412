@@ -210,9 +210,11 @@ config SW_SYNC_USER
 	 drivers from userspace.
 
 config CMA
-	bool "Contiguous Memory Allocator framework"
-	# Currently there is only one allocator so force it on
+	bool "Contiguous Memory Allocator (EXPERIMENTAL)"
+	depends on HAVE_DMA_CONTIGUOUS && HAVE_MEMBLOCK && EXPERIMENTAL
 	select CMA_BEST_FIT
+	select MIGRATION
+	select MEMORY_ISOLATION
 	help
 	  This enables the Contiguous Memory Allocator framework which
 	  allows drivers to allocate big physically-contiguous blocks of
