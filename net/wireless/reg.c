@@ -680,6 +680,8 @@ static u32 map_regdom_flags(u32 rd_flags)
 		channel_flags |= IEEE80211_CHAN_NO_IBSS;
 	if (rd_flags & NL80211_RRF_DFS)
 		channel_flags |= IEEE80211_CHAN_RADAR;
+	if (rd_flags & NL80211_RRF_NO_OFDM)
+		channel_flags |= IEEE80211_CHAN_NO_OFDM;
 	return channel_flags;
 }
 
@@ -1899,6 +1901,7 @@ static void restore_custom_reg_settings(struct wiphy *wiphy)
 			chan->flags = chan->orig_flags;
 			chan->max_antenna_gain = chan->orig_mag;
 			chan->max_power = chan->orig_mpwr;
+			chan->beacon_found = false;
 		}
 	}
 }
