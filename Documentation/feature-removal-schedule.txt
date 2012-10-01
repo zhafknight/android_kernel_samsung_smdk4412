@@ -6,6 +6,15 @@ be removed from this file.  The suggested deprecation period is 3 releases.
 
 ---------------------------
 
+What:	support for i.mx25 in mx2_camera.c
+When:	v3.8
+Why:	it's been broken for a year. Furthermore, i.MX25 video capture
+	HW doesn't have much in common with i.MX27. A separate driver
+	will be needed for it.
+Who:	Javier Martin<javier.martin@vista-silicon.com>
+
+---------------------------
+
 What:	ddebug_query="query" boot cmdline param
 When:	v3.8
 Why:	obsoleted by dyndbg="query" and module.dyndbg="query"
@@ -635,5 +644,14 @@ Why:	We have a DMA engine implementation; all users should be updated
 	engine driver.
 Who:	Russell King <linux@arm.linux.org.uk>,
 	Santosh Shilimkar <santosh.shilimkar@ti.com>
+
+----------------------------
+
+What:	Remove deprecated DV timings capability defines V4L2_IN_CAP_CUSTOM_TIMINGS
+	and V4L2_OUT_CAP_CUSTOM_TIMINGS.
+When:	3.9
+Why:	These defines have been replaced by V4L2_IN_CAP_TIMINGS and
+	V4L2_OUT_CAP_TIMINGS respectively.
+Who:	Hans Verkuil <hans.verkuil@cisco.com>
 
 ----------------------------
