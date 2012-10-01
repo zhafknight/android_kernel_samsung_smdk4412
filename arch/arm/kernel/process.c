@@ -32,9 +32,9 @@
 #include <linux/hw_breakpoint.h>
 #include <linux/cpuidle.h>
 #include <linux/console.h>
+#include <linux/leds.h>
 
 #include <asm/cacheflush.h>
-#include <asm/leds.h>
 #include <asm/processor.h>
 #include <asm/thread_notify.h>
 #include <asm/stacktrace.h>
@@ -227,7 +227,7 @@ void cpu_idle(void)
 	while (1) {
 		tick_nohz_idle_enter();
 		rcu_idle_enter();
-		leds_event(led_idle_start);
+		ledtrig_cpu(CPU_LED_IDLE_START);
 		while (!need_resched()) {
 #ifdef CONFIG_HOTPLUG_CPU
 			if (cpu_is_offline(smp_processor_id()))
@@ -258,7 +258,7 @@ void cpu_idle(void)
 			} else
 				local_irq_enable();
 		}
-		leds_event(led_idle_end);
+		ledtrig_cpu(CPU_LED_IDLE_END);
 		rcu_idle_exit();
 		tick_nohz_idle_exit();
 		schedule_preempt_disabled();
