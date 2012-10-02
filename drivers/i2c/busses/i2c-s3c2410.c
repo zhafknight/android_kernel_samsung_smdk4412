@@ -41,7 +41,7 @@
 #include <asm/irq.h>
 
 #include <plat/regs-iic.h>
-#include <plat/iic.h>
+#include <linux/platform_data/i2c-s3c2410.h>
 
 /* i2c controller state */
 

@@ -35,7 +35,7 @@
 #include <plat/s3c2410.h>
 #include <plat/clock.h>
 #include <plat/devs.h>
-#include <plat/iic.h>
+#include <linux/platform_data/i2c-s3c2410.h>
 #include <plat/cpu.h>
 
 static struct map_desc otom11_iodesc[] __initdata = {

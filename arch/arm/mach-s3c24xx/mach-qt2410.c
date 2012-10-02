@@ -47,18 +47,21 @@
 #include <asm/irq.h>
 #include <asm/mach-types.h>
 
-#include <mach/leds-gpio.h>
+#include <linux/platform_data/leds-s3c24xx.h>
+#include <mach/regs-lcd.h>
 #include <plat/regs-serial.h>
 #include <mach/fb.h>
-#include <plat/nand.h>
-#include <plat/udc.h>
-#include <plat/iic.h>
+#include <linux/platform_data/mtd-nand-s3c2410.h>
+#include <linux/platform_data/usb-s3c2410_udc.h>
+#include <linux/platform_data/i2c-s3c2410.h>
 
 #include <plat/common-smdk.h>
 #include <plat/gpio-cfg.h>
 #include <plat/devs.h>
 #include <plat/cpu.h>
 #include <plat/pm.h>
+
+#include "common.h"
 
 static struct map_desc qt2410_iodesc[] __initdata = {
 	{ 0xe0000000, __phys_to_pfn(S3C2410_CS3+0x01000000), SZ_1M, MT_DEVICE }
@@ -336,11 +339,10 @@ static void __init qt2410_machine_init(void)
 }
 
 MACHINE_START(QT2410, "QT2410")
-	.boot_params	= S3C2410_SDRAM_PA + 0x100,
+	.atag_offset	= 0x100,
 	.map_io		= qt2410_map_io,
 	.init_irq	= s3c24xx_init_irq,
 	.init_machine	= qt2410_machine_init,
 	.timer		= &s3c24xx_timer,
+	.restart	= s3c2410_restart,
 MACHINE_END
-
-
