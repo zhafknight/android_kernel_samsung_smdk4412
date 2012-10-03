@@ -24,8 +24,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "drmP.h"
-#include "drm_crtc_helper.h"
+#include <drm/drmP.h>
+#include <drm/drm_crtc_helper.h>
 
 #include "nouveau_drm.h"
 #include "nouveau_reg.h"
@@ -35,7 +35,7 @@
 #include "nouveau_hw.h"
 #include "nvreg.h"
 
-#include "i2c/sil164.h"
+#include <drm/i2c/sil164.h>
 
 #include <subdev/i2c.h>
 

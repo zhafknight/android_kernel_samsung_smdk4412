@@ -24,8 +24,7 @@
  *
  */
 
-#include "drmP.h"
-#include "drm_mode.h"
+#include <drm/drmP.h>
 
 #include "nouveau_drm.h"
 #include "nouveau_dma.h"
