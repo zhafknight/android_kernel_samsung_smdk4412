@@ -22,12 +22,15 @@
  * Authors: Ben Skeggs
  */
 
+<<<<<<< HEAD
 #include <drm/drmP.h>
 
 #include "nouveau_drv.h"
 #include "nouveau_pm.h"
 #include "nouveau_gpio.h"
 
+=======
+>>>>>>> 612a9aab56a9
 #ifdef CONFIG_ACPI
 #include <linux/acpi.h>
 #endif
@@ -35,6 +38,7 @@
 #include <linux/hwmon.h>
 #include <linux/hwmon-sysfs.h>
 
+<<<<<<< HEAD
 static int
 nouveau_pwmfan_get(struct drm_device *dev)
 {
@@ -43,6 +47,9 @@ nouveau_pwmfan_get(struct drm_device *dev)
 	struct gpio_func gpio;
 	u32 divs, duty;
 	int ret;
+=======
+#include <drm/drmP.h>
+>>>>>>> 612a9aab56a9
 
 	if (!pm->pwm_get)
 		return -ENODEV;

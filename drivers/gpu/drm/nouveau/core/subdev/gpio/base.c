@@ -216,7 +216,7 @@ nouveau_gpio_isr_del(struct nouveau_gpio *gpio, int idx, u8 tag, u8 line,
 		spin_unlock_irqrestore(&gpio->lock, flags);
 
 		list_for_each_entry_safe(isr, tmp, &tofree, head) {
-			flush_work_sync(&isr->work);
+			flush_work(&isr->work);
 			kfree(isr);
 		}
 	}

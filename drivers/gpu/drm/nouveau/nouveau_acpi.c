@@ -7,6 +7,7 @@
 #include <acpi/acpi.h>
 #include <linux/mxm-wmi.h>
 
+<<<<<<< HEAD
 #include <drm/drmP.h>
 #include <drm/drm_crtc_helper.h>
 #include "nouveau_drv.h"
@@ -16,6 +17,15 @@
 
 #include <linux/vga_switcheroo.h>
 
+=======
+#include <linux/vga_switcheroo.h>
+
+#include <drm/drm_edid.h>
+
+#include "nouveau_drm.h"
+#include "nouveau_acpi.h"
+
+>>>>>>> 612a9aab56a9
 #define NOUVEAU_DSM_LED 0x02
 #define NOUVEAU_DSM_LED_STATE 0x00
 #define NOUVEAU_DSM_LED_OFF 0x10

@@ -22,6 +22,7 @@
  * Authors: Dave Airlie
  */
 
+<<<<<<< HEAD
 #include <drm/drmP.h>
 
 #include "nouveau_drv.h"
@@ -29,6 +30,14 @@
 #include "nouveau_dma.h"
 
 #include <linux/dma-buf.h>
+=======
+#include <linux/dma-buf.h>
+
+#include <drm/drmP.h>
+
+#include "nouveau_drm.h"
+#include "nouveau_gem.h"
+>>>>>>> 612a9aab56a9
 
 static struct sg_table *nouveau_gem_map_dma_buf(struct dma_buf_attachment *attachment,
 					  enum dma_data_direction dir)

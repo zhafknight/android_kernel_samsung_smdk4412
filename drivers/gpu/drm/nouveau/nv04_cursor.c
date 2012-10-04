@@ -1,4 +1,9 @@
 #include <drm/drmP.h>
+<<<<<<< HEAD
+=======
+#include <drm/drm_mode.h>
+#include "nouveau_drm.h"
+>>>>>>> 612a9aab56a9
 #include "nouveau_reg.h"
 #include "nouveau_drv.h"
 #include "nouveau_crtc.h"

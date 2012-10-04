@@ -23,7 +23,11 @@
  */
 
 #include <drm/drmP.h>
+<<<<<<< HEAD
 #include "nouveau_drv.h"
+=======
+#include "nouveau_drm.h"
+>>>>>>> 612a9aab56a9
 #include "nouveau_hw.h"
 
 #define CHIPSET_NFORCE 0x01a0

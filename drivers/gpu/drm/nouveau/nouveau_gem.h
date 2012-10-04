@@ -1,9 +1,9 @@
 #ifndef __NOUVEAU_GEM_H__
 #define __NOUVEAU_GEM_H__
 
-#include "drmP.h"
+#include <drm/drmP.h>
 
-#include <nouveau_drm.h>
+#include "nouveau_drm.h"
 #include "nouveau_bo.h"
 
 #define nouveau_bo_tile_layout(nvbo)				\

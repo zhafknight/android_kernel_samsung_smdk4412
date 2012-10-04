@@ -31,9 +31,17 @@
 #include "nouveau_connector.h"
 #include "nouveau_fb.h"
 #include "nouveau_fbcon.h"
+<<<<<<< HEAD
 #include "nouveau_ramht.h"
 #include "nouveau_software.h"
 #include <drm/drm_crtc_helper.h>
+=======
+#include <drm/drm_crtc_helper.h>
+#include "nouveau_fence.h"
+
+#include <core/gpuobj.h>
+#include <subdev/timer.h>
+>>>>>>> 612a9aab56a9
 
 static void nv50_display_isr(struct drm_device *);
 static void nv50_display_bh(unsigned long);

@@ -500,7 +500,7 @@ nouveau_drm_open(struct drm_device *dev, struct drm_file *fpriv)
 	char name[16];
 	int ret;
 
-	snprintf(name, sizeof(name), "%d", fpriv->pid);
+	snprintf(name, sizeof(name), "%d", pid_nr(fpriv->pid));
 
 	ret = nouveau_cli_create(pdev, name, sizeof(*cli), (void **)&cli);
 	if (ret)

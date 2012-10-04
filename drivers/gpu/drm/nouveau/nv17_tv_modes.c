@@ -26,7 +26,11 @@
 
 #include <drm/drmP.h>
 #include <drm/drm_crtc_helper.h>
+<<<<<<< HEAD
 #include "nouveau_drv.h"
+=======
+#include "nouveau_drm.h"
+>>>>>>> 612a9aab56a9
 #include "nouveau_encoder.h"
 #include "nouveau_crtc.h"
 #include "nouveau_hw.h"

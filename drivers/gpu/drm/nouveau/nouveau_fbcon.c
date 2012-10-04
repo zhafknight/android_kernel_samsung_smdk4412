@@ -42,10 +42,17 @@
 #include <drm/drm_crtc.h>
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_fb_helper.h>
+<<<<<<< HEAD
 #include "nouveau_drv.h"
 #include <drm/nouveau_drm.h>
 #include "nouveau_crtc.h"
 #include "nouveau_fb.h"
+=======
+
+#include "nouveau_drm.h"
+#include "nouveau_gem.h"
+#include "nouveau_bo.h"
+>>>>>>> 612a9aab56a9
 #include "nouveau_fbcon.h"
 #include "nouveau_dma.h"
 

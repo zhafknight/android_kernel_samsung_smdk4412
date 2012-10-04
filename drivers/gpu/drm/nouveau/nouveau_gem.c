@@ -24,10 +24,17 @@
  *
  */
 #include <linux/dma-buf.h>
+<<<<<<< HEAD
 #include <drm/drmP.h>
 
 #include "nouveau_drv.h"
 #include <drm/nouveau_drm.h>
+=======
+
+#include <subdev/fb.h>
+
+#include "nouveau_drm.h"
+>>>>>>> 612a9aab56a9
 #include "nouveau_dma.h"
 #include "nouveau_fence.h"
 

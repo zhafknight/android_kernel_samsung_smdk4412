@@ -23,6 +23,10 @@
  */
 
 #include <drm/drmP.h>
+<<<<<<< HEAD
+=======
+#include <drm/drm_dp_helper.h>
+>>>>>>> 612a9aab56a9
 
 #include "nouveau_drv.h"
 #include "nouveau_i2c.h"

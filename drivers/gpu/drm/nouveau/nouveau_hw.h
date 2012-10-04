@@ -24,7 +24,13 @@
 #define __NOUVEAU_HW_H__
 
 #include <drm/drmP.h>
+<<<<<<< HEAD
 #include "nouveau_drv.h"
+=======
+#include "nv04_display.h"
+
+#include <subdev/bios/pll.h>
+>>>>>>> 612a9aab56a9
 
 #define MASK(field) ( \
 	(0xffffffff >> (31 - ((1 ? field) - (0 ? field)))) << (0 ? field))

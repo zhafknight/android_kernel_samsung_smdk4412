@@ -19,12 +19,12 @@
 #include <drmP.h>
 #include <drm/nouveau_drm.h>
 
-#include "ttm/ttm_bo_api.h"
-#include "ttm/ttm_bo_driver.h"
-#include "ttm/ttm_placement.h"
-#include "ttm/ttm_memory.h"
-#include "ttm/ttm_module.h"
-#include "ttm/ttm_page_alloc.h"
+#include <drm/ttm/ttm_bo_api.h>
+#include <drm/ttm/ttm_bo_driver.h>
+#include <drm/ttm/ttm_placement.h>
+#include <drm/ttm/ttm_memory.h>
+#include <drm/ttm/ttm_module.h>
+#include <drm/ttm/ttm_page_alloc.h>
 
 struct nouveau_channel;
 

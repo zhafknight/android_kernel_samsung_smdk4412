@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+<<<<<<< HEAD
 #include <drm/drmP.h>
 #define NV_DEBUG_NOTRACE
 #include "nouveau_drv.h"
@@ -3545,6 +3546,16 @@ init_i2c_long_if(struct nvbios *bios, uint16_t offset, struct init_exec *iexec)
 	if (!chan)
 		return -ENODEV;
 
+=======
+#include <subdev/bios.h>
+
+#include <drm/drmP.h>
+
+#include "nouveau_drm.h"
+#include "nouveau_reg.h"
+#include "nouveau_hw.h"
+#include "nouveau_encoder.h"
+>>>>>>> 612a9aab56a9
 
 	ret = i2c_transfer(&chan->adapter, msg, 2);
 	if (ret < 0) {

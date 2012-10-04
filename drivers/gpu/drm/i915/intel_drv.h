@@ -31,6 +31,10 @@
 #include <drm/drm_crtc.h>
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_fb_helper.h>
+<<<<<<< HEAD
+=======
+#include <drm/drm_dp_helper.h>
+>>>>>>> 612a9aab56a9
 
 #define _wait_for(COND, MS, W) ({ \
 	unsigned long timeout__ = jiffies + msecs_to_jiffies(MS);	\
