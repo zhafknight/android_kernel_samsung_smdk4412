@@ -70,9 +70,11 @@ arch/arm/plat-s3c24xx
 arch/arm/plat-spear
 arch/arm/plat-versatile
 drivers/gpu/drm
+drivers/acpi
 drivers/hwmon
 drivers/iommu
 drivers/staging/westbridge
+include/acpi
 include/drm
 include/linux/platform_data/ntc_thermistor.h
 security/smack
