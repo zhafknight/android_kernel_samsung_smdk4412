@@ -1927,6 +1927,7 @@ config MIPS_MT_SMP
 	select SYS_SUPPORTS_SCHED_SMT if SMP
 	select SYS_SUPPORTS_SMP
 	select SMP_UP
+	select MIPS_PERF_SHARED_TC_COUNTERS
 	help
 	  This is a kernel model which is known a VSMP but lately has been
 	  marketesed into SMVP.
@@ -2036,16 +2037,6 @@ config MIPS_VPE_APSP_API
 	bool "Enable support for AP/SP API (RTLX)"
 	depends on MIPS_VPE_LOADER
 	help
-
-config MIPS_APSP_KSPD
-	bool "Enable KSPD"
-	depends on MIPS_VPE_APSP_API
-	default y
-	help
-	  KSPD is a kernel daemon that accepts syscall requests from the SP
-	  side, actions them and returns the results. It also handles the
-	  "exit" syscall notifying other kernel modules the SP program is
-	  exiting.  You probably want to say yes here.
 
 config MIPS_CMP
 	bool "MIPS CMP framework support"
@@ -2275,6 +2266,9 @@ config NR_CPUS
 	  approximately eight kilobytes to the kernel image.  For best
 	  performance should round up your number of processors to the next
 	  power of two.
+
+config MIPS_PERF_SHARED_TC_COUNTERS
+	bool
 
 #
 # Timer Interrupt Frequency Configuration
