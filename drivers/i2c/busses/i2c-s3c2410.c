@@ -643,14 +643,14 @@ static int s3c24xx_i2c_xfer(struct i2c_adapter *adap,
 		return -EIO;
 	}
 
-	clk_enable(i2c->clk);
+	clk_prepare_enable(i2c->clk);
 
 	for (retry = 0; retry < adap->retries; retry++) {
 
 		ret = s3c24xx_i2c_doxfer(i2c, msgs, num);
 
 		if (ret != -EAGAIN) {
-			clk_disable(i2c->clk);
+			clk_disable_unprepare(i2c->clk);
 			return ret;
 		}
 
@@ -659,7 +659,7 @@ static int s3c24xx_i2c_xfer(struct i2c_adapter *adap,
 		udelay(100);
 	}
 
-	clk_disable(i2c->clk);
+	clk_disable_unprepare(i2c->clk);
 	return -EREMOTEIO;
 }
 
@@ -1009,7 +1009,7 @@ static int s3c24xx_i2c_probe(struct platform_device *pdev)
 
 	dev_dbg(&pdev->dev, "clock source %p\n", i2c->clk);
 
-	clk_enable(i2c->clk);
+	clk_prepare_enable(i2c->clk);
 
 	/* map the registers */
 
@@ -1094,7 +1094,7 @@ static int s3c24xx_i2c_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, i2c);
 
 	dev_info(&pdev->dev, "%s: S3C I2C adapter\n", dev_name(&i2c->adap.dev));
-	clk_disable(i2c->clk);
+	clk_disable_unprepare(i2c->clk);
 	return 0;
 
  err_cpufreq:
@@ -1111,7 +1111,7 @@ static int s3c24xx_i2c_probe(struct platform_device *pdev)
 	kfree(i2c->ioarea);
 
  err_clk:
-	clk_disable(i2c->clk);
+	clk_disable_unprepare(i2c->clk);
 	clk_put(i2c->clk);
 
  err_noclk:
@@ -1133,7 +1133,7 @@ static int s3c24xx_i2c_remove(struct platform_device *pdev)
 	i2c_del_adapter(&i2c->adap);
 	free_irq(i2c->irq, i2c);
 
-	clk_disable(i2c->clk);
+	clk_disable_unprepare(i2c->clk);
 	clk_put(i2c->clk);
 
 	iounmap(i2c->regs);
@@ -1162,9 +1162,9 @@ static int s3c24xx_i2c_resume_noirq(struct device *dev)
 	struct platform_device *pdev = to_platform_device(dev);
 	struct s3c24xx_i2c *i2c = platform_get_drvdata(pdev);
 
-	clk_enable(i2c->clk);
+	clk_prepare_enable(i2c->clk);
 	s3c24xx_i2c_init(i2c);
-	clk_disable(i2c->clk);
+	clk_disable_unprepare(i2c->clk);
 	i2c->suspended = 0;
 
 	return 0;
