@@ -17,6 +17,7 @@
 #define user_mode(regs)			(((regs)->epsw & EPSW_nSL) == EPSW_nSL)
 #define instruction_pointer(regs)	((regs)->pc)
 #define user_stack_pointer(regs)	((regs)->sp)
+#define current_pt_regs()		current_frame()
 
 #define arch_has_single_step()	(1)
 
