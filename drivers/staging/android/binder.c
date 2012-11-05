@@ -32,9 +32,10 @@
 #include <linux/rbtree.h>
 #include <linux/sched.h>
 #include <linux/seq_file.h>
-#include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
+#include <linux/slab.h>
+#include <linux/pid_namespace.h>
 #include <linux/security.h>
 
 #include "binder.h"
@@ -1712,6 +1713,10 @@ static void binder_transaction(struct binder_proc *proc,
 				return_error = BR_FAILED_REPLY;
 				goto err_binder_get_ref_for_node_failed;
 			}
+	if (security_binder_transfer_binder(proc->tsk, target_proc->tsk)) {
+				return_error = BR_FAILED_REPLY;
+				goto err_binder_get_ref_for_node_failed;
+			}
 			ref = binder_get_ref_for_node(target_proc, node);
 			if (ref == NULL) {
 				return_error = BR_FAILED_REPLY;
@@ -2922,6 +2927,9 @@ static long binder_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	case BINDER_SET_CONTEXT_MGR:
 		ret = binder_ioctl_set_ctx_mgr(filp);
 		if (ret)
+			goto err;
+		ret = security_binder_set_context_mgr(proc->tsk);
+		if (ret < 0)
 			goto err;
 		break;
 	case BINDER_THREAD_EXIT:
