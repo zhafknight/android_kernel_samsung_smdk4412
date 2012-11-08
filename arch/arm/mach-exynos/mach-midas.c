@@ -3617,7 +3617,7 @@ MACHINE_START(SMDK4412, "SMDK4x12")
 	.map_io		= midas_map_io,
 	.handle_irq     = gic_handle_irq,
 	.init_machine	= midas_machine_init,
-	.timer		= &exynos4_timer,
+	.init_time	= exynos_timer_init,
 #if defined(CONFIG_EXYNOS_C2C)
 	.reserve	= &exynos_c2c_reserve,
 #elif defined(CONFIG_DMA_CMA)
@@ -3633,7 +3633,7 @@ MACHINE_START(SMDK4212, "SMDK4x12")
 	.smp            = smp_ops(exynos_smp_ops),
 	.handle_irq     = gic_handle_irq,
 	.init_machine	= midas_machine_init,
-	.timer		= &exynos4_timer,
+	.init_time	= exynos_timer_init,
 #if defined(CONFIG_EXYNOS_C2C)
 	.reserve	= &exynos_c2c_reserve,
 #elif defined(CONFIG_DMA_CMA)

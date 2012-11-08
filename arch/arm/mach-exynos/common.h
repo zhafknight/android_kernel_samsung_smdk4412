@@ -15,5 +15,6 @@
 extern struct smp_operations exynos_smp_ops;
 
 extern void exynos_cpu_die(unsigned int cpu);
+extern void __init exynos_timer_init(void);
 
 #endif /* __ARCH_ARM_MACH_EXYNOS_COMMON_H */

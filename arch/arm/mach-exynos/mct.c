@@ -494,7 +494,7 @@ static void __init exynos4_timer_resources(void)
 #endif /* CONFIG_LOCAL_TIMERS */
 }
 
-static void __init exynos4_timer_init(void)
+void __init exynos_timer_init(void)
 {
 	mct_int_type = MCT_INT_PPI;
 
@@ -505,7 +505,3 @@ static void __init exynos4_timer_init(void)
 	exynos4_clocksource_init();
 	exynos4_clockevent_init();
 }
-
-struct sys_timer exynos4_timer = {
-	.init		= exynos4_timer_init,
-};
