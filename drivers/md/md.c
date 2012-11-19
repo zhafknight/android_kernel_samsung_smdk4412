@@ -7278,6 +7278,7 @@ void md_done_sync(struct mddev *mddev, int blocks, int ok)
 	wake_up(&mddev->recovery_wait);
 	if (!ok) {
 		set_bit(MD_RECOVERY_INTR, &mddev->recovery);
+		set_bit(MD_RECOVERY_ERROR, &mddev->recovery);
 		md_wakeup_thread(mddev->thread);
 		// stop recovery, signal do_sync ....
 	}
@@ -7666,8 +7667,13 @@ void md_do_sync(struct md_thread *thread)
 					printk(KERN_INFO
 					       "md: checkpointing %s of %s.\n",
 					       desc, mdname(mddev));
-					mddev->recovery_cp =
-						mddev->curr_resync_completed;
+					if (test_bit(MD_RECOVERY_ERROR,
+						&mddev->recovery))
+						mddev->recovery_cp =
+							mddev->curr_resync_completed;
+					else
+						mddev->recovery_cp =
+							mddev->curr_resync;
 				}
 			} else
 				mddev->recovery_cp = MaxSector;
