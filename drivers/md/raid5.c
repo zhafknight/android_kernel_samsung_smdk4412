@@ -2738,12 +2738,14 @@ static void handle_stripe_clean_event(struct r5conf *conf,
 			dev = &sh->dev[i];
 			if (!test_bit(R5_LOCKED, &dev->flags) &&
 			    (test_bit(R5_UPTODATE, &dev->flags) ||
-			     test_and_clear_bit(R5_Discard, &dev->flags))) {
+			     test_bit(R5_Discard, &dev->flags))) {
 				/* We can return any write requests */
 				struct bio *wbi, *wbi2;
 				int bitmap_end = 0;
 				pr_debug("Return write for disc %d\n", i);
 				spin_lock_irq(&conf->device_lock);
+				if (test_and_clear_bit(R5_Discard, &dev->flags))
+					clear_bit(R5_UPTODATE, &dev->flags);
 				wbi = dev->written;
 				dev->written = NULL;
 				while (wbi && wbi->bi_sector <
@@ -2766,7 +2768,8 @@ static void handle_stripe_clean_event(struct r5conf *conf,
 					 !test_bit(STRIPE_DEGRADED, &sh->state),
 							0);
 			}
-		}
+		} else if (test_bit(R5_Discard, &sh->dev[i].flags))
+			clear_bit(R5_Discard, &sh->dev[i].flags);
 
 	if (test_and_clear_bit(STRIPE_FULL_WRITE, &sh->state))
 		if (atomic_dec_and_test(&conf->pending_full_writes))
