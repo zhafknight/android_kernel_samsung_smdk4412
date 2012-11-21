@@ -64,7 +64,6 @@
 #include <asm/mach/map.h>
 #include <asm/mmu-legacy.h>
 #include <asm/mach/arch.h>
-#include <linux/irqchip/arm-gic.h>
 #include <asm/mach-types.h>
 
 #include <plat/regs-serial.h>
@@ -3615,7 +3614,6 @@ MACHINE_START(SMDK4412, "SMDK4x12")
 	.init_irq	= exynos4_init_irq,
 	.smp            = smp_ops(exynos_smp_ops),
 	.map_io		= midas_map_io,
-	.handle_irq     = gic_handle_irq,
 	.init_machine	= midas_machine_init,
 	.init_time	= exynos_timer_init,
 #if defined(CONFIG_EXYNOS_C2C)
@@ -3631,7 +3629,6 @@ MACHINE_START(SMDK4212, "SMDK4x12")
 	.init_irq	= exynos4_init_irq,
 	.map_io		= midas_map_io,
 	.smp            = smp_ops(exynos_smp_ops),
-	.handle_irq     = gic_handle_irq,
 	.init_machine	= midas_machine_init,
 	.init_time	= exynos_timer_init,
 #if defined(CONFIG_EXYNOS_C2C)
