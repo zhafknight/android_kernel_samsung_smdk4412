@@ -92,8 +92,20 @@ nvc0_fence_read(struct nouveau_channel *chan)
 static void
 nvc0_fence_context_del(struct nouveau_channel *chan, int engine)
 {
+<<<<<<< HEAD
 	struct nvc0_fence_priv *priv = nv_engine(chan->dev, engine);
 	struct nvc0_fence_chan *fctx = chan->engctx[engine];
+=======
+	struct drm_device *dev = chan->drm->dev;
+	struct nvc0_fence_priv *priv = chan->drm->fence;
+	struct nvc0_fence_chan *fctx = chan->fence;
+	int i;
+
+	for (i = 0; i < dev->mode_config.num_crtc; i++) {
+		struct nouveau_bo *bo = nv50_display_crtc_sema(dev, i);
+		nouveau_bo_vma_del(bo, &fctx->dispc_vma[i]);
+	}
+>>>>>>> 3c2e81ef344a
 
 	nouveau_bo_vma_del(priv->bo, &fctx->vma);
 	nouveau_fence_context_del(&fctx->base);
@@ -116,9 +128,21 @@ nvc0_fence_context_new(struct nouveau_channel *chan, int engine)
 
 	ret = nouveau_bo_vma_add(priv->bo, chan->vm, &fctx->vma);
 	if (ret)
+<<<<<<< HEAD
 		nvc0_fence_context_del(chan, engine);
 
 	nouveau_bo_wr32(priv->bo, chan->id * 16/4, 0x00000000);
+=======
+		nvc0_fence_context_del(chan);
+
+	/* map display semaphore buffers into channel's vm */
+	for (i = 0; !ret && i < chan->drm->dev->mode_config.num_crtc; i++) {
+		struct nouveau_bo *bo = nv50_display_crtc_sema(chan->drm->dev, i);
+		ret = nouveau_bo_vma_add(bo, client->vm, &fctx->dispc_vma[i]);
+	}
+
+	nouveau_bo_wr32(priv->bo, fifo->chid * 16/4, 0x00000000);
+>>>>>>> 3c2e81ef344a
 	return ret;
 }
 
@@ -141,6 +165,8 @@ nvc0_fence_destroy(struct drm_device *dev, int engine)
 	struct nvc0_fence_priv *priv = nv_engine(dev, engine);
 
 	nouveau_bo_unmap(priv->bo);
+	if (priv->bo)
+		nouveau_bo_unpin(priv->bo);
 	nouveau_bo_ref(NULL, &priv->bo);
 	dev_priv->eng[engine] = NULL;
 	kfree(priv);
@@ -172,8 +198,11 @@ nvc0_fence_create(struct drm_device *dev)
 			     0, 0, NULL, &priv->bo);
 	if (ret == 0) {
 		ret = nouveau_bo_pin(priv->bo, TTM_PL_FLAG_VRAM);
-		if (ret == 0)
+		if (ret == 0) {
 			ret = nouveau_bo_map(priv->bo);
+			if (ret)
+				nouveau_bo_unpin(priv->bo);
+		}
 		if (ret)
 			nouveau_bo_ref(NULL, &priv->bo);
 	}

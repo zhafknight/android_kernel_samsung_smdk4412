@@ -10,6 +10,7 @@
  * published by the Free Software Foundation.
  */
 
+<<<<<<< HEAD
 #ifndef REGS_GSC_H_
 #define REGS_GSC_H_
 
@@ -32,6 +33,10 @@
 #define GSC_BLK_GSCL_WB_IN_SRC_SEL(x)	(1 << (2 * x))
 #define SYSREG_GSCBLK_CFG2		(S3C_VA_SYS + 0x2000)
 #define PXLASYNC_LO_MASK_CAMIF_GSCL(x)	(1 << (x))
+=======
+#ifndef EXYNOS_REGS_GSC_H_
+#define EXYNOS_REGS_GSC_H_
+>>>>>>> 3c2e81ef344a
 
 /* G-Scaler enable */
 #define GSC_ENABLE			0x00
@@ -292,4 +297,17 @@
 #define GSC_CLK_SNOOP_COUNT		0xC04
 #define GSC_CLK_GATE_MODE_SNOOP_CNT(x)	((x) << 0)
 
+<<<<<<< HEAD
 #endif /* REGS_GSC_H_ */
+=======
+/* SYSCON. GSCBLK_CFG */
+#define SYSREG_GSCBLK_CFG1		(S3C_VA_SYS + 0x0224)
+#define GSC_BLK_DISP1WB_DEST(x)		(x << 10)
+#define GSC_BLK_SW_RESET_WB_DEST(x)	(1 << (18 + x))
+#define GSC_BLK_PXLASYNC_LO_MASK_WB(x)	(0 << (14 + x))
+#define GSC_BLK_GSCL_WB_IN_SRC_SEL(x)	(1 << (2 * x))
+#define SYSREG_GSCBLK_CFG2		(S3C_VA_SYS + 0x2000)
+#define PXLASYNC_LO_MASK_CAMIF_GSCL(x)	(1 << (x))
+
+#endif /* EXYNOS_REGS_GSC_H_ */
+>>>>>>> 3c2e81ef344a

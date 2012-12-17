@@ -4305,6 +4305,7 @@ int nouveau_bios_parse_lvds_table(struct drm_device *dev, int pxclk, bool *dl, b
 	return 0;
 }
 
+<<<<<<< HEAD
 /* BIT 'U'/'d' table encoder subtables have hashes matching them to
  * a particular set of encoders.
  *
@@ -4506,6 +4507,9 @@ nouveau_bios_run_display_table(struct drm_device *dev, u16 type, int pclk,
 
 
 int run_tmds_table(struct drm_device *dev, struct dcb_entry *dcbent, int head, int pxclk)
+=======
+int run_tmds_table(struct drm_device *dev, struct dcb_output *dcbent, int head, int pxclk)
+>>>>>>> 3c2e81ef344a
 {
 	/*
 	 * the pxclk parameter is in kHz
@@ -5324,6 +5328,7 @@ static int parse_bit_tmds_tbl_entry(struct drm_device *dev, struct nvbios *bios,
 	return 0;
 }
 
+<<<<<<< HEAD
 static int
 parse_bit_U_tbl_entry(struct drm_device *dev, struct nvbios *bios,
 		      struct bit_entry *bitentry)
@@ -5348,6 +5353,8 @@ parse_bit_U_tbl_entry(struct drm_device *dev, struct nvbios *bios,
 	return 0;
 }
 
+=======
+>>>>>>> 3c2e81ef344a
 struct bit_table {
 	const char id;
 	int (* const parse_fn)(struct drm_device *, struct nvbios *, struct bit_entry *);
@@ -5423,7 +5430,6 @@ parse_bit_structure(struct nvbios *bios, const uint16_t bitoffset)
 	parse_bit_table(bios, bitoffset, &BIT_TABLE('M', M)); /* memory? */
 	parse_bit_table(bios, bitoffset, &BIT_TABLE('L', lvds));
 	parse_bit_table(bios, bitoffset, &BIT_TABLE('T', tmds));
-	parse_bit_table(bios, bitoffset, &BIT_TABLE('U', U));
 
 	return 0;
 }
@@ -6447,9 +6453,15 @@ static int nouveau_parse_vbios_struct(struct drm_device *dev)
 int
 nouveau_run_vbios_init(struct drm_device *dev)
 {
+<<<<<<< HEAD
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nvbios *bios = &dev_priv->vbios;
 	int i, ret = 0;
+=======
+	struct nouveau_drm *drm = nouveau_drm(dev);
+	struct nvbios *bios = &drm->vbios;
+	int ret = 0;
+>>>>>>> 3c2e81ef344a
 
 	/* Reset the BIOS head to 0. */
 	bios->state.crtchead = 0;
@@ -6462,6 +6474,7 @@ nouveau_run_vbios_init(struct drm_device *dev)
 		bios->fp.lvds_init_run = false;
 	}
 
+<<<<<<< HEAD
 	parse_init_tables(bios);
 
 	/*
@@ -6484,6 +6497,8 @@ nouveau_run_vbios_init(struct drm_device *dev)
 		}
 	}
 
+=======
+>>>>>>> 3c2e81ef344a
 	return ret;
 }
 

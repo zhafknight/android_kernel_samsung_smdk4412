@@ -530,8 +530,14 @@ static int
 calc_mclk(struct drm_device *dev, struct nouveau_pm_level *perflvl,
 	  struct nv50_pm_state *info)
 {
+<<<<<<< HEAD
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	u32 crtc_mask = nv50_display_active_crtcs(dev);
+=======
+	struct nouveau_drm *drm = nouveau_drm(dev);
+	struct nouveau_device *device = nouveau_dev(dev);
+	u32 crtc_mask = 0; /*XXX: nv50_display_active_crtcs(dev); */
+>>>>>>> 3c2e81ef344a
 	struct nouveau_mem_exec_func exec = {
 		.dev = dev,
 		.precharge = mclk_precharge,

@@ -162,6 +162,7 @@ nv10_fence_fini(struct drm_device *dev, int engine, bool suspend)
 static int
 nv10_fence_init(struct drm_device *dev, int engine)
 {
+<<<<<<< HEAD
 	return 0;
 }
 
@@ -171,6 +172,12 @@ nv10_fence_destroy(struct drm_device *dev, int engine)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nv10_fence_priv *priv = nv_engine(dev, engine);
 
+=======
+	struct nv10_fence_priv *priv = drm->fence;
+	nouveau_bo_unmap(priv->bo);
+	if (priv->bo)
+		nouveau_bo_unpin(priv->bo);
+>>>>>>> 3c2e81ef344a
 	nouveau_bo_ref(NULL, &priv->bo);
 	dev_priv->eng[engine] = NULL;
 	kfree(priv);
@@ -203,8 +210,11 @@ nv10_fence_create(struct drm_device *dev)
 				     0, 0x0000, NULL, &priv->bo);
 		if (!ret) {
 			ret = nouveau_bo_pin(priv->bo, TTM_PL_FLAG_VRAM);
-			if (!ret)
+			if (!ret) {
 				ret = nouveau_bo_map(priv->bo);
+				if (ret)
+					nouveau_bo_unpin(priv->bo);
+			}
 			if (ret)
 				nouveau_bo_ref(NULL, &priv->bo);
 		}

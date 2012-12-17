@@ -3,6 +3,11 @@
  *
  * Authors:
  *	Eunchul Kim <chulspro.kim@samsung.com>
+<<<<<<< HEAD
+=======
+ *	Jinyoung Jeon <jy0.jeon@samsung.com>
+ *	Sangmin Lee <lsmin.lee@samsung.com>
+>>>>>>> 3c2e81ef344a
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -27,7 +32,16 @@
 #ifndef _EXYNOS_DRM_FIMC_H_
 #define _EXYNOS_DRM_FIMC_H_
 
+<<<<<<< HEAD
 /* ToDo */
 
 #endif /* _EXYNOS_DRM_FIMC_H_ */
 
+=======
+/*
+ * TODO
+ * FIMD output interface notifier callback.
+ */
+
+#endif /* _EXYNOS_DRM_FIMC_H_ */
+>>>>>>> 3c2e81ef344a

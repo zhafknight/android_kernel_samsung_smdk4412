@@ -31,19 +31,19 @@
 #include "nouveau_drv.h"
 #include "nouveau_dma.h"
 #include "nouveau_reg.h"
+<<<<<<< HEAD
 #include "nouveau_crtc.h"
 #include "nouveau_software.h"
 #include "nv50_evo.h"
+=======
+>>>>>>> 3c2e81ef344a
 
-struct nv50_display_crtc {
-	struct nouveau_channel *sync;
-	struct {
-		struct nouveau_bo *bo;
-		u32 offset;
-		u16 value;
-	} sem;
-};
+int  nv50_display_create(struct drm_device *);
+void nv50_display_destroy(struct drm_device *);
+int  nv50_display_init(struct drm_device *);
+void nv50_display_fini(struct drm_device *);
 
+<<<<<<< HEAD
 struct nv50_display {
 	struct nouveau_channel *master;
 	struct nouveau_gpuobj *ntfy;
@@ -89,5 +89,12 @@ void nv50_evo_dmaobj_init(struct nouveau_gpuobj *, u32 memtype, u64 base,
 			  u64 size);
 int  nv50_evo_dmaobj_new(struct nouveau_channel *, u32 handle, u32 memtype,
 			 u64 base, u64 size, struct nouveau_gpuobj **);
+=======
+void nv50_display_flip_stop(struct drm_crtc *);
+int  nv50_display_flip_next(struct drm_crtc *, struct drm_framebuffer *,
+			    struct nouveau_channel *, u32 swap_interval);
+
+struct nouveau_bo *nv50_display_crtc_sema(struct drm_device *, int head);
+>>>>>>> 3c2e81ef344a
 
 #endif /* __NV50_DISPLAY_H__ */

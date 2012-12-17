@@ -29,8 +29,12 @@
 
 #include <drm/drm_edid.h>
 <<<<<<< HEAD
+<<<<<<< HEAD
 #include "nouveau_i2c.h"
 =======
+=======
+#include "nouveau_crtc.h"
+>>>>>>> 3c2e81ef344a
 
 struct nouveau_i2c_port;
 >>>>>>> 612a9aab56a9
@@ -82,6 +86,21 @@ static inline struct nouveau_connector *nouveau_connector(
 						struct drm_connector *con)
 {
 	return container_of(con, struct nouveau_connector, base);
+}
+
+static inline struct nouveau_connector *
+nouveau_crtc_connector_get(struct nouveau_crtc *nv_crtc)
+{
+	struct drm_device *dev = nv_crtc->base.dev;
+	struct drm_connector *connector;
+	struct drm_crtc *crtc = to_drm_crtc(nv_crtc);
+
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		if (connector->encoder && connector->encoder->crtc == crtc)
+			return nouveau_connector(connector);
+	}
+
+	return NULL;
 }
 
 struct drm_connector *
