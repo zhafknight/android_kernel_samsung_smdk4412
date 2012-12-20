@@ -84,9 +84,11 @@ static int br_mdb_fill_info(struct sk_buff *skb, struct netlink_callback *cb,
 					struct br_mdb_entry e;
 					e.ifindex = port->dev->ifindex;
 					e.state = p->state;
-					e.addr.u.ip4 = p->addr.u.ip4;
+					if (p->addr.proto == htons(ETH_P_IP))
+						e.addr.u.ip4 = p->addr.u.ip4;
 #if IS_ENABLED(CONFIG_IPV6)
-					e.addr.u.ip6 = p->addr.u.ip6;
+					if (p->addr.proto == htons(ETH_P_IPV6))
+						e.addr.u.ip6 = p->addr.u.ip6;
 #endif
 					e.addr.proto = p->addr.proto;
 					if (nla_put(skb, MDBA_MDB_ENTRY_INFO, sizeof(e), &e)) {
@@ -481,4 +483,11 @@ void br_mdb_init(void)
 	rtnl_register(PF_BRIDGE, RTM_GETMDB, NULL, br_mdb_dump, NULL);
 	rtnl_register(PF_BRIDGE, RTM_NEWMDB, br_mdb_add, NULL, NULL);
 	rtnl_register(PF_BRIDGE, RTM_DELMDB, br_mdb_del, NULL, NULL);
+}
+
+void br_mdb_uninit(void)
+{
+	rtnl_unregister(PF_BRIDGE, RTM_GETMDB);
+	rtnl_unregister(PF_BRIDGE, RTM_NEWMDB);
+	rtnl_unregister(PF_BRIDGE, RTM_DELMDB);
 }
