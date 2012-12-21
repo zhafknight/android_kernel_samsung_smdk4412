@@ -200,9 +200,19 @@ struct dm_snap_tracked_chunk {
 	chunk_t chunk;
 };
 
-static struct dm_snap_tracked_chunk *track_chunk(struct dm_snapshot *s,
-						 struct bio *bio,
-						 chunk_t chunk)
+static void init_tracked_chunk(struct bio *bio)
+{
+	struct dm_snap_tracked_chunk *c = dm_per_bio_data(bio, sizeof(struct dm_snap_tracked_chunk));
+	INIT_HLIST_NODE(&c->node);
+}
+
+static bool is_bio_tracked(struct bio *bio)
+{
+	struct dm_snap_tracked_chunk *c = dm_per_bio_data(bio, sizeof(struct dm_snap_tracked_chunk));
+	return !hlist_unhashed(&c->node);
+}
+
+static void track_chunk(struct dm_snapshot *s, struct bio *bio, chunk_t chunk)
 {
 	struct dm_snap_tracked_chunk *c = dm_per_bio_data(bio, sizeof(struct dm_snap_tracked_chunk));
 
@@ -212,13 +222,11 @@ static struct dm_snap_tracked_chunk *track_chunk(struct dm_snapshot *s,
 	hlist_add_head(&c->node,
 		       &s->tracked_chunk_hash[DM_TRACKED_CHUNK_HASH(chunk)]);
 	spin_unlock_irq(&s->tracked_chunk_lock);
-
-	return c;
 }
 
-static void stop_tracking_chunk(struct dm_snapshot *s,
-				struct dm_snap_tracked_chunk *c)
+static void stop_tracking_chunk(struct dm_snapshot *s, struct bio *bio)
 {
+	struct dm_snap_tracked_chunk *c = dm_per_bio_data(bio, sizeof(struct dm_snap_tracked_chunk));
 	unsigned long flags;
 
 	spin_lock_irqsave(&s->tracked_chunk_lock, flags);
@@ -1580,6 +1588,8 @@ static int snapshot_map(struct dm_target *ti, struct bio *bio,
 	chunk_t chunk;
 	struct dm_snap_pending_exception *pe = NULL;
 
+	init_tracked_chunk(bio);
+
 	if (bio->bi_rw & REQ_FLUSH) {
 		bio->bi_bdev = s->cow->bdev;
 		return DM_MAPIO_REMAPPED;
@@ -1664,7 +1674,7 @@ static int snapshot_map(struct dm_target *ti, struct bio *bio,
 		}
 	} else {
 		bio->bi_bdev = s->origin->bdev;
-		map_context->ptr = track_chunk(s, bio, chunk);
+		track_chunk(s, bio, chunk);
 	}
 
  out_unlock:
@@ -1693,12 +1703,13 @@ static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
 	int r = DM_MAPIO_REMAPPED;
 	chunk_t chunk;
 
+	init_tracked_chunk(bio);
+
 	if (bio->bi_rw & REQ_FLUSH) {
 		if (!dm_bio_get_target_request_nr(bio))
 			bio->bi_bdev = s->origin->bdev;
 		else
 			bio->bi_bdev = s->cow->bdev;
-		map_context->ptr = NULL;
 		return DM_MAPIO_REMAPPED;
 	}
 
@@ -1727,7 +1738,7 @@ static int snapshot_merge_map(struct dm_target *ti, struct bio *bio,
 		remap_exception(s, e, bio, chunk);
 
 		if (bio_rw(bio) == WRITE)
-			map_context->ptr = track_chunk(s, bio, chunk);
+			track_chunk(s, bio, chunk);
 		goto out_unlock;
 	}
 
@@ -1750,10 +1761,9 @@ static int snapshot_end_io(struct dm_target *ti, struct bio *bio,
 			   int error, union map_info *map_context)
 {
 	struct dm_snapshot *s = ti->private;
-	struct dm_snap_tracked_chunk *c = map_context->ptr;
 
-	if (c)
-		stop_tracking_chunk(s, c);
+	if (is_bio_tracked(bio))
+		stop_tracking_chunk(s, bio);
 
 	return 0;
 }
