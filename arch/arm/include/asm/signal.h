@@ -1,26 +1,12 @@
-#ifndef _ASMARM_SIGNAL_H
-#define _ASMARM_SIGNAL_H
+#ifndef _UAPI_ASMARM_SIGNAL_H
+#define _UAPI_ASMARM_SIGNAL_H
 
 #include <linux/types.h>
 
 /* Avoid too many header ordering problems.  */
 struct siginfo;
 
-#ifdef __KERNEL__
-/* Most things should be clean enough to redefine this at will, if care
-   is taken to make libc match.  */
-
-#define _NSIG		64
-#define _NSIG_BPW	32
-#define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
-
-typedef unsigned long old_sigset_t;		/* at least 32 bits */
-
-typedef struct {
-	unsigned long sig[_NSIG_WORDS];
-} sigset_t;
-
-#else
+#ifndef __KERNEL__
 /* Here we must cater to libcs that poke about in kernel headers.  */
 
 #define NSIG		32
@@ -101,38 +87,12 @@ typedef unsigned long sigset_t;
 #define SA_NOMASK	SA_NODEFER
 #define SA_ONESHOT	SA_RESETHAND
 
-
-/* 
- * sigaltstack controls
- */
-#define SS_ONSTACK	1
-#define SS_DISABLE	2
-
 #define MINSIGSTKSZ	2048
 #define SIGSTKSZ	8192
 
 #include <asm-generic/signal-defs.h>
 
-#ifdef __KERNEL__
-struct old_sigaction {
-	__sighandler_t sa_handler;
-	old_sigset_t sa_mask;
-	unsigned long sa_flags;
-	__sigrestore_t sa_restorer;
-};
-
-struct sigaction {
-	__sighandler_t sa_handler;
-	unsigned long sa_flags;
-	__sigrestore_t sa_restorer;
-	sigset_t sa_mask;		/* mask last for extensibility */
-};
-
-struct k_sigaction {
-	struct sigaction sa;
-};
-
-#else
+#ifndef __KERNEL__
 /* Here we must cater to libcs that poke about in kernel headers.  */
 
 struct sigaction {
@@ -156,8 +116,5 @@ typedef struct sigaltstack {
 	size_t ss_size;
 } stack_t;
 
-#ifdef __KERNEL__
-#include <asm/sigcontext.h>
-#endif
 
-#endif
+#endif /* _UAPI_ASMARM_SIGNAL_H */
