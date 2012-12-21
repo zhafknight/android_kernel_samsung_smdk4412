@@ -138,7 +138,7 @@ static void dispatch_bios(void *context, struct bio_list *bio_list)
 		queue_bio(ms, bio, WRITE);
 }
 
-struct dm_raid1_read_record {
+struct dm_raid1_bio_record {
 	struct mirror *m;
 	struct dm_bio_details details;
 };
@@ -1072,7 +1072,7 @@ static int mirror_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 
 	ti->num_flush_requests = 1;
 	ti->num_discard_requests = 1;
-	ti->per_bio_data_size = sizeof(struct dm_raid1_read_record);
+	ti->per_bio_data_size = sizeof(struct dm_raid1_bio_record);
 	ti->discard_zeroes_data_unsupported = true;
 
 	ms->kmirrord_wq = alloc_workqueue("kmirrord",
@@ -1145,7 +1145,7 @@ static int mirror_map(struct dm_target *ti, struct bio *bio)
 	int r, rw = bio_rw(bio);
 	struct mirror *m;
 	struct mirror_set *ms = ti->private;
-	struct dm_raid1_read_record *read_record;
+	struct dm_raid1_bio_record *bio_record;
 	struct dm_dirty_log *log = dm_rh_dirty_log(ms->rh);
 
 	if (rw == WRITE) {
@@ -1178,10 +1178,10 @@ static int mirror_map(struct dm_target *ti, struct bio *bio)
 	if (unlikely(!m))
 		return -EIO;
 
-	read_record = dm_per_bio_data(bio, sizeof(struct dm_raid1_read_record));
-	dm_bio_record(&read_record->details, bio);
-	map_context->ptr = read_record;
-	read_record->m = m;
+	bio_record = dm_per_bio_data(bio, sizeof(struct dm_raid1_bio_record));
+	dm_bio_record(&bio_record->details, bio);
+	map_context->ptr = bio_record;
+	bio_record->m = m;
 
 	map_bio(m, bio);
 
@@ -1194,7 +1194,7 @@ static int mirror_end_io(struct dm_target *ti, struct bio *bio, int error)
 	struct mirror_set *ms = (struct mirror_set *) ti->private;
 	struct mirror *m = NULL;
 	struct dm_bio_details *bd = NULL;
-	struct dm_raid1_read_record *read_record = map_context->ptr;
+	struct dm_raid1_bio_record *bio_record = map_context->ptr;
 
 	/*
 	 * We need to dec pending if this was a write.
@@ -1212,7 +1212,7 @@ static int mirror_end_io(struct dm_target *ti, struct bio *bio, int error)
 		goto out;
 
 	if (unlikely(error)) {
-		if (!read_record) {
+		if (!bio_record) {
 			/*
 			 * There wasn't enough memory to record necessary
 			 * information for a retry or there was no other
@@ -1222,7 +1222,7 @@ static int mirror_end_io(struct dm_target *ti, struct bio *bio, int error)
 			return -EIO;
 		}
 
-		m = read_record->m;
+		m = bio_record->m;
 
 		DMERR("Mirror read failed from %s. Trying alternative device.",
 		      m->dev->name);
@@ -1234,7 +1234,7 @@ static int mirror_end_io(struct dm_target *ti, struct bio *bio, int error)
 		 * mirror.
 		 */
 		if (default_ok(m) || mirror_available(ms, bio)) {
-			bd = &read_record->details;
+			bd = &bio_record->details;
 
 			dm_bio_restore(bd, bio);
 			map_context->ptr = NULL;
