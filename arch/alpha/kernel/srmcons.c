@@ -46,6 +46,7 @@ typedef union _srmcons_result {
 static int
 srmcons_do_receive_chars(struct tty_port *port)
 {
+	struct tty_port *port = tty->port;
 	srmcons_result result;
 	int count = 0, loops = 0;
 

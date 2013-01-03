@@ -55,6 +55,7 @@ static struct console *console;
 
 static void receive_chars(struct tty_port *port)
 {
+	struct tty_port *port = tty->port;
 	unsigned char ch;
 	static unsigned char seen_esc = 0;
 
