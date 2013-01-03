@@ -219,7 +219,6 @@ s3c24xx_serial_rx_chars(int irq, void *dev_id)
 {
 	struct s3c24xx_uart_port *ourport = dev_id;
 	struct uart_port *port = &ourport->port;
-	struct tty_struct *tty = port->state->port.tty;
 	unsigned int ufcon, ch, flag, ufstat, uerstat;
 #ifdef CSR_GPS_WORK_AROUND_RX_ISR
 	int max_count = 256;
@@ -384,7 +383,7 @@ s3c24xx_serial_rx_chars(int irq, void *dev_id)
 	tty_flip_buffer_push(tty);
 	}
 #else	/* !CSR_GPS_WORK_AROUND_RX_ISR */
-	tty_flip_buffer_push(tty);
+	tty_flip_buffer_push(&port->state->port);
 #endif	/* CSR_GPS_WORK_AROUND_RX_ISR */
 
  out:
