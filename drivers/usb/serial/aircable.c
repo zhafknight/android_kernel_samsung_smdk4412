@@ -123,9 +123,8 @@ static int aircable_probe(struct usb_serial *serial,
 	return 0;
 }
 
-static int aircable_process_packet(struct tty_struct *tty,
-			struct usb_serial_port *port, int has_headers,
-			char *packet, int len)
+static int aircable_process_packet(struct usb_serial_port *port,
+		int has_headers, char *packet, int len)
 {
 	if (has_headers) {
 		len -= HCI_HEADER_LENGTH;
@@ -136,7 +135,7 @@ static int aircable_process_packet(struct tty_struct *tty,
 		return 0;
 	}
 
-	tty_insert_flip_string(tty, packet, len);
+	tty_insert_flip_string(&port->port, packet, len);
 
 	return len;
 }
@@ -160,7 +159,7 @@ static void aircable_process_read_urb(struct urb *urb)
 	count = 0;
 	for (i = 0; i < urb->actual_length; i += HCI_COMPLETE_FRAME) {
 		len = min_t(int, urb->actual_length - i, HCI_COMPLETE_FRAME);
-		count += aircable_process_packet(tty, port, has_headers,
+		count += aircable_process_packet(port, has_headers,
 								&data[i], len);
 	}
 
