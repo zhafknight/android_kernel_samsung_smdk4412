@@ -5,7 +5,7 @@
 
 #include <linux/module.h>
 #include <linux/errno.h>
-#include <asm/setup.h>
+#include <uapi/asm/setup.h>
 
 static struct {
 	u32 special_mark_1;

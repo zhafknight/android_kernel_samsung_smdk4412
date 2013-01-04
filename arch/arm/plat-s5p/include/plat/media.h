@@ -14,7 +14,7 @@
 #define _S5P_MEDIA_H
 
 #include <linux/types.h>
-#include <asm/setup.h>
+#include <uapi/asm/setup.h>
 
 #ifdef CONFIG_CMA
 #include <linux/cma.h>

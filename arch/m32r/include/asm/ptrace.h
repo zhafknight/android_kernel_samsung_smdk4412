@@ -32,7 +32,6 @@ extern void init_debug_traps(struct task_struct *);
 
 #define instruction_pointer(regs) ((regs)->bpc)
 #define profile_pc(regs) instruction_pointer(regs)
-#define user_stack_pointer(regs) ((regs)->spu)
 
 extern void withdraw_debug_trap(struct pt_regs *regs);
 

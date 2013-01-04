@@ -12,7 +12,7 @@
 
 #include <linux/mm.h>
 #include <linux/swap.h>
-#include <asm/setup.h>
+#include <uapi/asm/setup.h>
 #include <linux/io.h>
 #include <mach/memory.h>
 #include <plat/media.h>

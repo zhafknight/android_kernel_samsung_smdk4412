@@ -364,7 +364,10 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
 		else
 			put_user_ex(0, &frame->uc.uc_flags);
 		put_user_ex(0, &frame->uc.uc_link);
-		err |= __save_altstack(&frame->uc.uc_stack, regs->sp);
+		put_user_ex(current->sas_ss_sp, &frame->uc.uc_stack.ss_sp);
+		put_user_ex(sas_ss_flags(regs->sp),
+			    &frame->uc.uc_stack.ss_flags);
+		put_user_ex(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
 
 		/* Set up to return from userspace.  */
 		restorer = VDSO32_SYMBOL(current->mm->context.vdso, rt_sigreturn);
@@ -411,6 +414,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
 	struct rt_sigframe __user *frame;
 	void __user *fp = NULL;
 	int err = 0;
+	struct task_struct *me = current;
 
 	frame = get_sigframe(ka, regs, sizeof(struct rt_sigframe), &fp);
 
@@ -429,7 +433,10 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
 		else
 			put_user_ex(0, &frame->uc.uc_flags);
 		put_user_ex(0, &frame->uc.uc_link);
-		err |= __save_altstack(&frame->uc.uc_stack, regs->sp);
+		put_user_ex(me->sas_ss_sp, &frame->uc.uc_stack.ss_sp);
+		put_user_ex(sas_ss_flags(regs->sp),
+			    &frame->uc.uc_stack.ss_flags);
+		put_user_ex(me->sas_ss_size, &frame->uc.uc_stack.ss_size);
 
 		/* Set up to return from userspace.  If provided, use a stub
 		   already in userspace.  */
@@ -496,7 +503,10 @@ static int x32_setup_rt_frame(int sig, struct k_sigaction *ka,
 		else
 			put_user_ex(0, &frame->uc.uc_flags);
 		put_user_ex(0, &frame->uc.uc_link);
-		err |= __compat_save_altstack(&frame->uc.uc_stack, regs->sp);
+		put_user_ex(current->sas_ss_sp, &frame->uc.uc_stack.ss_sp);
+		put_user_ex(sas_ss_flags(regs->sp),
+			    &frame->uc.uc_stack.ss_flags);
+		put_user_ex(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
 		put_user_ex(0, &frame->uc.uc__pad0);
 
 		if (ka->sa.sa_flags & SA_RESTORER) {
@@ -593,6 +603,13 @@ sys_sigaction(int sig, const struct old_sigaction __user *act,
 }
 #endif /* CONFIG_X86_32 */
 
+long
+sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
+		struct pt_regs *regs)
+{
+	return do_sigaltstack(uss, uoss, regs->sp);
+}
+
 /*
  * Do a signal return; undo the signal stack.
  */
@@ -642,7 +659,7 @@ long sys_rt_sigreturn(struct pt_regs *regs)
 	if (restore_sigcontext(regs, &frame->uc.uc_mcontext, &ax))
 		goto badframe;
 
-	if (restore_altstack(&frame->uc.uc_stack))
+	if (do_sigaltstack(&frame->uc.uc_stack, NULL, regs->sp) == -EFAULT)
 		goto badframe;
 
 	return ax;
@@ -848,6 +865,7 @@ asmlinkage long sys32_x32_rt_sigreturn(struct pt_regs *regs)
 	struct rt_sigframe_x32 __user *frame;
 	sigset_t set;
 	unsigned long ax;
+	struct pt_regs tregs;
 
 	frame = (struct rt_sigframe_x32 __user *)(regs->sp - 8);
 
@@ -861,7 +879,8 @@ asmlinkage long sys32_x32_rt_sigreturn(struct pt_regs *regs)
 	if (restore_sigcontext(regs, &frame->uc.uc_mcontext, &ax))
 		goto badframe;
 
-	if (compat_restore_altstack(&frame->uc.uc_stack))
+	tregs = *regs;
+	if (sys32_sigaltstack(&frame->uc.uc_stack, NULL, &tregs) == -EFAULT)
 		goto badframe;
 
 	return ax;
