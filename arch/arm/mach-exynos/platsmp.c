@@ -85,13 +85,6 @@ static void __cpuinit exynos_secondary_init(unsigned int cpu)
 		enable_cache_foz();
 
 	/*
-	 * if any interrupts are already enabled for the primary
-	 * core (e.g. timer irq), then they will not have been enabled
-	 * for us: do so
-	 */
-	gic_secondary_init(0);
-
-	/*
 	 * let the primary processor know we're out of the
 	 * pen, then head off into the C entry point
 	 */
