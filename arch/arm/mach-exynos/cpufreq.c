@@ -753,6 +753,16 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 	}
 
 	ret = cpufreq_frequency_table_cpuinfo(policy, exynos_info->freq_table);
+
+	/* Keep stock frq. as default startup frq. */
+#if defined(CONFIG_CPU_EXYNOS4210)
+	policy->max = 1200000;
+	policy->min = 100000;
+#else
+	policy->max = 1400000;
+	policy->min = 200000;
+#endif
+
 	if (ret)
 		return ret;
 
