@@ -2614,7 +2614,14 @@ static int chunk_usage_filter(struct btrfs_fs_info *fs_info, u64 chunk_offset,
 	cache = btrfs_lookup_block_group(fs_info, chunk_offset);
 	chunk_used = btrfs_block_group_used(&cache->item);
 
-	user_thresh = div_factor_fine(cache->key.offset, bargs->usage);
+	if (bargs->usage == 0)
+		user_thresh = 0;
+	else if (bargs->usage > 100)
+		user_thresh = cache->key.offset;
+	else
+		user_thresh = div_factor_fine(cache->key.offset,
+					      bargs->usage);
+
 	if (chunk_used < user_thresh)
 		ret = 0;
 
@@ -3500,7 +3507,7 @@ struct btrfs_raid_attr btrfs_raid_array[BTRFS_NR_RAID_TYPES] = {
 	{ 1, 1, 2, 2, 2, 2 /* raid1 */ },
 	{ 1, 2, 1, 1, 1, 2 /* dup */ },
 	{ 1, 1, 0, 2, 1, 1 /* raid0 */ },
-	{ 1, 1, 0, 1, 1, 1 /* single */ },
+	{ 1, 1, 1, 1, 1, 1 /* single */ },
 };
 
 static int __btrfs_alloc_chunk(struct btrfs_trans_handle *trans,
