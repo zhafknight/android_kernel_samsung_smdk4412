@@ -8,7 +8,7 @@ obj-y				:= extable.o fault.o \
 obj-y				+= dma-mapping.o init.o
 
 obj-$(CONFIG_MMU)		+= fault-armv.o flush.o idmap.o ioremap.o \
-				   mmap.o pgd.o vmregion.o
+				   mmap.o pgd.o
 
 obj-$(CONFIG_ARCH_EXYNOS)	+= mmu-legacy.o
 
