@@ -52,6 +52,7 @@
 #include <media/soc_camera.h>
 
 #include <sound/sh_fsi.h>
+#include <sound/simple_card.h>
 
 #include <video/sh_mobile_hdmi.h>
 #include <video/sh_mobile_lcdc.h>
@@ -656,14 +657,8 @@ static struct platform_device lcdc_device = {
 /* FSI */
 #define IRQ_FSI		evt2irq(0x1840)
 static struct sh_fsi_platform_info fsi_info = {
-	.port_a = {
-		.flags		= SH_FSI_BRS_INV,
-	},
 	.port_b = {
-		.flags		= SH_FSI_BRS_INV |
-				  SH_FSI_BRM_INV |
-				  SH_FSI_LRS_INV |
-				  SH_FSI_CLK_CPG |
+		.flags		= SH_FSI_CLK_CPG |
 				  SH_FSI_FMT_SPDIF,
 	},
 };
@@ -691,17 +686,25 @@ static struct platform_device fsi_device = {
 	},
 };
 
-static struct fsi_ak4642_info fsi2_ak4643_info = {
+static struct asoc_simple_card_info fsi2_ak4643_info = {
 	.name		= "AK4643",
 	.card		= "FSI2A-AK4643",
-	.cpu_dai	= "fsia-dai",
 	.codec		= "ak4642-codec.0-0013",
 	.platform	= "sh_fsi2",
-	.id		= FSI_PORT_A,
+	.daifmt		= SND_SOC_DAIFMT_LEFT_J,
+	.cpu_dai = {
+		.name	= "fsia-dai",
+		.fmt	= SND_SOC_DAIFMT_CBS_CFS,
+	},
+	.codec_dai = {
+		.name	= "ak4642-hifi",
+		.fmt	= SND_SOC_DAIFMT_CBM_CFM,
+		.sysclk	= 11289600,
+	},
 };
 
 static struct platform_device fsi_ak4643_device = {
-	.name	= "fsi-ak4642-audio",
+	.name	= "asoc-simple-card",
 	.dev	= {
 		.platform_data	= &fsi2_ak4643_info,
 	},
@@ -806,8 +809,26 @@ static struct platform_device lcdc1_device = {
 	},
 };
 
+static struct asoc_simple_card_info fsi2_hdmi_info = {
+	.name		= "HDMI",
+	.card		= "FSI2B-HDMI",
+	.codec		= "sh-mobile-hdmi",
+	.platform	= "sh_fsi2",
+	.cpu_dai = {
+		.name	= "fsib-dai",
+		.fmt	= SND_SOC_DAIFMT_CBM_CFM | SND_SOC_DAIFMT_IB_NF,
+	},
+	.codec_dai = {
+		.name	= "sh_mobile_hdmi-hifi",
+	},
+};
+
 static struct platform_device fsi_hdmi_device = {
-	.name		= "sh_fsi2_b_hdmi",
+	.name	= "asoc-simple-card",
+	.id	= 1,
+	.dev	= {
+		.platform_data	= &fsi2_hdmi_info,
+	},
 };
 
 static struct gpio_led ap4evb_leds[] = {

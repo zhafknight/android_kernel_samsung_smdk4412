@@ -31,6 +31,7 @@
 #include <video/sh_mobile_lcdc.h>
 #include <media/sh_mobile_ceu.h>
 #include <sound/sh_fsi.h>
+#include <sound/simple_card.h>
 #include <asm/io.h>
 #include <asm/heartbeat.h>
 #include <asm/clock.h>
@@ -278,12 +279,6 @@ static struct platform_device ceu1_device = {
 
 /* FSI */
 /* change J20, J21, J22 pin to 1-2 connection to use slave mode */
-static struct sh_fsi_platform_info fsi_info = {
-	.port_a = {
-		.flags = SH_FSI_BRS_INV,
-	},
-};
-
 static struct resource fsi_resources[] = {
 	[0] = {
 		.name	= "FSI",
@@ -302,22 +297,27 @@ static struct platform_device fsi_device = {
 	.id		= 0,
 	.num_resources	= ARRAY_SIZE(fsi_resources),
 	.resource	= fsi_resources,
-	.dev	= {
-		.platform_data	= &fsi_info,
+};
+
+static struct asoc_simple_card_info fsi_ak4642_info = {
+	.name		= "AK4642",
+	.card		= "FSIA-AK4642",
+	.codec		= "ak4642-codec.0-0012",
+	.platform	= "sh_fsi.0",
+	.daifmt		= SND_SOC_DAIFMT_LEFT_J,
+	.cpu_dai = {
+		.name	= "fsia-dai",
+		.fmt	= SND_SOC_DAIFMT_CBS_CFS | SND_SOC_DAIFMT_IB_NF,
+	},
+	.codec_dai = {
+		.name	= "ak4642-hifi",
+		.fmt	= SND_SOC_DAIFMT_CBM_CFM,
+		.sysclk	= 11289600,
 	},
 };
 
-static struct fsi_ak4642_info fsi_ak4642_info = {
-	.name		= "AK4642",
-	.card		= "FSIA-AK4642",
-	.cpu_dai	= "fsia-dai",
-	.codec		= "ak4642-codec.0-0012",
-	.platform	= "sh_fsi.0",
-	.id		= FSI_PORT_A,
-};
-
 static struct platform_device fsi_ak4642_device = {
-	.name	= "fsi-ak4642-audio",
+	.name	= "asoc-simple-card",
 	.dev	= {
 		.platform_data	= &fsi_ak4642_info,
 	},
