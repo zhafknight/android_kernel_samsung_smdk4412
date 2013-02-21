@@ -54,11 +54,10 @@
 #include <linux/mtd/map.h>
 #include <linux/mtd/physmap.h>
 
-static struct resource tct_hammer_nor_resource = {
-		.start = 0x00000000,
-		.end   = 0x01000000 - 1,
-		.flags = IORESOURCE_MEM,
-};
+#include "common.h"
+
+static struct resource tct_hammer_nor_resource =
+			DEFINE_RES_MEM(0x00000000, SZ_16M);
 
 static struct mtd_partition tct_hammer_mtd_partitions[] = {
 	{
@@ -146,9 +145,10 @@ static void __init tct_hammer_init(void)
 }
 
 MACHINE_START(TCT_HAMMER, "TCT_HAMMER")
-	.boot_params	= S3C2410_SDRAM_PA + 0x100,
+	.atag_offset	= 0x100,
 	.map_io		= tct_hammer_map_io,
 	.init_irq	= s3c24xx_init_irq,
 	.init_machine	= tct_hammer_init,
-	.timer		= &s3c24xx_timer,
+	.init_time	= s3c24xx_timer_init,
+	.restart	= s3c2410_restart,
 MACHINE_END

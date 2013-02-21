@@ -2,8 +2,6 @@
 # Makefile for the linux kernel.
 #
 
-obj-$(CONFIG_ARM_GIC)		+= gic.o
-obj-$(CONFIG_ARM_VIC)		+= vic.o
 obj-$(CONFIG_ICST)		+= icst.o
 obj-$(CONFIG_PL330)		+= pl330.o
 obj-$(CONFIG_SA1111)		+= sa1111.o

@@ -63,13 +63,10 @@
 #include <linux/mtd/map.h>
 #include <linux/mtd/physmap.h>
 
-static struct resource amlm5900_nor_resource = {
-		.start = 0x00000000,
-		.end   = 0x01000000 - 1,
-		.flags = IORESOURCE_MEM,
-};
+#include "common.h"
 
-
+static struct resource amlm5900_nor_resource =
+			DEFINE_RES_MEM(0x00000000, SZ_16M);
 
 static struct mtd_partition amlm5900_mtd_partitions[] = {
 	{
@@ -236,9 +233,10 @@ static void __init amlm5900_init(void)
 }
 
 MACHINE_START(AML_M5900, "AML_M5900")
-	.boot_params	= S3C2410_SDRAM_PA + 0x100,
+	.atag_offset	= 0x100,
 	.map_io		= amlm5900_map_io,
 	.init_irq	= s3c24xx_init_irq,
 	.init_machine	= amlm5900_init,
-	.timer		= &s3c24xx_timer,
+	.init_time	= s3c24xx_timer_init,
+	.restart	= s3c2410_restart,
 MACHINE_END

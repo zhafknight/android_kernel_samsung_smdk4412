@@ -346,10 +346,10 @@ config ARCH_BCM2835
 	select ARM_ERRATA_411920
 	select ARM_TIMER_SP804
 	select CLKDEV_LOOKUP
+	select CLKSRC_OF
 	select COMMON_CLK
 	select CPU_V6
 	select GENERIC_CLOCKEVENTS
-	select GENERIC_GPIO
 	select MULTI_IRQ_HANDLER
 	select PINCTRL
 	select PINCTRL_BCM2835
@@ -645,9 +645,9 @@ config ARCH_TEGRA
 	select ARCH_HAS_CPUFREQ
 	select CLKDEV_LOOKUP
 	select CLKSRC_MMIO
+	select CLKSRC_OF
 	select COMMON_CLK
 	select GENERIC_CLOCKEVENTS
-	select GENERIC_GPIO
 	select HAVE_CLK
 	select HAVE_SMP
 	select MIGHT_HAVE_CACHE_L2X0
@@ -750,7 +750,6 @@ config ARCH_S3C24XX
 	select ARCH_HAS_CPUFREQ
 	select ARCH_USES_GETTIMEOFFSET
 	select CLKDEV_LOOKUP
-	select GENERIC_GPIO
 	select HAVE_CLK
 	select HAVE_S3C2410_I2C if I2C
 	select HAVE_S3C2410_WATCHDOG if WATCHDOG
@@ -793,7 +792,6 @@ config ARCH_S5P64X0
 	select CLKSRC_MMIO
 	select CPU_V6
 	select GENERIC_CLOCKEVENTS
-	select GENERIC_GPIO
 	select HAVE_CLK
 	select HAVE_S3C2410_I2C if I2C
 	select HAVE_S3C2410_WATCHDOG if WATCHDOG
@@ -808,7 +806,6 @@ config ARCH_S5PC100
 	select ARCH_USES_GETTIMEOFFSET
 	select CLKDEV_LOOKUP
 	select CPU_V7
-	select GENERIC_GPIO
 	select HAVE_CLK
 	select HAVE_S3C2410_I2C if I2C
 	select HAVE_S3C2410_WATCHDOG if WATCHDOG
@@ -826,7 +823,6 @@ config ARCH_S5PV210
 	select CLKSRC_MMIO
 	select CPU_V7
 	select GENERIC_CLOCKEVENTS
-	select GENERIC_GPIO
 	select HAVE_CLK
 	select HAVE_S3C2410_I2C if I2C
 	select HAVE_S3C2410_WATCHDOG if WATCHDOG
@@ -895,7 +891,6 @@ config ARCH_U300
 	select COMMON_CLK
 	select CPU_ARM926T
 	select GENERIC_CLOCKEVENTS
-	select GENERIC_GPIO
 	select HAVE_TCM
 	select SPARSE_IRQ
 	help
@@ -979,7 +974,6 @@ config ARCH_VT8500_SINGLE
 	select COMMON_CLK
 	select CPU_ARM926T
 	select GENERIC_CLOCKEVENTS
-	select GENERIC_GPIO
 	select HAVE_CLK
 	select MULTI_IRQ_HANDLER
 	select SPARSE_IRQ
@@ -1116,10 +1110,6 @@ source "arch/arm/mach-socfpga/Kconfig"
 source "arch/arm/plat-spear/Kconfig"
 
 source "arch/arm/mach-s3c24xx/Kconfig"
-if ARCH_S3C24XX
-source "arch/arm/mach-s3c2412/Kconfig"
-source "arch/arm/mach-s3c2440/Kconfig"
-endif
 
 if ARCH_S3C64XX
 source "arch/arm/mach-s3c64xx/Kconfig"
