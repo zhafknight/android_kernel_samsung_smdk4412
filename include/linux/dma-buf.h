@@ -51,9 +51,9 @@ struct dma_buf_attachment;
  *		   pages.
  * @release: release this buffer; to be called after the last dma_buf_put.
  * @begin_cpu_access: [optional] called before cpu access to invalidate cpu
- *		      caches and allocate backing storage (if not yet done)
- *		      respectively pin the objet into memory.
- * @end_cpu_access: [optional] called after cpu access to flush cashes.
+ * 		      caches and allocate backing storage (if not yet done)
+ * 		      respectively pin the objet into memory.
+ * @end_cpu_access: [optional] called after cpu access to flush caches.
  * @kmap_atomic: maps a page from the buffer into kernel address
  *		 space, users may not block until the subsequent unmap call.
  *		 This callback must not sleep.
