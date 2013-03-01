@@ -9,14 +9,6 @@
 #include <linux/ceph/msgr.h>
 
 /*
- * osdmap encoding versions
- */
-#define CEPH_OSDMAP_INC_VERSION     5
-#define CEPH_OSDMAP_INC_VERSION_EXT 6
-#define CEPH_OSDMAP_VERSION         5
-#define CEPH_OSDMAP_VERSION_EXT     6
-
-/*
  * fs id
  */
 struct ceph_fsid {
@@ -64,7 +56,7 @@ struct ceph_timespec {
  * placement group.
  * we encode this into one __le64.
  */
-struct ceph_pg {
+struct ceph_pg_v1 {
 	__le16 preferred; /* preferred primary osd */
 	__le16 ps;        /* placement seed */
 	__le32 pool;      /* object pool */
@@ -91,21 +83,6 @@ struct ceph_pg {
 
 #define CEPH_PG_TYPE_REP     1
 #define CEPH_PG_TYPE_RAID4   2
-#define CEPH_PG_POOL_VERSION 2
-struct ceph_pg_pool {
-	__u8 type;                /* CEPH_PG_TYPE_* */
-	__u8 size;                /* number of osds in each pg */
-	__u8 crush_ruleset;       /* crush placement rule */
-	__u8 object_hash;         /* hash mapping object name to ps */
-	__le32 pg_num, pgp_num;   /* number of pg's */
-	__le32 lpg_num, lpgp_num; /* number of localized pg's */
-	__le32 last_change;       /* most recent epoch changed */
-	__le64 snap_seq;          /* seq for per-pool snapshot */
-	__le32 snap_epoch;        /* epoch of last snap */
-	__le32 num_snaps;
-	__le32 num_removed_snap_intervals; /* if non-empty, NO per-pool snaps */
-	__le64 auid;               /* who owns the pg */
-} __attribute__ ((packed));
 
 /*
  * stable_mod func is used to control number of placement groups.
@@ -128,7 +105,7 @@ static inline int ceph_stable_mod(int x, int b, int bmask)
  * object layout - how a given object should be stored.
  */
 struct ceph_object_layout {
-	struct ceph_pg ol_pgid;   /* raw pg, with _full_ ps precision. */
+	struct ceph_pg_v1 ol_pgid;   /* raw pg, with _full_ ps precision. */
 	__le32 ol_stripe_unit;    /* for per-object parity, if any */
 } __attribute__ ((packed));
 
@@ -437,44 +414,6 @@ struct ceph_osd_op {
 		} __attribute__ ((packed)) clonerange;
 	};
 	__le32 payload_len;
-} __attribute__ ((packed));
-
-/*
- * osd request message header.  each request may include multiple
- * ceph_osd_op object operations.
- */
-struct ceph_osd_request_head {
-	__le32 client_inc;                 /* client incarnation */
-	struct ceph_object_layout layout;  /* pgid */
-	__le32 osdmap_epoch;               /* client's osdmap epoch */
-
-	__le32 flags;
-
-	struct ceph_timespec mtime;        /* for mutations only */
-	struct ceph_eversion reassert_version; /* if we are replaying op */
-
-	__le32 object_len;     /* length of object name */
-
-	__le64 snapid;         /* snapid to read */
-	__le64 snap_seq;       /* writer's snap context */
-	__le32 num_snaps;
-
-	__le16 num_ops;
-	struct ceph_osd_op ops[];  /* followed by ops[], obj, ticket, snaps */
-} __attribute__ ((packed));
-
-struct ceph_osd_reply_head {
-	__le32 client_inc;                /* client incarnation */
-	__le32 flags;
-	struct ceph_object_layout layout;
-	__le32 osdmap_epoch;
-	struct ceph_eversion reassert_version; /* for replaying uncommitted */
-
-	__le32 result;                    /* result code */
-
-	__le32 object_len;                /* length of object name */
-	__le32 num_ops;
-	struct ceph_osd_op ops[0];  /* ops[], object */
 } __attribute__ ((packed));
 
 
