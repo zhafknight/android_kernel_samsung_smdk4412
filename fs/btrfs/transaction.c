@@ -1067,7 +1067,6 @@ static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
 	struct inode *parent_inode;
 	struct btrfs_path *path;
 	struct btrfs_dir_item *dir_item;
-	struct dentry *parent;
 	struct dentry *dentry;
 	struct extent_buffer *tmp;
 	struct extent_buffer *old;
@@ -1082,7 +1081,7 @@ static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
 	path = btrfs_alloc_path();
 	if (!path) {
 		ret = pending->error = -ENOMEM;
-		goto path_alloc_fail;
+		return ret;
 	}
 
 	new_root_item = kmalloc(sizeof(*new_root_item), GFP_NOFS);
@@ -1122,10 +1121,10 @@ static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
 
 	rsv = trans->block_rsv;
 	trans->block_rsv = &pending->block_rsv;
+	trans->bytes_reserved = trans->block_rsv->reserved;
 
 	dentry = pending->dentry;
-	parent = dget_parent(dentry);
-	parent_inode = parent->d_inode;
+	parent_inode = pending->dir;
 	parent_root = BTRFS_I(parent_inode)->root;
 	record_root_in_trans(trans, parent_root);
 
@@ -1273,14 +1272,12 @@ static noinline int create_pending_snapshot(struct btrfs_trans_handle *trans,
 	if (ret)
 		btrfs_abort_transaction(trans, root, ret);
 fail:
-	dput(parent);
 	trans->block_rsv = rsv;
+	trans->bytes_reserved = 0;
 no_free_objectid:
 	kfree(new_root_item);
 root_item_alloc_fail:
 	btrfs_free_path(path);
-path_alloc_fail:
-	btrfs_block_rsv_release(root, &pending->block_rsv, (u64)-1);
 	return ret;
 }
 
@@ -1444,6 +1441,7 @@ static void cleanup_transaction(struct btrfs_trans_handle *trans,
 				struct btrfs_root *root, int err)
 {
 	struct btrfs_transaction *cur_trans = trans->transaction;
+	DEFINE_WAIT(wait);
 
 	WARN_ON(trans->use_count > 1);
 
@@ -1452,8 +1450,13 @@ static void cleanup_transaction(struct btrfs_trans_handle *trans,
 	spin_lock(&root->fs_info->trans_lock);
 	list_del_init(&cur_trans->list);
 	if (cur_trans == root->fs_info->running_transaction) {
+		root->fs_info->trans_no_join = 1;
+		spin_unlock(&root->fs_info->trans_lock);
+		wait_event(cur_trans->writer_wait,
+			   atomic_read(&cur_trans->num_writers) == 1);
+
+		spin_lock(&root->fs_info->trans_lock);
 		root->fs_info->running_transaction = NULL;
-		root->fs_info->trans_no_join = 0;
 	}
 	spin_unlock(&root->fs_info->trans_lock);
 

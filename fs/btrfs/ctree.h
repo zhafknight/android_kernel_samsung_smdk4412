@@ -339,6 +339,7 @@ static inline unsigned long btrfs_chunk_item_size(int num_stripes)
  * File system states
  */
 #define BTRFS_FS_STATE_ERROR		0
+#define BTRFS_FS_STATE_REMOUNTING	1
 
 /* Super block flags */
 /* Errors detected */
@@ -1902,6 +1903,7 @@ struct btrfs_ioctl_defrag_range_args {
 
 #define btrfs_clear_opt(o, opt)		((o) &= ~BTRFS_MOUNT_##opt)
 #define btrfs_set_opt(o, opt)		((o) |= BTRFS_MOUNT_##opt)
+#define btrfs_raw_test_opt(o, opt)	((o) & BTRFS_MOUNT_##opt)
 #define btrfs_test_opt(root, opt)	((root)->fs_info->mount_opt & \
 					 BTRFS_MOUNT_##opt)
 /*
@@ -3104,8 +3106,13 @@ void btrfs_trans_release_metadata(struct btrfs_trans_handle *trans,
 int btrfs_orphan_reserve_metadata(struct btrfs_trans_handle *trans,
 				  struct inode *inode);
 void btrfs_orphan_release_metadata(struct inode *inode);
-int btrfs_snap_reserve_metadata(struct btrfs_trans_handle *trans,
-				struct btrfs_pending_snapshot *pending);
+int btrfs_subvolume_reserve_metadata(struct btrfs_root *root,
+				     struct btrfs_block_rsv *rsv,
+				     int nitems,
+				     u64 *qgroup_reserved);
+void btrfs_subvolume_release_metadata(struct btrfs_root *root,
+				      struct btrfs_block_rsv *rsv,
+				      u64 qgroup_reserved);
 int btrfs_delalloc_reserve_metadata(struct inode *inode, u64 num_bytes);
 void btrfs_delalloc_release_metadata(struct inode *inode, u64 num_bytes);
 int btrfs_delalloc_reserve_space(struct inode *inode, u64 num_bytes);

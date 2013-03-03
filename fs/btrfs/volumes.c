@@ -650,6 +650,7 @@ static int __btrfs_close_devices(struct btrfs_fs_devices *fs_devices)
 		new_device->writeable = 0;
 		new_device->in_fs_metadata = 0;
 		new_device->can_discard = 0;
+		spin_lock_init(&new_device->io_lock);
 		list_replace_rcu(&device->dev_list, &new_device->dev_list);
 
 		call_rcu(&device->rcu, free_device);
@@ -828,7 +829,6 @@ int btrfs_scan_one_device(const char *path, fmode_t flags, void *holder,
 
 	if (IS_ERR(bdev)) {
 		ret = PTR_ERR(bdev);
-		printk(KERN_INFO "btrfs: open %s failed\n", path);
 		goto error;
 	}
 
@@ -3836,10 +3836,6 @@ static int __btrfs_alloc_chunk(struct btrfs_trans_handle *trans,
 	 */
 	data_stripes = num_stripes / ncopies;
 
-	if (stripe_size * ndevs > max_chunk_size * ncopies) {
-		stripe_size = max_chunk_size * ncopies;
-		do_div(stripe_size, ndevs);
-	}
 	if (type & BTRFS_BLOCK_GROUP_RAID5) {
 		raid_stripe_len = find_raid56_stripe_len(ndevs - 1,
 				 btrfs_super_stripesize(info->super_copy));
@@ -3850,6 +3846,27 @@ static int __btrfs_alloc_chunk(struct btrfs_trans_handle *trans,
 				 btrfs_super_stripesize(info->super_copy));
 		data_stripes = num_stripes - 2;
 	}
+
+	/*
+	 * Use the number of data stripes to figure out how big this chunk
+	 * is really going to be in terms of logical address space,
+	 * and compare that answer with the max chunk size
+	 */
+	if (stripe_size * data_stripes > max_chunk_size) {
+		u64 mask = (1ULL << 24) - 1;
+		stripe_size = max_chunk_size;
+		do_div(stripe_size, data_stripes);
+
+		/* bump the answer up to a 16MB boundary */
+		stripe_size = (stripe_size + mask) & ~mask;
+
+		/* but don't go higher than the limits we found
+		 * while searching for free extents
+		 */
+		if (stripe_size > devices_info[ndevs-1].max_avail)
+			stripe_size = devices_info[ndevs-1].max_avail;
+	}
+
 	do_div(stripe_size, dev_stripes);
 
 	/* align to BTRFS_STRIPE_LEN */
@@ -4538,8 +4555,7 @@ static int __btrfs_map_block(struct btrfs_fs_info *fs_info, int rw,
 	num_stripes = 1;
 	stripe_index = 0;
 	stripe_nr_orig = stripe_nr;
-	stripe_nr_end = (offset + *length + map->stripe_len - 1) &
-			(~(map->stripe_len - 1));
+	stripe_nr_end = ALIGN(offset + *length, map->stripe_len);
 	do_div(stripe_nr_end, map->stripe_len);
 	stripe_end_offset = stripe_nr_end * map->stripe_len -
 			    (offset + *length);
