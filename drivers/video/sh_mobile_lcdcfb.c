@@ -461,6 +461,7 @@ static void sh_mobile_lcdc_geometry(struct sh_mobile_lcdc_chan *ch)
 		((display_var->hsync_len & 7) << 8) |
 		hsync_pos;
 	lcdc_write_chan(ch, LDHAJR, tmp);
+	lcdc_write_chan_mirror(ch, LDHAJR, tmp);
 }
 
 static int sh_mobile_lcdc_start(struct sh_mobile_lcdc_priv *priv)
