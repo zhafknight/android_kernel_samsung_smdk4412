@@ -980,13 +980,18 @@ void rsxx_dma_destroy(struct rsxx_cardinfo *card)
 	}
 }
 
-void rsxx_eeh_save_issued_dmas(struct rsxx_cardinfo *card)
+int rsxx_eeh_save_issued_dmas(struct rsxx_cardinfo *card)
 {
 	int i;
 	int j;
 	int cnt;
 	struct rsxx_dma *dma;
-	struct list_head issued_dmas[card->n_targets];
+	struct list_head *issued_dmas;
+
+	issued_dmas = kzalloc(sizeof(*issued_dmas) * card->n_targets,
+			      GFP_KERNEL);
+	if (!issued_dmas)
+		return -ENOMEM;
 
 	for (i = 0; i < card->n_targets; i++) {
 		INIT_LIST_HEAD(&issued_dmas[i]);
@@ -1025,6 +1030,10 @@ void rsxx_eeh_save_issued_dmas(struct rsxx_cardinfo *card)
 		}
 		spin_unlock(&card->ctrl[i].queue_lock);
 	}
+
+	kfree(issued_dmas);
+
+	return 0;
 }
 
 void rsxx_eeh_cancel_dmas(struct rsxx_cardinfo *card)
@@ -1047,7 +1056,6 @@ void rsxx_eeh_cancel_dmas(struct rsxx_cardinfo *card)
 int rsxx_eeh_remap_dmas(struct rsxx_cardinfo *card)
 {
 	struct rsxx_dma *dma;
-	struct rsxx_dma *tmp;
 	int i;
 
 	for (i = 0; i < card->n_targets; i++) {
