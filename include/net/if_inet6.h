@@ -70,6 +70,8 @@ struct inet6_ifaddr {
 	struct inet6_ifaddr	*ifpub;
 	int			regen_count;
 #endif
+	bool			tokenized;
+
 	struct rcu_head		rcu;
 };
 
@@ -185,6 +187,8 @@ struct inet6_dev {
 	struct timer_list	regen_timer;
 	struct list_head	tempaddr_list;
 #endif
+
+	struct in6_addr		token;
 
 	struct neigh_parms	*nd_parms;
 	struct inet6_dev	*next;
