@@ -627,6 +627,16 @@ config OPTICAL_WAKE_ENABLE
 	help
 	  This option enables proximity & light sensors using wake up gpio.
 
+config INPUT_IMS_PCU
+	tristate "IMS Passenger Control Unit driver"
+	depends on USB
+	depends on LEDS_CLASS
+	help
+	  Say Y here if you have system with IMS Rave Passenger Control Unit.
+
+	  To compile this driver as a module, choose M here: the module will be
+	  called ims_pcu.
+
 config INPUT_CMA3000
 	tristate "VTI CMA3000 Tri-axis accelerometer"
 	help
