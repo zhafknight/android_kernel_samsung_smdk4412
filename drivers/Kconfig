@@ -128,6 +128,8 @@ source "drivers/vfio/Kconfig"
 
 source "drivers/vlynq/Kconfig"
 
+source "drivers/virt/Kconfig"
+
 source "drivers/virtio/Kconfig"
 
 source "drivers/hv/Kconfig"
@@ -178,8 +180,6 @@ source "drivers/iommu/Kconfig"
 source "drivers/remoteproc/Kconfig"
 
 source "drivers/rpmsg/Kconfig"
-
-source "drivers/virt/Kconfig"
 
 source "drivers/devfreq/Kconfig"
 
