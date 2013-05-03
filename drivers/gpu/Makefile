@@ -17,3 +17,5 @@ endif
 ifeq ($(CONFIG_UMP),y)
 obj-y			+= mali400/ump/
 endif
+
+obj-$(CONFIG_TEGRA_HOST1X)	+= host1x/
