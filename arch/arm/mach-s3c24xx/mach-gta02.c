@@ -84,10 +84,15 @@
 #include <plat/devs.h>
 #include <plat/cpu.h>
 #include <plat/pm.h>
+<<<<<<< HEAD
 #include <linux/platform_data/usb-s3c2410_udc.h>
 #include <plat/gpio-cfg.h>
 #include <linux/platform_data/i2c-s3c2410.h>
 #include <linux/platform_data/touchscreen-s3c2410.h>
+=======
+#include <plat/regs-serial.h>
+#include <plat/samsung-time.h>
+>>>>>>> 6fa52ed33bea
 
 #include "common.h"
 
@@ -507,6 +512,7 @@ static void __init gta02_map_io(void)
 	s3c24xx_init_io(gta02_iodesc, ARRAY_SIZE(gta02_iodesc));
 	s3c24xx_init_clocks(12000000);
 	s3c24xx_init_uarts(gta02_uartcfgs, ARRAY_SIZE(gta02_uartcfgs));
+	samsung_set_timer_source(SAMSUNG_PWM3, SAMSUNG_PWM4);
 }
 
 
@@ -593,8 +599,12 @@ MACHINE_START(NEO1973_GTA02, "GTA02")
 	/* Maintainer: Nelson Castillo <arhuaco@freaks-unidos.net> */
 	.atag_offset	= 0x100,
 	.map_io		= gta02_map_io,
-	.init_irq	= s3c24xx_init_irq,
+	.init_irq	= s3c2442_init_irq,
 	.init_machine	= gta02_machine_init,
+<<<<<<< HEAD
 	.timer		= &s3c24xx_timer,
+=======
+	.init_time	= samsung_timer_init,
+>>>>>>> 6fa52ed33bea
 	.restart	= s3c244x_restart,
 MACHINE_END

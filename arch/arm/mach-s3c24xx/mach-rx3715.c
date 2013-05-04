@@ -50,6 +50,11 @@
 #include <plat/devs.h>
 #include <plat/cpu.h>
 #include <plat/pm.h>
+<<<<<<< HEAD
+=======
+#include <plat/regs-serial.h>
+#include <plat/samsung-time.h>
+>>>>>>> 6fa52ed33bea
 
 #include "common.h"
 
@@ -179,6 +184,7 @@ static void __init rx3715_map_io(void)
 	s3c24xx_init_io(rx3715_iodesc, ARRAY_SIZE(rx3715_iodesc));
 	s3c24xx_init_clocks(16934000);
 	s3c24xx_init_uarts(rx3715_uartcfgs, ARRAY_SIZE(rx3715_uartcfgs));
+	samsung_set_timer_source(SAMSUNG_PWM3, SAMSUNG_PWM4);
 }
 
 /* H1940 and RX3715 need to reserve this for suspend */
@@ -186,11 +192,6 @@ static void __init rx3715_reserve(void)
 {
 	memblock_reserve(0x30003000, 0x1000);
 	memblock_reserve(0x30081000, 0x1000);
-}
-
-static void __init rx3715_init_irq(void)
-{
-	s3c24xx_init_irq();
 }
 
 static void __init rx3715_init_machine(void)
@@ -210,8 +211,12 @@ MACHINE_START(RX3715, "IPAQ-RX3715")
 	.atag_offset	= 0x100,
 	.map_io		= rx3715_map_io,
 	.reserve	= rx3715_reserve,
-	.init_irq	= rx3715_init_irq,
+	.init_irq	= s3c2440_init_irq,
 	.init_machine	= rx3715_init_machine,
+<<<<<<< HEAD
 	.timer		= &s3c24xx_timer,
+=======
+	.init_time	= samsung_timer_init,
+>>>>>>> 6fa52ed33bea
 	.restart	= s3c244x_restart,
 MACHINE_END

@@ -47,9 +47,14 @@
 
 #include <plat/clock.h>
 #include <plat/devs.h>
+<<<<<<< HEAD
 #include <plat/cpu.h>
 #include <linux/platform_data/i2c-s3c2410.h>
 #include <linux/platform_data/asoc-s3c24xx_simtec.h>
+=======
+#include <plat/regs-serial.h>
+#include <plat/samsung-time.h>
+>>>>>>> 6fa52ed33bea
 
 #include "simtec.h"
 #include "common.h"
@@ -335,6 +340,7 @@ static void __init vr1000_map_io(void)
 	s3c24xx_init_io(vr1000_iodesc, ARRAY_SIZE(vr1000_iodesc));
 	s3c24xx_init_clocks(0);
 	s3c24xx_init_uarts(vr1000_uartcfgs, ARRAY_SIZE(vr1000_uartcfgs));
+	samsung_set_timer_source(SAMSUNG_PWM3, SAMSUNG_PWM4);
 }
 
 static void __init vr1000_init(void)
@@ -356,7 +362,12 @@ MACHINE_START(VR1000, "Thorcom-VR1000")
 	.atag_offset	= 0x100,
 	.map_io		= vr1000_map_io,
 	.init_machine	= vr1000_init,
+<<<<<<< HEAD
 	.init_irq	= s3c24xx_init_irq,
 	.timer		= &s3c24xx_timer,
+=======
+	.init_irq	= s3c2410_init_irq,
+	.init_time	= samsung_timer_init,
+>>>>>>> 6fa52ed33bea
 	.restart	= s3c2410_restart,
 MACHINE_END

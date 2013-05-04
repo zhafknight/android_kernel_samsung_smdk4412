@@ -57,6 +57,7 @@
 #include <plat/clock.h>
 #include <plat/devs.h>
 #include <plat/cpu.h>
+#include <plat/samsung-time.h>
 
 #include <sound/s3c24xx_uda134x.h>
 
@@ -526,6 +527,7 @@ static void __init mini2440_map_io(void)
 	s3c24xx_init_io(mini2440_iodesc, ARRAY_SIZE(mini2440_iodesc));
 	s3c24xx_init_clocks(12000000);
 	s3c24xx_init_uarts(mini2440_uartcfgs, ARRAY_SIZE(mini2440_uartcfgs));
+	samsung_set_timer_source(SAMSUNG_PWM3, SAMSUNG_PWM4);
 }
 
 /*
@@ -687,7 +689,12 @@ MACHINE_START(MINI2440, "MINI2440")
 	.atag_offset	= 0x100,
 	.map_io		= mini2440_map_io,
 	.init_machine	= mini2440_init,
+<<<<<<< HEAD
 	.init_irq	= s3c24xx_init_irq,
 	.timer		= &s3c24xx_timer,
+=======
+	.init_irq	= s3c2440_init_irq,
+	.init_time	= samsung_timer_init,
+>>>>>>> 6fa52ed33bea
 	.restart	= s3c244x_restart,
 MACHINE_END

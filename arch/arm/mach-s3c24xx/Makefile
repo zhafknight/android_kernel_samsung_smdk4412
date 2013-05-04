@@ -20,7 +20,12 @@ obj-$(CONFIG_CPU_S3C2410)	+= s3c2410.o
 obj-$(CONFIG_S3C2410_DMA)	+= dma-s3c2410.o
 obj-$(CONFIG_S3C2410_PM)	+= pm-s3c2410.o sleep-s3c2410.o
 
+<<<<<<< HEAD
 obj-$(CONFIG_CPU_S3C2412)	+= s3c2412.o irq-s3c2412.o clock-s3c2412.o
+=======
+obj-$(CONFIG_CPU_S3C2412)	+= s3c2412.o clock-s3c2412.o
+obj-$(CONFIG_S3C2412_CPUFREQ)	+= cpufreq-s3c2412.o
+>>>>>>> 6fa52ed33bea
 obj-$(CONFIG_S3C2412_DMA)	+= dma-s3c2412.o
 obj-$(CONFIG_S3C2412_PM)	+= pm-s3c2412.o
 obj-$(CONFIG_S3C2412_PM_SLEEP)	+= sleep-s3c2412.o
@@ -28,9 +33,14 @@ obj-$(CONFIG_S3C2412_PM_SLEEP)	+= sleep-s3c2412.o
 obj-$(CONFIG_CPU_S3C2416)	+= s3c2416.o irq-s3c2416.o clock-s3c2416.o
 obj-$(CONFIG_S3C2416_PM)	+= pm-s3c2416.o
 
-obj-$(CONFIG_CPU_S3C2440)	+= s3c2440.o irq-s3c2440.o clock-s3c2440.o
+obj-$(CONFIG_CPU_S3C2440)	+= s3c2440.o clock-s3c2440.o
 obj-$(CONFIG_CPU_S3C2442)	+= s3c2442.o
+<<<<<<< HEAD
 obj-$(CONFIG_CPU_S3C244X)	+= s3c244x.o irq-s3c244x.o clock-s3c244x.o
+=======
+obj-$(CONFIG_CPU_S3C244X)	+= s3c244x.o clock-s3c244x.o
+obj-$(CONFIG_S3C2440_CPUFREQ)	+= cpufreq-s3c2440.o
+>>>>>>> 6fa52ed33bea
 obj-$(CONFIG_S3C2440_DMA)	+= dma-s3c2440.o
 
 obj-$(CONFIG_CPU_S3C2443)	+= s3c2443.o irq-s3c2443.o clock-s3c2443.o
