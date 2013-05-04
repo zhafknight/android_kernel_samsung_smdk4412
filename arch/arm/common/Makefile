@@ -2,6 +2,8 @@
 # Makefile for the linux kernel.
 #
 
+obj-y				+= firmware.o
+
 obj-$(CONFIG_ICST)		+= icst.o
 obj-$(CONFIG_PL330)		+= pl330.o
 obj-$(CONFIG_SA1111)		+= sa1111.o
