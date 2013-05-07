@@ -1143,6 +1143,35 @@ err_no_rxchan:
 	return -ENODEV;
 }
 
+static int pl022_dma_autoprobe(struct pl022 *pl022)
+{
+	struct device *dev = &pl022->adev->dev;
+
+	/* automatically configure DMA channels from platform, normally using DT */
+	pl022->dma_rx_channel = dma_request_slave_channel(dev, "rx");
+	if (!pl022->dma_rx_channel)
+		goto err_no_rxchan;
+
+	pl022->dma_tx_channel = dma_request_slave_channel(dev, "tx");
+	if (!pl022->dma_tx_channel)
+		goto err_no_txchan;
+
+	pl022->dummypage = kmalloc(PAGE_SIZE, GFP_KERNEL);
+	if (!pl022->dummypage)
+		goto err_no_dummypage;
+
+	return 0;
+
+err_no_dummypage:
+	dma_release_channel(pl022->dma_tx_channel);
+	pl022->dma_tx_channel = NULL;
+err_no_txchan:
+	dma_release_channel(pl022->dma_rx_channel);
+	pl022->dma_rx_channel = NULL;
+err_no_rxchan:
+	return -ENODEV;
+}
+		
 static void terminate_dma(struct pl022 *pl022)
 {
 	struct dma_chan *rxchan = pl022->dma_rx_channel;
@@ -1168,6 +1197,11 @@ static void pl022_dma_remove(struct pl022 *pl022)
 static inline int configure_dma(struct pl022 *pl022)
 {
 	return -ENODEV;
+}
+
+static inline int pl022_dma_autoprobe(struct pl022 *pl022)
+{
+	return 0;
 }
 
 static inline int pl022_dma_probe(struct pl022 *pl022)
@@ -2208,8 +2242,13 @@ pl022_probe(struct amba_device *adev, const struct amba_id *id)
 		goto err_no_irq;
 	}
 
-	/* Get DMA channels */
-	if (platform_info->enable_dma) {
+	/* Get DMA channels, try autoconfiguration first */
+	status = pl022_dma_autoprobe(pl022);
+
+	/* If that failed, use channels from platform_info */
+	if (status == 0)
+		platform_info->enable_dma = 1;
+	else if (platform_info->enable_dma) {
 		status = pl022_dma_probe(pl022);
 		if (status != 0)
 			platform_info->enable_dma = 0;
