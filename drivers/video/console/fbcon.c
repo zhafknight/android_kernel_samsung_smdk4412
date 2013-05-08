@@ -523,7 +523,7 @@ static int search_for_mapped_con(void)
 	return retval;
 }
 
-static int fbcon_takeover(int show_logo)
+static int do_fbcon_takeover(int show_logo)
 {
 	int err, i;
 
@@ -536,13 +536,12 @@ static int fbcon_takeover(int show_logo)
 	for (i = first_fb_vc; i <= last_fb_vc; i++)
 		con2fb_map[i] = info_idx;
 
-	err = take_over_console(&fb_con, first_fb_vc, last_fb_vc,
+	err = do_take_over_console(&fb_con, first_fb_vc, last_fb_vc,
 				fbcon_is_default);
 
 	if (err) {
-		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+		for (i = first_fb_vc; i <= last_fb_vc; i++)
 			con2fb_map[i] = -1;
-		}
 		info_idx = -1;
 	} else {
 		fbcon_has_console_bind = 1;
