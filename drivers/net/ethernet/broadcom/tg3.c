@@ -94,10 +94,10 @@ static inline void _tg3_flag_clear(enum TG3_FLAGS flag, unsigned long *bits)
 
 #define DRV_MODULE_NAME		"tg3"
 #define TG3_MAJ_NUM			3
-#define TG3_MIN_NUM			131
+#define TG3_MIN_NUM			132
 #define DRV_MODULE_VERSION	\
 	__stringify(TG3_MAJ_NUM) "." __stringify(TG3_MIN_NUM)
-#define DRV_MODULE_RELDATE	"April 09, 2013"
+#define DRV_MODULE_RELDATE	"May 21, 2013"
 
 #define RESET_KIND_SHUTDOWN	0
 #define RESET_KIND_INIT		1
@@ -8911,6 +8911,10 @@ static int tg3_chip_reset(struct tg3 *tp)
 		tg3_halt_cpu(tp, RX_CPU_BASE);
 	}
 
+	err = tg3_poll_fw(tp);
+	if (err)
+		return err;
+
 	tw32(GRC_MODE, tp->grc_mode);
 
 	if (tg3_chip_rev_id(tp) == CHIPREV_ID_5705_A0) {
@@ -8940,10 +8944,6 @@ static int tg3_chip_reset(struct tg3 *tp)
 	udelay(40);
 
 	tg3_ape_unlock(tp, TG3_APE_LOCK_GRC);
-
-	err = tg3_poll_fw(tp);
-	if (err)
-		return err;
 
 	tg3_mdio_start(tp);
 
