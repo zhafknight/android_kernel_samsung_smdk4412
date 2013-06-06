@@ -1284,6 +1284,18 @@ static int s3c24xx_serial_init_port(struct s3c24xx_uart_port *ourport,
 		ourport->tx_irq = ret;
 
 	ourport->clk	= clk_get(&platdev->dev, "uart");
+	if (IS_ERR(ourport->clk)) {
+		pr_err("%s: Controller clock not found\n",
+				dev_name(&platdev->dev));
+		return PTR_ERR(ourport->clk);
+	}
+
+	ret = clk_prepare_enable(ourport->clk);
+	if (ret) {
+		pr_err("uart: clock failed to prepare+enable: %d\n", ret);
+		clk_put(ourport->clk);
+		return ret;
+	}
 
 	dbg("port: map=%08x, mem=%08x, irq=%d (%d,%d), clock=%ld\n",
 	    port->mapbase, port->membase, port->irq,
@@ -1291,6 +1303,7 @@ static int s3c24xx_serial_init_port(struct s3c24xx_uart_port *ourport,
 
 	/* reset the fifos (and setup the uart) */
 	s3c24xx_serial_resetport(port, cfg);
+	clk_disable_unprepare(ourport->clk);
 	return 0;
 }
 
