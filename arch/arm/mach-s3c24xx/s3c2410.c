@@ -42,10 +42,13 @@
 #include <plat/clock.h>
 #include <plat/pll.h>
 #include <plat/pm.h>
+#include <plat/watchdog-reset.h>
 
 #include <plat/gpio-core.h>
 #include <plat/gpio-cfg.h>
 #include <plat/gpio-cfg-helpers.h>
+
+#include "common.h"
 
 /* Initial IO mappings */
 
@@ -72,8 +75,8 @@ void __init s3c2410_init_uarts(struct s3c2410_uartcfg *cfg, int no)
 
 void __init s3c2410_map_io(void)
 {
-	s3c24xx_gpiocfg_default.set_pull = s3c_gpio_setpull_1up;
-	s3c24xx_gpiocfg_default.get_pull = s3c_gpio_getpull_1up;
+	s3c24xx_gpiocfg_default.set_pull = s3c24xx_gpio_setpull_1up;
+	s3c24xx_gpiocfg_default.get_pull = s3c24xx_gpio_getpull_1up;
 
 	iotable_init(s3c2410_iodesc, ARRAY_SIZE(s3c2410_iodesc));
 }
@@ -123,30 +126,39 @@ static struct clk s3c2410_armclk = {
 	.id	= -1,
 };
 
+static struct clk_lookup s3c2410_clk_lookup[] = {
+	CLKDEV_INIT(NULL, "clk_uart_baud0", &clk_p),
+	CLKDEV_INIT(NULL, "clk_uart_baud1", &s3c24xx_uclk),
+};
+
 void __init s3c2410_init_clocks(int xtal)
 {
 	s3c24xx_register_baseclocks(xtal);
 	s3c2410_setup_clocks();
 	s3c2410_baseclk_add();
 	s3c24xx_register_clock(&s3c2410_armclk);
+	clkdev_add_table(s3c2410_clk_lookup, ARRAY_SIZE(s3c2410_clk_lookup));
+	samsung_wdt_reset_init(S3C24XX_VA_WATCHDOG);
 }
 
-struct subsys_system s3c2410_subsys = {
+struct bus_type s3c2410_subsys = {
 	.name = "s3c2410-core",
+	.dev_name = "s3c2410-core",
 };
 
 /* Note, we would have liked to name this s3c2410-core, but we cannot
- * register two subsys_system with the same name.
+ * register two subsystems with the same name.
  */
-struct subsys_system s3c2410a_subsys = {
+struct bus_type s3c2410a_subsys = {
 	.name = "s3c2410a-core",
+	.dev_name = "s3c2410a-core",
 };
 
 static struct device s3c2410_dev = {
-	.cls		= &s3c2410_subsys,
+	.bus		= &s3c2410_subsys,
 };
 
-/* need to register class before we actually register the device, and
+/* need to register the subsystem before we actually register the device, and
  * we also need to ensure that it has been initialised before any of the
  * drivers even try to use it (even if not on an s3c2410 based system)
  * as a driver which may support both 2410 and 2440 may try and use it.
@@ -154,14 +166,14 @@ static struct device s3c2410_dev = {
 
 static int __init s3c2410_core_init(void)
 {
-	return subsys_system_register(&s3c2410_subsys);
+	return subsys_system_register(&s3c2410_subsys, NULL);
 }
 
 core_initcall(s3c2410_core_init);
 
 static int __init s3c2410a_core_init(void)
 {
-	return subsys_system_register(&s3c2410a_subsys);
+	return subsys_system_register(&s3c2410a_subsys, NULL);
 }
 
 core_initcall(s3c2410a_core_init);
@@ -172,14 +184,26 @@ int __init s3c2410_init(void)
 
 #ifdef CONFIG_PM
 	register_syscore_ops(&s3c2410_pm_syscore_ops);
-#endif
 	register_syscore_ops(&s3c24xx_irq_syscore_ops);
+#endif
 
 	return device_register(&s3c2410_dev);
 }
 
 int __init s3c2410a_init(void)
 {
-	s3c2410_dev.cls = &s3c2410a_subsys;
+	s3c2410_dev.bus = &s3c2410a_subsys;
 	return s3c2410_init();
+}
+
+void s3c2410_restart(char mode, const char *cmd)
+{
+	if (mode == 's') {
+		soft_restart(0);
+	}
+
+	samsung_wdt_reset();
+
+	/* we'll take a jump through zero as a poor second */
+	soft_restart(0);
 }
