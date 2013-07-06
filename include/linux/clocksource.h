@@ -211,6 +211,7 @@ struct clocksource {
 #define CLOCK_SOURCE_UNSTABLE			0x40
 #define CLOCK_SOURCE_SCHED_CLOCK		0x80
 #define CLOCK_SOURCE_SUSPEND_NONSTOP		0x100
+#define CLOCK_SOURCE_RESELECT			0x200
 
 /* simplify initialization of mask field */
 #define CLOCKSOURCE_MASK(bits) (cycle_t)((bits) < 64 ? ((1ULL<<(bits))-1) : -1)
