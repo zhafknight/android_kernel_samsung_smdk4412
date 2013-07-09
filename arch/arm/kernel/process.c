@@ -33,6 +33,7 @@
 #include <linux/cpuidle.h>
 #include <linux/console.h>
 #include <linux/leds.h>
+#include <linux/reboot.h>
 
 #include <asm/cacheflush.h>
 #include <asm/idmap.h>
@@ -151,7 +152,7 @@ void soft_restart(unsigned long addr)
 	BUG();
 }
 
-static void null_restart(char mode, const char *cmd)
+static void null_restart(enum reboot_mode reboot_mode, const char *cmd)
 {
 }
 
@@ -161,7 +162,7 @@ static void null_restart(char mode, const char *cmd)
 void (*pm_power_off)(void);
 EXPORT_SYMBOL(pm_power_off);
 
-void (*arm_pm_restart)(char str, const char *cmd) = null_restart;
+void (*arm_pm_restart)(enum reboot_mode reboot_mode, const char *cmd) = null_restart;
 EXPORT_SYMBOL_GPL(arm_pm_restart);
 
 /*
@@ -212,16 +213,6 @@ void arch_cpu_idle(void)
 	if (cpuidle_idle_call())
 		default_idle();
 }
-
-static char reboot_mode = 'h';
-
-int __init reboot_setup(char *str)
-{
-	reboot_mode = str[0];
-	return 1;
-}
-
-__setup("reboot=", reboot_setup);
 
 /*
  * Called by kexec, immediately prior to machine_kexec().
