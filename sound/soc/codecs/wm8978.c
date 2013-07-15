@@ -892,6 +892,7 @@ static struct snd_soc_dai_driver wm8978_dai = {
 		.formats = WM8978_FORMATS,
 	},
 	.ops = &wm8978_dai_ops,
+	.symmetric_rates = 1,
 };
 
 static int wm8978_suspend(struct snd_soc_codec *codec, pm_message_t state)
