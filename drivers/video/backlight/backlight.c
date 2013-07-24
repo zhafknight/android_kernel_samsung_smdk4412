@@ -105,7 +105,7 @@ static void backlight_generate_event(struct backlight_device *bd,
 	sysfs_notify(&bd->dev.kobj, NULL, "actual_brightness");
 }
 
-static ssize_t backlight_store_dimming(struct device *dev,
+static ssize_t bl_dimming_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	int rc;
@@ -134,7 +134,7 @@ static ssize_t backlight_store_dimming(struct device *dev,
 	return rc;
 }
 
-static ssize_t backlight_show_dimming(struct device *dev,
+static ssize_t bl_dimming_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct backlight_device *bd = to_backlight_device(dev);
@@ -142,16 +142,18 @@ static ssize_t backlight_show_dimming(struct device *dev,
 	return sprintf(buf, "%d\n", bd->props.dimming);
 }
 
-static ssize_t backlight_show_power(struct device *dev,
-		struct device_attribute *attr,char *buf)
+static DEVICE_ATTR_RW(bl_dimming);
+
+static ssize_t bl_power_show(struct device *dev, struct device_attribute *attr,
+		char *buf)
 {
 	struct backlight_device *bd = to_backlight_device(dev);
 
 	return sprintf(buf, "%d\n", bd->props.power);
 }
 
-static ssize_t backlight_store_power(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t count)
+static ssize_t bl_power_store(struct device *dev, struct device_attribute *attr,
+		const char *buf, size_t count)
 {
 	int rc;
 	struct backlight_device *bd = to_backlight_device(dev);
@@ -175,8 +177,9 @@ static ssize_t backlight_store_power(struct device *dev,
 
 	return rc;
 }
+static DEVICE_ATTR_RW(bl_power);
 
-static ssize_t backlight_show_brightness(struct device *dev,
+static ssize_t brightness_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct backlight_device *bd = to_backlight_device(dev);
@@ -184,7 +187,7 @@ static ssize_t backlight_show_brightness(struct device *dev,
 	return sprintf(buf, "%d\n", bd->props.brightness);
 }
 
-static ssize_t backlight_store_brightness(struct device *dev,
+static ssize_t brightness_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	int rc;
@@ -215,24 +218,27 @@ static ssize_t backlight_store_brightness(struct device *dev,
 
 	return rc;
 }
+static DEVICE_ATTR_RW(brightness);
 
-static ssize_t backlight_show_type(struct device *dev,
-		struct device_attribute *attr, char *buf)
+static ssize_t type_show(struct device *dev, struct device_attribute *attr,
+		char *buf)
 {
 	struct backlight_device *bd = to_backlight_device(dev);
 
 	return sprintf(buf, "%s\n", backlight_types[bd->props.type]);
 }
+static DEVICE_ATTR_RO(type);
 
-static ssize_t backlight_show_max_brightness(struct device *dev,
+static ssize_t max_brightness_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct backlight_device *bd = to_backlight_device(dev);
 
 	return sprintf(buf, "%d\n", bd->props.max_brightness);
 }
+static DEVICE_ATTR_RO(max_brightness);
 
-static ssize_t backlight_show_actual_brightness(struct device *dev,
+static ssize_t actual_brightness_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	int rc = -ENXIO;
@@ -245,6 +251,7 @@ static ssize_t backlight_show_actual_brightness(struct device *dev,
 
 	return rc;
 }
+static DEVICE_ATTR_RO(actual_brightness);
 
 static struct class *backlight_class;
 
@@ -282,17 +289,16 @@ static void bl_device_release(struct device *dev)
 	kfree(bd);
 }
 
-static struct device_attribute bl_device_attributes[] = {
-	__ATTR(dimming, 0644, backlight_show_dimming, backlight_store_dimming),
-	__ATTR(bl_power, 0644, backlight_show_power, backlight_store_power),
-	__ATTR(brightness, 0644, backlight_show_brightness,
-		     backlight_store_brightness),
-	__ATTR(actual_brightness, 0444, backlight_show_actual_brightness,
-		     NULL),
-	__ATTR(max_brightness, 0444, backlight_show_max_brightness, NULL),
-	__ATTR(type, 0444, backlight_show_type, NULL),
-	__ATTR_NULL,
+static struct attribute *bl_device_attrs[] = {
+	&dev_attr_bl_dimming.attr,
+	&dev_attr_bl_power.attr,
+	&dev_attr_brightness.attr,
+	&dev_attr_actual_brightness.attr,
+	&dev_attr_max_brightness.attr,
+	&dev_attr_type.attr,
+	NULL,
 };
+ATTRIBUTE_GROUPS(bl_device);
 
 /**
  * backlight_force_update - tell the backlight subsystem that hardware state
@@ -429,7 +435,7 @@ static int __init backlight_class_init(void)
 		return PTR_ERR(backlight_class);
 	}
 
-	backlight_class->dev_attrs = bl_device_attributes;
+	backlight_class->dev_groups = bl_device_groups;
 	backlight_class->suspend = backlight_suspend;
 	backlight_class->resume = backlight_resume;
 	return 0;
