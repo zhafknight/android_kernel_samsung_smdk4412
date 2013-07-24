@@ -29,7 +29,7 @@ static void led_update_brightness(struct led_classdev *led_cdev)
 		led_cdev->brightness = led_cdev->brightness_get(led_cdev);
 }
 
-static ssize_t led_brightness_show(struct device *dev, 
+static ssize_t brightness_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
@@ -40,7 +40,7 @@ static ssize_t led_brightness_show(struct device *dev,
 	return sprintf(buf, "%u\n", led_cdev->brightness);
 }
 
-static ssize_t led_brightness_store(struct device *dev,
+static ssize_t brightness_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
@@ -62,6 +62,7 @@ static ssize_t led_brightness_store(struct device *dev,
 
 	return ret;
 }
+static DEVICE_ATTR_RW(brightness);
 
 static ssize_t led_max_brightness_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -70,14 +71,35 @@ static ssize_t led_max_brightness_show(struct device *dev,
 
 	return sprintf(buf, "%u\n", led_cdev->max_brightness);
 }
+static DEVICE_ATTR(max_brightness, 0444, led_max_brightness_show, NULL);
 
-static struct device_attribute led_class_attrs[] = {
-	__ATTR(brightness, 0644, led_brightness_show, led_brightness_store),
-	__ATTR(max_brightness, 0444, led_max_brightness_show, NULL),
 #ifdef CONFIG_LEDS_TRIGGERS
-	__ATTR(trigger, 0644, led_trigger_show, led_trigger_store),
+static DEVICE_ATTR(trigger, 0644, led_trigger_show, led_trigger_store);
+static struct attribute *led_trigger_attrs[] = {
+	&dev_attr_trigger.attr,
+	NULL,
+};
+static const struct attribute_group led_trigger_group = {
+	.attrs = led_trigger_attrs,
+};
 #endif
-	__ATTR_NULL,
+
+static struct attribute *led_class_attrs[] = {
+	&dev_attr_brightness.attr,
+	&dev_attr_max_brightness.attr,
+	NULL,
+};
+
+static const struct attribute_group led_group = {
+	.attrs = led_class_attrs,
+};
+
+static const struct attribute_group *led_groups[] = {
+	&led_group,
+#ifdef CONFIG_LEDS_TRIGGERS
+	&led_trigger_group,
+#endif
+	NULL,
 };
 
 static void led_timer_function(unsigned long data)
@@ -293,7 +315,7 @@ static int __init leds_init(void)
 		return PTR_ERR(leds_class);
 	leds_class->suspend = led_suspend;
 	leds_class->resume = led_resume;
-	leds_class->dev_attrs = led_class_attrs;
+	leds_class->dev_groups = led_groups;
 	return 0;
 }
 
