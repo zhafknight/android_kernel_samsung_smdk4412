@@ -2269,8 +2269,8 @@ bool blk_update_request(struct request *req, int error, unsigned int nr_bytes)
 	if (bio_nbytes) {
 		req_bio_endio(req, bio, bio_nbytes, error);
 		bio->bi_iter.bi_idx += next_idx;
-		bio_iovec(bio)->bv_offset += nr_bytes;
-		bio_iovec(bio)->bv_len -= nr_bytes;
+		bio_iovec(bio).bv_offset += nr_bytes;
+		bio_iovec(bio).bv_len -= nr_bytes;
 	}
 
 	req->__data_len -= total_bytes;

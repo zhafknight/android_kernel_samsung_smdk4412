@@ -999,8 +999,6 @@ static int kcryptd_io_read(struct dm_crypt_io *io, gfp_t gfp)
 	clone->bi_vcnt = bio_segments(base_bio);
 	clone->bi_iter.bi_size = base_bio->bi_iter.bi_size;
 	clone->bi_iter.bi_sector = cc->start + io->sector;
-	memcpy(clone->bi_io_vec, bio_iovec(base_bio),
-	       sizeof(struct bio_vec) * clone->bi_vcnt);
 
 	generic_make_request(clone);
 	return 0;
