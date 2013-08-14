@@ -42,7 +42,6 @@
 struct exynos_dvfs_info *exynos_info;
 
 static struct regulator *arm_regulator;
-static struct cpufreq_freqs freqs;
 
 static bool exynos_cpufreq_disable;
 static bool exynos_cpufreq_lock_disable;
@@ -100,6 +99,7 @@ static int exynos_target(struct cpufreq_policy *policy,
 	unsigned int index, old_index = UINT_MAX;
 	unsigned int arm_volt, safe_arm_volt = 0;
 	int ret = 0, i;
+	unsigned int old_freq;
 	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
 	unsigned int *volt_table = exynos_info->volt_table;
 
@@ -108,7 +108,7 @@ static int exynos_target(struct cpufreq_policy *policy,
 	if (exynos_cpufreq_disable)
 		goto out;
 
-	freqs.old = policy->cur;
+	old_freq = policy->cur;
 
 	/*
 	 * cpufreq_frequency_table_target() cannot be used for freqs.old
@@ -117,7 +117,7 @@ static int exynos_target(struct cpufreq_policy *policy,
 	 * will lead to inconsistent voltage/frequency configurations later.
 	 */
 	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-		if (freq_table[i].frequency == freqs.old)
+		if (freq_table[i].frequency == old_freq)
 			old_index = freq_table[i].driver_data;
 	}
 	if (old_index == UINT_MAX) {
@@ -144,17 +144,12 @@ static int exynos_target(struct cpufreq_policy *policy,
 		index = 3;
 #endif
 
-	freqs.new = freq_table[index].frequency;
-	freqs.cpu = policy->cpu;
-
 	safe_arm_volt = exynos_get_safe_armvolt(old_index, index);
 
 	arm_volt = volt_table[index];
 
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-
 	/* When the new frequency is higher than current frequency */
-	if ((freqs.new > freqs.old) && !safe_arm_volt) {
+	if ((target_freq > old_freq) && !safe_arm_volt) {
 		/* Firstly, voltage up to increase frequency */
 		regulator_set_voltage(arm_regulator, arm_volt,
 				     arm_volt + 25000);
@@ -163,14 +158,12 @@ static int exynos_target(struct cpufreq_policy *policy,
 	if (safe_arm_volt)
 		regulator_set_voltage(arm_regulator, safe_arm_volt,
 				     safe_arm_volt + 25000);
-	if (freqs.new != freqs.old)
+	if (target_freq != old_freq)
 		exynos_info->set_freq(old_index, index);
 
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-
 	/* When the new frequency is lower than current frequency */
-	if ((freqs.new < freqs.old) ||
-	   ((freqs.new > freqs.old) && safe_arm_volt)) {
+	if ((target_freq < old_freq) ||
+	   ((target_freq > old_freq) && safe_arm_volt)) {
 		/* down the voltage after frequency change */
 		regulator_set_voltage(arm_regulator, arm_volt,
 				     arm_volt + 25000);
@@ -338,10 +331,6 @@ int exynos_cpufreq_lock(unsigned int nId,
 			return -EINVAL;
 		}
 
-		freqs.old = freq_old;
-		freqs.new = freq_new;
-		cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-
 		/* get the voltage value */
 		safe_arm_volt = exynos_get_safe_armvolt(old_idx, cpufreq_level);
 		if (safe_arm_volt)
@@ -353,8 +342,6 @@ int exynos_cpufreq_lock(unsigned int nId,
 				     arm_volt + 25000);
 
 		exynos_info->set_freq(old_idx, cpufreq_level);
-
-		cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 	}
 
 	mutex_unlock(&set_freq_lock);
@@ -495,10 +482,6 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 				continue;
 			}
 		}
-		freqs.old = freq_old;
-		freqs.new = freq_new;
-
-		cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
 
 		exynos_info->set_freq(old_idx, cpufreq_level);
 
@@ -509,8 +492,6 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 
 		arm_volt = volt_table[cpufreq_level];
 		regulator_set_voltage(arm_regulator, arm_volt, arm_volt + 25000);
-
-		cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 	}
 
 	mutex_unlock(&set_freq_lock);
