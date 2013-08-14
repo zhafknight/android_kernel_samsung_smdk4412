@@ -161,6 +161,7 @@ config GENERIC_GPIO
 endmenu
 
 source "init/Kconfig"
+source "kernel/Kconfig.freezer"
 source "drivers/Kconfig"
 source "fs/Kconfig"
 
