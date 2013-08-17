@@ -7367,7 +7367,6 @@ F:	drivers/net/ethernet/sfc/
 
 SGI GRU DRIVER
 M:	Dimitri Sivanich <sivanich@sgi.com>
-M:	Robin Holt <holt@sgi.com>
 S:	Maintained
 F:	drivers/misc/sgi-gru/
 
@@ -7387,7 +7386,8 @@ S:	Maintained for 2.6.
 F:	Documentation/sgi-visws.txt
 
 SGI XP/XPC/XPNET DRIVER
-M:	Robin Holt <holt@sgi.com>
+M:	Cliff Whickman <cpw@sgi.com>
+M:	Robin Holt <robinmholt@gmail.com>
 S:	Maintained
 F:	drivers/misc/sgi-xp/
 
