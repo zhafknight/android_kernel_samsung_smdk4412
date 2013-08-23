@@ -116,7 +116,7 @@ static int usb_serial_device_remove(struct device *dev)
 }
 
 #ifdef CONFIG_HOTPLUG
-static ssize_t store_new_id(struct device_driver *driver,
+static ssize_t new_id_store(struct device_driver *driver,
 			    const char *buf, size_t count)
 {
 	struct usb_serial_driver *usb_drv = to_usb_serial_driver(driver);
@@ -129,10 +129,19 @@ static ssize_t store_new_id(struct device_driver *driver,
 	return retval;
 }
 
-static struct driver_attribute drv_attrs[] = {
-	__ATTR(new_id, S_IWUSR, NULL, store_new_id),
-	__ATTR_NULL,
+static ssize_t new_id_show(struct device_driver *driver, char *buf)
+{
+	struct usb_serial_driver *usb_drv = to_usb_serial_driver(driver);
+
+	return usb_show_dynids(&usb_drv->dynids, buf);
+}
+static DRIVER_ATTR_RW(new_id);
+
+static struct attribute *usb_serial_drv_attrs[] = {
+	&driver_attr_new_id.attr,
+	NULL,
 };
+ATTRIBUTE_GROUPS(usb_serial_drv);
 
 static void free_dynids(struct usb_serial_driver *drv)
 {
@@ -160,7 +169,7 @@ struct bus_type usb_serial_bus_type = {
 	.match =	usb_serial_device_match,
 	.probe =	usb_serial_device_probe,
 	.remove =	usb_serial_device_remove,
-	.drv_attrs = 	drv_attrs,
+	.drv_groups = 	usb_serial_drv_groups,
 };
 
 int usb_serial_bus_register(struct usb_serial_driver *driver)
