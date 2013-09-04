@@ -36,18 +36,10 @@ struct samsung_i2s {
  */
 #define QUIRK_NO_MUXPSR		(1 << 2)
 #define QUIRK_NEED_RSTCLR	(1 << 3)
-/* If the idma will be enabled */
-#define QUIRK_ENABLED_IDMA	(1 << 4)
-/* If the srp will be enabled */
-#define QUIRK_ENABLED_SRP	(1 << 5)
+#define QUIRK_SUPPORTS_TDM	(1 << 4)
 	/* Quirks of the I2S controller */
 	u32 quirks;
-
-	/*
-	 * Array of clock names that can be used to generate I2S signals.
-	 * Also corresponds to clocks of I2SMOD[10]
-	 */
-	const char **src_clk;
+	dma_addr_t idma_addr;
 };
 
 /**
@@ -60,5 +52,3 @@ struct s3c_audio_pdata {
 		struct samsung_i2s i2s;
 	} type;
 };
-
-extern void __init exynos4_i2sv3_setup_resource(void);
