@@ -181,8 +181,17 @@ config SYS_HYPERVISOR
 	bool
 	default n
 
+config GENERIC_CPU_DEVICES
+	bool
+	default n
+
+config SOC_BUS
+	bool
+
+source "drivers/base/regmap/Kconfig"
+
 config DMA_SHARED_BUFFER
-	bool "Buffer framework to be shared between drivers"
+	bool
 	default n
 	select ANON_INODES
 	help
@@ -210,68 +219,26 @@ config SW_SYNC
 	  the synchronization.
 
 config SW_SYNC_USER
-       bool "Userspace API for SW_SYNC"
-       default n
-       depends on SW_SYNC
-       help
-         Provides a user space API to the sw sync object.
-         *WARNING* improper use of this can result in deadlocking kernel
-	 drivers from userspace.
-
-config CMA
-	bool "Contiguous Memory Allocator"
-	depends on HAVE_DMA_CONTIGUOUS && HAVE_MEMBLOCK
-	select CMA_BEST_FIT
-	select MIGRATION
-	select MEMORY_ISOLATION
+	bool "Userspace API for SW_SYNC"
+	default n
+	depends on SW_SYNC
 	help
-	  This enables the Contiguous Memory Allocator framework which
-	  allows drivers to allocate big physically-contiguous blocks of
-	  memory for use with hardware components that do not support I/O
-	  map nor scatter-gather.
+	  Provides a user space API to the sw sync object.
+	  *WARNING* improper use of this can result in deadlocking kernel
+	  drivers from userspace.
 
-	  If you select this option you will also have to select at least
-	  one allocator algorithm below.
-
-	  To make use of CMA you need to specify the regions and
-	  driver->region mapping on command line when booting the kernel.
-
-config CMA_DEVELOPEMENT
-	bool "Include CMA developement features"
-	depends on CMA
+config DMA_CMA
+	bool "DMA Contiguous Memory Allocator"
+	depends on HAVE_DMA_CONTIGUOUS && CMA
 	help
-	  This lets you enable some developement features of the CMA
-	  freamework.
+	  This enables the Contiguous Memory Allocator which allows drivers
+	  to allocate big physically-contiguous blocks of memory for use with
+	  hardware components that do not support I/O map nor scatter-gather.
 
-config CMA_DEBUG
-	bool "CMA debug messages"
-	depends on CMA_DEVELOPEMENT
-	help
-	  Enable debug messages in CMA code.
+	  For more information see <include/linux/dma-contiguous.h>.
+	  If unsure, say "n".
 
-config CMA_SYSFS
-	bool "CMA SysFS interface support"
-	depends on CMA_DEVELOPEMENT
-	help
-	  Enable support for SysFS interface.
-
-config CMA_CMDLINE
-	bool "CMA command line parameters support"
-	depends on CMA_DEVELOPEMENT
-	help
-	  Enable support for cma, cma.map and cma.asterisk command line
-	  parameters.
-
-config CMA_BEST_FIT
-	bool "CMA best-fit allocator"
-	depends on CMA
-	help
-	  This is a best-fit algorithm running in O(n log n) time where
-	  n is the number of existing holes (which is never greater then
-	  the number of allocated regions and usually much smaller).  It
-	  allocates area from the smallest hole that is big enough for
-	  allocation in question.
-
+if  DMA_CMA
 comment "Default contiguous memory area size:"
 
 config CMA_SIZE_MBYTES
@@ -279,7 +246,8 @@ config CMA_SIZE_MBYTES
 	depends on !CMA_SIZE_SEL_PERCENTAGE
 	default 16
 	help
-	  Defines the size (in MiB) of the default memory area for CMA.
+	  Defines the size (in MiB) of the default memory area for Contiguous
+	  Memory Allocator.
 
 config CMA_SIZE_PERCENTAGE
 	int "Percentage of total memory"
@@ -335,13 +303,6 @@ config CMA_AREAS
 
 	  If unsure, leave the default value "7".
 
-config GENERIC_CPU_DEVICES
-	bool
-	default n
-
-config SOC_BUS
-	bool
-
-source "drivers/base/regmap/Kconfig"
+endif
 
 endmenu
