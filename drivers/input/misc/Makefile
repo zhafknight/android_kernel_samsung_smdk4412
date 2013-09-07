@@ -65,3 +65,4 @@ obj-$(CONFIG_SENSORS_BH1721FVC)		+= bh1721fvc.o
 obj-$(CONFIG_MPU_SENSORS_AK8975)	+= ak8975.o
 obj-$(CONFIG_OPTICAL_GP2A)		+= gp2a.o
 obj-$(CONFIG_INPUT_FLIP)  += flip.o
+obj-$(CONFIG_INPUT_IDEAPAD_SLIDEBAR)	+= ideapad_slidebar.o
