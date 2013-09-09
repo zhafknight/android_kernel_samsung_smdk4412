@@ -12,6 +12,7 @@
 
 #include "super.h"
 #include "mds_client.h"
+#include "cache.h"
 #include <linux/ceph/decode.h>
 
 /*
@@ -58,14 +59,6 @@ struct inode *ceph_get_inode(struct super_block *sb, struct ceph_vino vino)
 
 	dout("get_inode on %lu=%llx.%llx got %p\n", inode->i_ino, vino.ino,
 	     vino.snap, inode);
-	return inode;
-}
-
-struct inode *ceph_lookup_inode(struct super_block *sb, struct ceph_vino vino)
-{
-	struct inode *inode;
-	ino_t t = ceph_vino_to_ino(vino);
-	inode = ilookup5_nowait(sb, t, ceph_ino_compare, &vino);
 	return inode;
 }
 
@@ -386,6 +379,8 @@ struct inode *ceph_alloc_inode(struct super_block *sb)
 
 	INIT_WORK(&ci->i_vmtruncate_work, ceph_vmtruncate_work);
 
+	ceph_fscache_inode_init(ci);
+
 	return &ci->vfs_inode;
 }
 
@@ -404,6 +399,8 @@ void ceph_destroy_inode(struct inode *inode)
 	struct rb_node *n;
 
 	dout("destroy_inode %p ino %llx.%llx\n", inode, ceph_vinop(inode));
+
+	ceph_fscache_unregister_inode_cookie(ci);
 
 	ceph_queue_caps_release(inode);
 
@@ -438,7 +435,6 @@ void ceph_destroy_inode(struct inode *inode)
 
 	call_rcu(&inode->i_rcu, ceph_i_callback);
 }
-
 
 /*
  * Helpers to fill in size, ctime, mtime, and atime.  We have to be
@@ -491,6 +487,10 @@ int ceph_fill_file_size(struct inode *inode, int issued,
 		     truncate_size);
 		ci->i_truncate_size = truncate_size;
 	}
+
+	if (queue_trunc)
+		ceph_fscache_invalidate(inode);
+
 	return queue_trunc;
 }
 
@@ -1079,7 +1079,7 @@ int ceph_fill_trace(struct super_block *sb, struct ceph_mds_request *req,
 			 * complete.
 			 */
 			ceph_set_dentry_offset(req->r_old_dentry);
-			dout("dn %p gets new offset %lld\n", req->r_old_dentry, 
+			dout("dn %p gets new offset %lld\n", req->r_old_dentry,
 			     ceph_dentry(req->r_old_dentry)->offset);
 
 			dn = req->r_old_dentry;  /* use old_dentry */
@@ -1494,6 +1494,7 @@ void ceph_queue_vmtruncate(struct inode *inode)
 	struct ceph_inode_info *ci = ceph_inode(inode);
 
 	ihold(inode);
+
 	if (queue_work(ceph_sb_to_client(inode->i_sb)->trunc_wq,
 		       &ci->i_vmtruncate_work)) {
 		dout("ceph_queue_vmtruncate %p\n", inode);
@@ -1564,7 +1565,6 @@ retry:
 
 	wake_up_all(&ci->i_cap_wq);
 }
-
 
 /*
  * symlinks
