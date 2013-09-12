@@ -2869,6 +2869,16 @@ static int prepend_unreachable(char **buffer, int *buflen)
 	return prepend(buffer, buflen, "(unreachable)", 13);
 }
 
+static void get_fs_root_rcu(struct fs_struct *fs, struct path *root)
+{
+	unsigned seq;
+
+	do {
+		seq = read_seqcount_begin(&fs->seq);
+		*root = fs->root;
+	} while (read_seqcount_retry(&fs->seq, seq));
+}
+
 /**
  * d_path - return the path of a dentry
  * @path: path to report
@@ -2901,13 +2911,15 @@ char *d_path(const struct path *path, char *buf, int buflen)
 	if (path->dentry->d_op && path->dentry->d_op->d_dname)
 		return path->dentry->d_op->d_dname(path->dentry, buf, buflen);
 
-	get_fs_root(current->fs, &root);
+	rcu_read_lock();
+	get_fs_root_rcu(current->fs, &root);
 	br_read_lock(&vfsmount_lock);
 	error = path_with_deleted(path, &root, &res, &buflen);
 	br_read_unlock(&vfsmount_lock);
+	rcu_read_unlock();
+
 	if (error < 0)
 		res = ERR_PTR(error);
-	path_put(&root);
 	return res;
 }
 EXPORT_SYMBOL(d_path);
@@ -3049,7 +3061,7 @@ SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
 {
 	int error;
 	struct path pwd, root;
-	char *page = (char *) __get_free_page(GFP_USER);
+	char *page = __getname();
 
 	if (!page)
 		return -ENOMEM;
@@ -3061,12 +3073,13 @@ SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
 	br_read_lock(&vfsmount_lock);
 	if (!d_unlinked(pwd.dentry)) {
 		unsigned long len;
-		char *cwd = page + PAGE_SIZE;
-		int buflen = PAGE_SIZE;
+		char *cwd = page + PATH_MAX;
+		int buflen = PATH_MAX;
 
 		prepend(&cwd, &buflen, "\0", 1);
 		error = prepend_path(&pwd, &root, &cwd, &buflen);
 		br_read_unlock(&vfsmount_lock);
+		rcu_read_unlock();
 
 		if (error < 0)
 			goto out;
@@ -3079,7 +3092,7 @@ SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
 		}
 
 		error = -ERANGE;
-		len = PAGE_SIZE + page - cwd;
+		len = PATH_MAX + page - cwd;
 		if (len <= size) {
 			error = len;
 			if (copy_to_user(buf, cwd, len))
@@ -3087,11 +3100,11 @@ SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
 		}
 	} else {
 		br_read_unlock(&vfsmount_lock);
+		rcu_read_unlock();
 	}
 
 out:
-	rcu_read_unlock();
-	free_page((unsigned long) page);
+	__putname(page);
 	return error;
 }
 
