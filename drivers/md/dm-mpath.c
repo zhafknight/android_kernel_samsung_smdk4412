@@ -1261,6 +1261,21 @@ static void activate_path(struct work_struct *work)
 				pg_init_done, pgpath);
 }
 
+static int noretry_error(int error)
+{
+	switch (error) {
+	case -EOPNOTSUPP:
+	case -EREMOTEIO:
+	case -EILSEQ:
+	case -ENODATA:
+	case -ENOSPC:
+		return 1;
+	}
+
+	/* Anything else could be a path failure, so should be retried */
+	return 0;
+}
+
 /*
  * end_io handling
  */
