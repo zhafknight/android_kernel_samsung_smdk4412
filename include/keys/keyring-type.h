@@ -14,5 +14,6 @@
 
 #include <linux/key.h>
 #include <linux/assoc_array.h>
+#include <linux/rcupdate.h>
 
 #endif /* _KEYS_KEYRING_TYPE_H */
