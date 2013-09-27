@@ -1576,7 +1576,7 @@ static int hci_rfkill_set_block(void *data, bool blocked)
 			hci_dev_do_close(hdev);
 	} else {
 		clear_bit(HCI_RFKILLED, &hdev->dev_flags);
-}
+	}
 
 	return 0;
 }
