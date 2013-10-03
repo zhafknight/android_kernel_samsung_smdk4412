@@ -775,8 +775,6 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 {
 	int retval;
 
-	policy->cur = policy->min = policy->max = exynos_getspeed(policy->cpu);
-
 	/* set the transition latency value */
 	policy->cpuinfo.transition_latency = 100000;
 
