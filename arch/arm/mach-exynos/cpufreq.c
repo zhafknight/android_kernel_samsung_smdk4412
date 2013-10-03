@@ -61,13 +61,6 @@ unsigned int g_cpufreq_lock_id;
 unsigned int g_cpufreq_lock_val[DVFS_LOCK_ID_END];
 unsigned int g_cpufreq_lock_level;
 
-int exynos_verify_speed(struct cpufreq_policy *policy)
-{
-	return cpufreq_frequency_table_verify(policy,
-					      exynos_info->freq_table);
-}
-
-
 static unsigned int exynos_get_safe_armvolt(unsigned int old_index, unsigned int new_index)
 {
 	unsigned int safe_arm_volt = 0;
@@ -874,11 +867,13 @@ static struct notifier_block exynos_cpufreq_nb = {
 
 static struct cpufreq_driver exynos_driver = {
 	.flags		= CPUFREQ_STICKY,
-	.verify		= exynos_verify_speed,
+	.verify		= cpufreq_generic_frequency_table_verify,
 	.target		= exynos_target,
 	.get		= exynos_getspeed,
 	.init		= exynos_cpufreq_cpu_init,
+	.exit		= cpufreq_generic_exit,
 	.name		= "exynos_cpufreq",
+	.attr		= cpufreq_generic_attr,
 #ifdef CONFIG_PM
 	.suspend	= exynos_cpufreq_suspend,
 	.resume		= exynos_cpufreq_resume,
