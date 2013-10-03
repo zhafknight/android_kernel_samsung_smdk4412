@@ -775,23 +775,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 {
 	int retval;
 
-	/* set the transition latency value */
-	policy->cpuinfo.transition_latency = 100000;
-
-	/*
-	 * EXYNOS4 multi-core processors has 2 cores
-	 * that the frequency cannot be set independently.
-	 * Each cpu is bound to the same speed.
-	 * So the affected cpu is all of the cpus.
-	 */
-	if (num_online_cpus() == 1) {
-		cpumask_copy(policy->related_cpus, cpu_possible_mask);
-		cpumask_copy(policy->cpus, cpu_online_mask);
-	} else {
-		cpumask_setall(policy->cpus);
-	}
-
-	retval = cpufreq_table_validate_and_show(policy, exynos_info->freq_table);
+	retval = cpufreq_generic_init(policy, exynos_info->freq_table, 100000);
 
 	/* Keep stock frq. as default startup frq. */
 	policy->max = 1400000;
