@@ -10045,33 +10045,6 @@ static void i915_disable_vga(struct drm_device *dev)
 	POSTING_READ(vga_reg);
 }
 
-static void i915_enable_vga_mem(struct drm_device *dev)
-{
-	/* Enable VGA memory on Intel HD */
-	if (HAS_PCH_SPLIT(dev)) {
-		vga_get_uninterruptible(dev->pdev, VGA_RSRC_LEGACY_IO);
-		outb(inb(VGA_MSR_READ) | VGA_MSR_MEM_EN, VGA_MSR_WRITE);
-		vga_set_legacy_decoding(dev->pdev, VGA_RSRC_LEGACY_IO |
-						   VGA_RSRC_LEGACY_MEM |
-						   VGA_RSRC_NORMAL_IO |
-						   VGA_RSRC_NORMAL_MEM);
-		vga_put(dev->pdev, VGA_RSRC_LEGACY_IO);
-	}
-}
-
-void i915_disable_vga_mem(struct drm_device *dev)
-{
-	/* Disable VGA memory on Intel HD */
-	if (HAS_PCH_SPLIT(dev)) {
-		vga_get_uninterruptible(dev->pdev, VGA_RSRC_LEGACY_IO);
-		outb(inb(VGA_MSR_READ) & ~VGA_MSR_MEM_EN, VGA_MSR_WRITE);
-		vga_set_legacy_decoding(dev->pdev, VGA_RSRC_LEGACY_IO |
-						   VGA_RSRC_NORMAL_IO |
-						   VGA_RSRC_NORMAL_MEM);
-		vga_put(dev->pdev, VGA_RSRC_LEGACY_IO);
-	}
-}
-
 void intel_modeset_init_hw(struct drm_device *dev)
 {
 	intel_init_power_well(dev);
@@ -10350,7 +10323,6 @@ void i915_redisable_vga(struct drm_device *dev)
 	if (I915_READ(vga_reg) != VGA_DISP_DISABLE) {
 		DRM_DEBUG_KMS("Something enabled VGA plane, disabling it\n");
 		i915_disable_vga(dev);
-		i915_disable_vga_mem(dev);
 	}
 }
 
@@ -10563,8 +10535,6 @@ void intel_modeset_cleanup(struct drm_device *dev)
 	}
 
 	intel_disable_fbc(dev);
-
-	i915_enable_vga_mem(dev);
 
 	intel_disable_gt_powersave(dev);
 
