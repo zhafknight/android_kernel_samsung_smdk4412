@@ -1121,8 +1121,8 @@ void drbd_make_request(struct request_queue *q, struct bio *bio)
 
 	/* to make some things easier, force alignment of requests within the
 	 * granularity of our hash tables */
-	s_enr = bio->bi_sector >> HT_SHIFT;
-	e_enr = bio->bi_size ? (bio->bi_sector+(bio->bi_size>>9)-1) >> HT_SHIFT : s_enr;
+	s_enr = bio->bi_iter.bi_sector >> HT_SHIFT;
+	e_enr = bio->bi_iter.bi_size ? (bio->bi_iter.bi_sector+(bio->bi_iter.bi_size>>9)-1) >> HT_SHIFT : s_enr;
 
 	if (likely(s_enr == e_enr)) {
 		inc_ap_bio(mdev, 1);
@@ -1136,7 +1136,7 @@ void drbd_make_request(struct request_queue *q, struct bio *bio)
 		/* rather error out here than BUG in bio_split */
 		dev_err(DEV, "bio would need to, but cannot, be split: "
 		    "(vcnt=%u,idx=%u,size=%u,sector=%llu)\n",
-		    bio->bi_vcnt, bio->bi_idx, bio->bi_size,
+		    bio->bi_vcnt, bio->bi_idx, bio->bi_iter.bi_size,
 		    (unsigned long long)bio->bi_sector);
 		bio_endio(bio, -EINVAL);
 	} else {
@@ -1150,7 +1150,7 @@ void drbd_make_request(struct request_queue *q, struct bio *bio)
 		 * sps = 64, mask = 63
 		 * first_sectors = 64 - (262269 & 63) = 3
 		 */
-		const sector_t sect = bio->bi_sector;
+		const sector_t sect = bio->bi_iter.bi_sector;
 		const int sps = 1 << HT_SHIFT; /* sectors per slot */
 		const int mask = sps - 1;
 		const sector_t first_sectors = sps - (sect & mask);

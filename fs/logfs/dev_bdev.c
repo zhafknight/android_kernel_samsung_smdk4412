@@ -32,9 +32,9 @@ static int sync_request(struct page *page, struct block_device *bdev, int rw)
 	bio_vec.bv_offset = 0;
 	bio.bi_vcnt = 1;
 	bio.bi_idx = 0;
-	bio.bi_size = PAGE_SIZE;
+	bio.bi_iter.bi_size = PAGE_SIZE;
 	bio.bi_bdev = bdev;
-	bio.bi_sector = page->index * (PAGE_SIZE >> 9);
+	bio.bi_iter.bi_sector = page->index * (PAGE_SIZE >> 9);
 	init_completion(&complete);
 	bio.bi_private = &complete;
 	bio.bi_end_io = request_complete;
@@ -109,9 +109,9 @@ static int __bdev_writeseg(struct super_block *sb, u64 ofs, pgoff_t index,
 			/* Block layer cannot split bios :( */
 			bio->bi_vcnt = i;
 			bio->bi_idx = 0;
-			bio->bi_size = i * PAGE_SIZE;
+			bio->bi_iter.bi_size = i * PAGE_SIZE;
 			bio->bi_bdev = super->s_bdev;
-			bio->bi_sector = ofs >> 9;
+			bio->bi_iter.bi_sector = ofs >> 9;
 			bio->bi_private = sb;
 			bio->bi_end_io = writeseg_end_io;
 			atomic_inc(&super->s_pending_writes);
@@ -137,9 +137,9 @@ static int __bdev_writeseg(struct super_block *sb, u64 ofs, pgoff_t index,
 	}
 	bio->bi_vcnt = nr_pages;
 	bio->bi_idx = 0;
-	bio->bi_size = nr_pages * PAGE_SIZE;
+	bio->bi_iter.bi_size = nr_pages * PAGE_SIZE;
 	bio->bi_bdev = super->s_bdev;
-	bio->bi_sector = ofs >> 9;
+	bio->bi_iter.bi_sector = ofs >> 9;
 	bio->bi_private = sb;
 	bio->bi_end_io = writeseg_end_io;
 	atomic_inc(&super->s_pending_writes);
@@ -204,9 +204,9 @@ static int do_erase(struct super_block *sb, u64 ofs, pgoff_t index,
 			/* Block layer cannot split bios :( */
 			bio->bi_vcnt = i;
 			bio->bi_idx = 0;
-			bio->bi_size = i * PAGE_SIZE;
+			bio->bi_iter.bi_size = i * PAGE_SIZE;
 			bio->bi_bdev = super->s_bdev;
-			bio->bi_sector = ofs >> 9;
+			bio->bi_iter.bi_sector = ofs >> 9;
 			bio->bi_private = sb;
 			bio->bi_end_io = erase_end_io;
 			atomic_inc(&super->s_pending_writes);
@@ -226,9 +226,9 @@ static int do_erase(struct super_block *sb, u64 ofs, pgoff_t index,
 	}
 	bio->bi_vcnt = nr_pages;
 	bio->bi_idx = 0;
-	bio->bi_size = nr_pages * PAGE_SIZE;
+	bio->bi_iter.bi_size = nr_pages * PAGE_SIZE;
 	bio->bi_bdev = super->s_bdev;
-	bio->bi_sector = ofs >> 9;
+	bio->bi_iter.bi_sector = ofs >> 9;
 	bio->bi_private = sb;
 	bio->bi_end_io = erase_end_io;
 	atomic_inc(&super->s_pending_writes);

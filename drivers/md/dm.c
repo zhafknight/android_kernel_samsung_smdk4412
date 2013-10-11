@@ -629,7 +629,7 @@ static void dec_pending(struct dm_io *io, int error)
 		if (io_error == DM_ENDIO_REQUEUE)
 			return;
 
-		if ((bio->bi_rw & REQ_FLUSH) && bio->bi_size) {
+		if ((bio->bi_rw & REQ_FLUSH) && bio->bi_iter.bi_size) {
 			/*
 			 * Preflush done for flush with data, reissue
 			 * without REQ_FLUSH.
@@ -690,7 +690,7 @@ static void end_clone_bio(struct bio *clone, int error)
 	struct dm_rq_clone_bio_info *info = clone->bi_private;
 	struct dm_rq_target_io *tio = info->tio;
 	struct bio *bio = info->orig;
-	unsigned int nr_bytes = info->orig->bi_size;
+	unsigned int nr_bytes = info->orig->bi_iter.bi_size;
 
 	bio_put(clone);
 
@@ -1020,7 +1020,7 @@ static void __map_bio(struct dm_target *ti, struct bio *clone,
 	 * this io.
 	 */
 	atomic_inc(&tio->io->io_count);
-	sector = clone->bi_sector;
+	sector = clone->bi_iter.bi_sector;
 	r = ti->type->map(ti, clone);
 	if (r == DM_MAPIO_REMAPPED) {
 		/* the bio has been remapped so dispatch it */
@@ -1077,13 +1077,13 @@ static struct bio *split_bvec(struct bio *bio, sector_t sector,
 	clone->bi_destructor = dm_bio_destructor;
 	*clone->bi_io_vec = *bv;
 
-	clone->bi_sector = sector;
+	clone->bi_iter.bi_sector = sector;
 	clone->bi_bdev = bio->bi_bdev;
 	clone->bi_rw = bio->bi_rw;
 	clone->bi_vcnt = 1;
-	clone->bi_size = to_bytes(len);
+	clone->bi_iter.bi_size = to_bytes(len);
 	clone->bi_io_vec->bv_offset = offset;
-	clone->bi_io_vec->bv_len = clone->bi_size;
+	clone->bi_io_vec->bv_len = clone->bi_iter.bi_size;
 	clone->bi_flags |= 1 << BIO_CLONED;
 
 	if (bio_integrity(bio)) {
@@ -1107,16 +1107,16 @@ static struct bio *clone_bio(struct bio *bio, sector_t sector,
 	clone = bio_alloc_bioset(GFP_NOIO, bio->bi_max_vecs, bs);
 	__bio_clone(clone, bio);
 	clone->bi_destructor = dm_bio_destructor;
-	clone->bi_sector = sector;
-	clone->bi_idx = idx;
+	clone->bi_iter.bi_sector = sector;
+	clone->bi_iter.bi_idx = idx;
 	clone->bi_vcnt = idx + bv_count;
-	clone->bi_size = to_bytes(len);
+	clone->bi_iter.bi_size = to_bytes(len);
 	clone->bi_flags &= ~(1 << BIO_SEG_VALID);
 
 	if (bio_integrity(bio)) {
 		bio_integrity_clone(clone, bio, GFP_NOIO);
 
-		if (idx != bio->bi_idx || clone->bi_size < bio->bi_size)
+		if (idx != bio->bi_iter.bi_idx || clone->bi_iter.bi_size < bio->bi_iter.bi_size)
 			bio_integrity_trim(clone,
 					   bio_sector_offset(bio, idx, 0), len);
 	}
@@ -1154,8 +1154,8 @@ static void __issue_target_request(struct clone_info *ci, struct dm_target *ti,
 	__bio_clone(clone, ci->bio);
 	clone->bi_destructor = dm_bio_destructor;
 	if (len) {
-		clone->bi_sector = ci->sector;
-		clone->bi_size = to_bytes(len);
+		clone->bi_iter.bi_sector = ci->sector;
+		clone->bi_iter.bi_size = to_bytes(len);
 	}
 
 	__map_bio(ti, clone, tio);
@@ -1375,8 +1375,8 @@ static void __split_and_process_bio(struct mapped_device *md, struct bio *bio)
 	ci.io->bio = bio;
 	ci.io->md = md;
 	spin_lock_init(&ci.io->endio_lock);
-	ci.sector = bio->bi_sector;
-	ci.idx = bio->bi_idx;
+	ci.sector = bio->bi_iter.bi_sector;
+	ci.idx = bio->bi_iter.bi_idx;
 
 	start_io_acct(ci.io);
 	if (bio->bi_rw & REQ_FLUSH) {

@@ -380,7 +380,7 @@ dio_bio_alloc(struct dio *dio, struct block_device *bdev,
 	bio = bio_alloc(GFP_KERNEL, nr_vecs);
 
 	bio->bi_bdev = bdev;
-	bio->bi_sector = first_sector;
+	bio->bi_iter.bi_sector = first_sector;
 	if (dio->is_async)
 		bio->bi_end_io = dio_bio_end_aio;
 	else
@@ -682,7 +682,7 @@ static int dio_send_cur_page(struct dio *dio)
 	if (dio->bio) {
 		loff_t cur_offset = dio->cur_page_fs_offset;
 		loff_t bio_next_offset = dio->logical_offset_in_bio +
-			dio->bio->bi_size;
+			dio->bio->bi_iter.bi_size;
 
 		/*
 		 * See whether this new request is contiguous with the old.

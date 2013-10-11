@@ -207,7 +207,7 @@ static void ext4_end_bio(struct bio *bio, int error)
 	struct inode *inode;
 	unsigned long flags;
 	int i;
-	sector_t bi_sector = bio->bi_sector;
+	sector_t bi_sector = bio->bi_iter.bi_sector;
 
 	BUG_ON(!io_end);
 	bio->bi_private = NULL;
@@ -306,7 +306,7 @@ static int io_submit_init(struct ext4_io_submit *io,
 		nvecs >>= 1;
 	} while (bio == NULL);
 
-	bio->bi_sector = bh->b_blocknr * (bh->b_size >> 9);
+	bio->bi_iter.bi_sector = bh->b_blocknr * (bh->b_size >> 9);
 	bio->bi_bdev = bh->b_bdev;
 	bio->bi_private = io->io_end = io_end;
 	bio->bi_end_io = ext4_end_bio;
