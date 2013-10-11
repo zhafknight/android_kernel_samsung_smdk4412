@@ -3275,7 +3275,7 @@ int btrfs_map_bio(struct btrfs_root *root, int rw, struct bio *bio,
 	struct btrfs_mapping_tree *map_tree;
 	struct btrfs_device *dev;
 	struct bio *first_bio = bio;
-	u64 logical = (u64)bio->bi_sector << 9;
+	u64 logical = (u64)bio->bi_iter.bi_sector << 9;
 	u64 length = 0;
 	u64 map_length;
 	struct btrfs_multi_bio *multi = NULL;
@@ -3283,7 +3283,7 @@ int btrfs_map_bio(struct btrfs_root *root, int rw, struct bio *bio,
 	int dev_nr = 0;
 	int total_devs = 1;
 
-	length = bio->bi_size;
+	length = bio->bi_iter.bi_size;
 	map_tree = &root->fs_info->mapping_tree;
 	map_length = length;
 

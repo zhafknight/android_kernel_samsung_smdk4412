@@ -82,17 +82,17 @@ int blkdev_issue_discard(struct block_device *bdev, sector_t sector,
 			break;
 		}
 
-		bio->bi_sector = sector;
+		bio->bi_iter.bi_sector = sector;
 		bio->bi_end_io = bio_batch_end_io;
 		bio->bi_bdev = bdev;
 		bio->bi_private = &bb;
 
 		if (nr_sects > max_discard_sectors) {
-			bio->bi_size = max_discard_sectors << 9;
+			bio->bi_iter.bi_size = max_discard_sectors << 9;
 			nr_sects -= max_discard_sectors;
 			sector += max_discard_sectors;
 		} else {
-			bio->bi_size = nr_sects << 9;
+			bio->bi_iter.bi_size = nr_sects << 9;
 			nr_sects = 0;
 		}
 
@@ -152,7 +152,7 @@ int blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
 			break;
 		}
 
-		bio->bi_sector = sector;
+		bio->bi_iter.bi_sector = sector;
 		bio->bi_end_io = bio_batch_end_io;
 		bio->bi_bdev = bdev;
 		bio->bi_private = &bb;
@@ -162,11 +162,11 @@ int blkdev_issue_write_same(struct block_device *bdev, sector_t sector,
 		bio->bi_io_vec->bv_len = bdev_logical_block_size(bdev);
 
 		if (nr_sects > max_write_same_sectors) {
-			bio->bi_size = max_write_same_sectors << 9;
+			bio->bi_iter.bi_size = max_write_same_sectors << 9;
 			nr_sects -= max_write_same_sectors;
 			sector += max_write_same_sectors;
 		} else {
-			bio->bi_size = nr_sects << 9;
+			bio->bi_iter.bi_size = nr_sects << 9;
 			nr_sects = 0;
 		}
 
@@ -218,7 +218,7 @@ int blkdev_issue_zeroout(struct block_device *bdev, sector_t sector,
 			break;
 		}
 
-		bio->bi_sector = sector;
+		bio->bi_iter.bi_sector = sector;
 		bio->bi_bdev   = bdev;
 		bio->bi_end_io = bio_batch_end_io;
 		bio->bi_private = &bb;

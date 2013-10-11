@@ -1034,7 +1034,6 @@ static int blkif_recover(struct blkfront_info *info)
 	kick_pending_request_queues(info);
 
 	spin_unlock_irq(&blkif_io_lock);
-
 	return 0;
 }
 
