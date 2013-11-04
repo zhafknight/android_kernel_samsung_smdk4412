@@ -29,6 +29,7 @@
 #include <linux/crc32.h>
 #include <linux/module.h>
 #include <linux/types.h>
+#include <linux/sched.h>
 #include "crc32defs.h"
 
 #if CRC_LE_BITS > 8
@@ -1036,7 +1037,7 @@ static int __init crc32c_combine_test(void)
 	int i, j;
 	int errors = 0, runs = 0;
 
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 10; i++) {
 		u32 crc_full;
 
 		crc_full = __crc32c_le(test[i].crc, test_buf + test[i].start,
@@ -1054,6 +1055,7 @@ static int __init crc32c_combine_test(void)
 			      crc_full == test[i].crc32c_le))
 				errors++;
 			runs++;
+			cond_resched();
 		}
 	}
 
@@ -1129,7 +1131,7 @@ static int __init crc32_combine_test(void)
 	int i, j;
 	int errors = 0, runs = 0;
 
-	for (i = 0; i < 100; i++) {
+	for (i = 0; i < 10; i++) {
 		u32 crc_full;
 
 		crc_full = crc32_le(test[i].crc, test_buf + test[i].start,
@@ -1147,6 +1149,7 @@ static int __init crc32_combine_test(void)
 			      crc_full == test[i].crc_le))
 				errors++;
 			runs++;
+			cond_resched();
 		}
 	}
 
