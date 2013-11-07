@@ -759,4 +759,5 @@ config SLP_PROCESS_MON
 source "drivers/misc/altera-stapl/Kconfig"
 source "drivers/misc/mei/Kconfig"
 source "drivers/misc/vmw_vmci/Kconfig"
+source "drivers/misc/mic/Kconfig"
 endmenu
