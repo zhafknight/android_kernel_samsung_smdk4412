@@ -111,6 +111,8 @@ int snd_soc_dai_set_clkdiv(struct snd_soc_dai *dai,
 int snd_soc_dai_set_pll(struct snd_soc_dai *dai,
 	int pll_id, int source, unsigned int freq_in, unsigned int freq_out);
 
+int snd_soc_dai_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio);
+
 /* Digital Audio interface formatting */
 int snd_soc_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt);
 
@@ -136,6 +138,7 @@ struct snd_soc_dai_ops {
 	int (*set_pll)(struct snd_soc_dai *dai, int pll_id, int source,
 		unsigned int freq_in, unsigned int freq_out);
 	int (*set_clkdiv)(struct snd_soc_dai *dai, int div_id, int div);
+	int (*set_bclk_ratio)(struct snd_soc_dai *dai, unsigned int ratio);
 
 	/*
 	 * DAI format configuration
