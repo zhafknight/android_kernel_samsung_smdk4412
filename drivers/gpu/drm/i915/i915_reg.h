@@ -2395,6 +2395,21 @@
 
 #define PFIT_AUTO_RATIOS (dev_priv->info->display_mmio_offset + 0x61238)
 
+#define _VLV_BLC_PWM_CTL2_A (dev_priv->info->display_mmio_offset + 0x61250)
+#define _VLV_BLC_PWM_CTL2_B (dev_priv->info->display_mmio_offset + 0x61350)
+#define VLV_BLC_PWM_CTL2(pipe) _PIPE(pipe, _VLV_BLC_PWM_CTL2_A, \
+				     _VLV_BLC_PWM_CTL2_B)
+
+#define _VLV_BLC_PWM_CTL_A (dev_priv->info->display_mmio_offset + 0x61254)
+#define _VLV_BLC_PWM_CTL_B (dev_priv->info->display_mmio_offset + 0x61354)
+#define VLV_BLC_PWM_CTL(pipe) _PIPE(pipe, _VLV_BLC_PWM_CTL_A, \
+				    _VLV_BLC_PWM_CTL_B)
+
+#define _VLV_BLC_HIST_CTL_A (dev_priv->info->display_mmio_offset + 0x61260)
+#define _VLV_BLC_HIST_CTL_B (dev_priv->info->display_mmio_offset + 0x61360)
+#define VLV_BLC_HIST_CTL(pipe) _PIPE(pipe, _VLV_BLC_HIST_CTL_A, \
+				     _VLV_BLC_HIST_CTL_B)
+
 /* Backlight control */
 #define BLC_PWM_CTL2	(dev_priv->info->display_mmio_offset + 0x61250) /* 965+ only */
 #define   BLM_PWM_ENABLE		(1 << 31)
@@ -4948,6 +4963,18 @@
 					CPT_AUD_CNTL_ST_B)
 #define CPT_AUD_CNTRL_ST2		0xE50C0
 
+#define VLV_HDMIW_HDMIEDID_A		(VLV_DISPLAY_BASE + 0x62050)
+#define VLV_HDMIW_HDMIEDID_B		(VLV_DISPLAY_BASE + 0x62150)
+#define VLV_HDMIW_HDMIEDID(pipe) _PIPE(pipe, \
+					VLV_HDMIW_HDMIEDID_A, \
+					VLV_HDMIW_HDMIEDID_B)
+#define VLV_AUD_CNTL_ST_A		(VLV_DISPLAY_BASE + 0x620B4)
+#define VLV_AUD_CNTL_ST_B		(VLV_DISPLAY_BASE + 0x621B4)
+#define VLV_AUD_CNTL_ST(pipe) _PIPE(pipe, \
+					VLV_AUD_CNTL_ST_A, \
+					VLV_AUD_CNTL_ST_B)
+#define VLV_AUD_CNTL_ST2		(VLV_DISPLAY_BASE + 0x620C0)
+
 /* These are the 4 32-bit write offset registers for each stream
  * output buffer.  It determines the offset from the
  * 3DSTATE_SO_BUFFERs that the next streamed vertex output goes to.
@@ -4964,6 +4991,12 @@
 #define CPT_AUD_CFG(pipe) _PIPE(pipe, \
 					CPT_AUD_CONFIG_A, \
 					CPT_AUD_CONFIG_B)
+#define VLV_AUD_CONFIG_A		(VLV_DISPLAY_BASE + 0x62000)
+#define VLV_AUD_CONFIG_B		(VLV_DISPLAY_BASE + 0x62100)
+#define VLV_AUD_CFG(pipe) _PIPE(pipe, \
+					VLV_AUD_CONFIG_A, \
+					VLV_AUD_CONFIG_B)
+
 #define   AUD_CONFIG_N_VALUE_INDEX		(1 << 29)
 #define   AUD_CONFIG_N_PROG_ENABLE		(1 << 28)
 #define   AUD_CONFIG_UPPER_N_SHIFT		20

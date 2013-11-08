@@ -747,7 +747,7 @@ intel_dp_i2c_init(struct intel_dp *intel_dp,
 	strncpy(intel_dp->adapter.name, name, sizeof(intel_dp->adapter.name) - 1);
 	intel_dp->adapter.name[sizeof(intel_dp->adapter.name) - 1] = '\0';
 	intel_dp->adapter.algo_data = &intel_dp->algo;
-	intel_dp->adapter.dev.parent = &intel_connector->base.kdev;
+	intel_dp->adapter.dev.parent = intel_connector->base.kdev;
 
 	ret = i2c_dp_aux_add_bus(&intel_dp->adapter);
 	return ret;
@@ -1249,7 +1249,6 @@ void ironlake_edp_backlight_on(struct intel_dp *intel_dp)
 	struct intel_digital_port *intel_dig_port = dp_to_dig_port(intel_dp);
 	struct drm_device *dev = intel_dig_port->base.base.dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	int pipe = to_intel_crtc(intel_dig_port->base.base.crtc)->pipe;
 	u32 pp;
 	u32 pp_ctrl_reg;
 
@@ -1272,7 +1271,7 @@ void ironlake_edp_backlight_on(struct intel_dp *intel_dp)
 	I915_WRITE(pp_ctrl_reg, pp);
 	POSTING_READ(pp_ctrl_reg);
 
-	intel_panel_enable_backlight(dev, pipe);
+	intel_panel_enable_backlight(intel_dp->attached_connector);
 }
 
 void ironlake_edp_backlight_off(struct intel_dp *intel_dp)
@@ -1285,7 +1284,7 @@ void ironlake_edp_backlight_off(struct intel_dp *intel_dp)
 	if (!is_edp(intel_dp))
 		return;
 
-	intel_panel_disable_backlight(dev);
+	intel_panel_disable_backlight(intel_dp->attached_connector);
 
 	DRM_DEBUG_KMS("\n");
 	pp = ironlake_get_pp_control(intel_dp);
@@ -3284,7 +3283,8 @@ bool intel_dpd_is_edp(struct drm_device *dev)
 		p_child = dev_priv->vbt.child_dev + i;
 
 		if (p_child->common.dvo_port == PORT_IDPD &&
-		    p_child->common.device_type == DEVICE_TYPE_eDP)
+		    (p_child->common.device_type & DEVICE_TYPE_eDP_BITS) ==
+		    (DEVICE_TYPE_eDP & DEVICE_TYPE_eDP_BITS))
 			return true;
 	}
 	return false;

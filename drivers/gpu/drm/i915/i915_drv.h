@@ -54,6 +54,7 @@
 #define DRIVER_DATE		"20080730"
 
 enum pipe {
+	INVALID_PIPE = -1,
 	PIPE_A = 0,
 	PIPE_B,
 	PIPE_C,
@@ -242,6 +243,7 @@ struct intel_opregion {
 	struct opregion_asle __iomem *asle;
 	void __iomem *vbt;
 	u32 __iomem *lid_state;
+	struct work_struct asle_work;
 };
 #define OPREGION_SIZE            (8*1024)
 
@@ -743,6 +745,9 @@ struct i915_suspend_saved_registers {
 	u32 saveBLC_HIST_CTL;
 	u32 saveBLC_PWM_CTL;
 	u32 saveBLC_PWM_CTL2;
+	u32 saveBLC_HIST_CTL_B;
+	u32 saveBLC_PWM_CTL_B;
+	u32 saveBLC_PWM_CTL2_B;
 	u32 saveBLC_CPU_PWM_CTL;
 	u32 saveBLC_CPU_PWM_CTL2;
 	u32 saveFPB0;

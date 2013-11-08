@@ -600,35 +600,40 @@ static u32 gm45_get_vblank_counter(struct drm_device *dev, int pipe)
 	return I915_READ(reg);
 }
 
-static bool intel_pipe_in_vblank(struct drm_device *dev, enum pipe pipe)
+/* raw reads, only for fast reads of display block, no need for forcewake etc. */
+#define __raw_i915_read32(dev_priv__, reg__) readl((dev_priv__)->regs + (reg__))
+#define __raw_i915_read16(dev_priv__, reg__) readw((dev_priv__)->regs + (reg__))
+
+static bool intel_pipe_in_vblank_locked(struct drm_device *dev, enum pipe pipe)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	uint32_t status;
+	int reg;
 
 	if (IS_VALLEYVIEW(dev)) {
 		status = pipe == PIPE_A ?
 			I915_DISPLAY_PIPE_A_VBLANK_INTERRUPT :
 			I915_DISPLAY_PIPE_B_VBLANK_INTERRUPT;
 
-		return I915_READ(VLV_ISR) & status;
+		reg = VLV_ISR;
 	} else if (IS_GEN2(dev)) {
 		status = pipe == PIPE_A ?
 			I915_DISPLAY_PIPE_A_VBLANK_INTERRUPT :
 			I915_DISPLAY_PIPE_B_VBLANK_INTERRUPT;
 
-		return I915_READ16(ISR) & status;
+		reg = ISR;
 	} else if (INTEL_INFO(dev)->gen < 5) {
 		status = pipe == PIPE_A ?
 			I915_DISPLAY_PIPE_A_VBLANK_INTERRUPT :
 			I915_DISPLAY_PIPE_B_VBLANK_INTERRUPT;
 
-		return I915_READ(ISR) & status;
+		reg = ISR;
 	} else if (INTEL_INFO(dev)->gen < 7) {
 		status = pipe == PIPE_A ?
 			DE_PIPEA_VBLANK :
 			DE_PIPEB_VBLANK;
 
-		return I915_READ(DEISR) & status;
+		reg = DEISR;
 	} else {
 		switch (pipe) {
 		default:
@@ -643,12 +648,17 @@ static bool intel_pipe_in_vblank(struct drm_device *dev, enum pipe pipe)
 			break;
 		}
 
-		return I915_READ(DEISR) & status;
+		reg = DEISR;
 	}
+
+	if (IS_GEN2(dev))
+		return __raw_i915_read16(dev_priv, reg) & status;
+	else
+		return __raw_i915_read32(dev_priv, reg) & status;
 }
 
 static int i915_get_crtc_scanoutpos(struct drm_device *dev, int pipe,
-			     int *vpos, int *hpos)
+			     int *vpos, int *hpos, ktime_t *stime, ktime_t *etime)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_crtc *crtc = dev_priv->pipe_to_crtc_mapping[pipe];
@@ -658,6 +668,7 @@ static int i915_get_crtc_scanoutpos(struct drm_device *dev, int pipe,
 	int vbl_start, vbl_end, htotal, vtotal;
 	bool in_vbl = true;
 	int ret = 0;
+	unsigned long irqflags;
 
 	if (!intel_crtc->active) {
 		DRM_DEBUG_DRIVER("trying to get scanoutpos for disabled "
@@ -672,14 +683,27 @@ static int i915_get_crtc_scanoutpos(struct drm_device *dev, int pipe,
 
 	ret |= DRM_SCANOUTPOS_VALID | DRM_SCANOUTPOS_ACCURATE;
 
+	/*
+	 * Lock uncore.lock, as we will do multiple timing critical raw
+	 * register reads, potentially with preemption disabled, so the
+	 * following code must not block on uncore.lock.
+	 */
+	spin_lock_irqsave(&dev_priv->uncore.lock, irqflags);
+	
+	/* preempt_disable_rt() should go right here in PREEMPT_RT patchset. */
+
+	/* Get optional system timestamp before query. */
+	if (stime)
+		*stime = ktime_get();
+
 	if (IS_GEN2(dev) || IS_G4X(dev) || INTEL_INFO(dev)->gen >= 5) {
 		/* No obvious pixelcount register. Only query vertical
 		 * scanout position from Display scan line register.
 		 */
 		if (IS_GEN2(dev))
-			position = I915_READ(PIPEDSL(pipe)) & DSL_LINEMASK_GEN2;
+			position = __raw_i915_read32(dev_priv, PIPEDSL(pipe)) & DSL_LINEMASK_GEN2;
 		else
-			position = I915_READ(PIPEDSL(pipe)) & DSL_LINEMASK_GEN3;
+			position = __raw_i915_read32(dev_priv, PIPEDSL(pipe)) & DSL_LINEMASK_GEN3;
 
 		/*
 		 * The scanline counter increments at the leading edge
@@ -688,7 +712,7 @@ static int i915_get_crtc_scanoutpos(struct drm_device *dev, int pipe,
 		 * to get a more accurate picture whether we're in vblank
 		 * or not.
 		 */
-		in_vbl = intel_pipe_in_vblank(dev, pipe);
+		in_vbl = intel_pipe_in_vblank_locked(dev, pipe);
 		if ((in_vbl && position == vbl_start - 1) ||
 		    (!in_vbl && position == vbl_end - 1))
 			position = (position + 1) % vtotal;
@@ -697,13 +721,21 @@ static int i915_get_crtc_scanoutpos(struct drm_device *dev, int pipe,
 		 * We can split this into vertical and horizontal
 		 * scanout position.
 		 */
-		position = (I915_READ(PIPEFRAMEPIXEL(pipe)) & PIPE_PIXEL_MASK) >> PIPE_PIXEL_SHIFT;
+		position = (__raw_i915_read32(dev_priv, PIPEFRAMEPIXEL(pipe)) & PIPE_PIXEL_MASK) >> PIPE_PIXEL_SHIFT;
 
 		/* convert to pixel counts */
 		vbl_start *= htotal;
 		vbl_end *= htotal;
 		vtotal *= htotal;
 	}
+
+	/* Get optional system timestamp after query. */
+	if (etime)
+		*etime = ktime_get();
+
+	/* preempt_enable_rt() should go right here in PREEMPT_RT patchset. */
+
+	spin_unlock_irqrestore(&dev_priv->uncore.lock, irqflags);
 
 	in_vbl = position >= vbl_start && position < vbl_end;
 
@@ -1040,7 +1072,7 @@ static void ivybridge_parity_work(struct work_struct *work)
 		parity_event[4] = kasprintf(GFP_KERNEL, "SLICE=%d", slice);
 		parity_event[5] = NULL;
 
-		kobject_uevent_env(&dev_priv->dev->primary->kdev.kobj,
+		kobject_uevent_env(&dev_priv->dev->primary->kdev->kobj,
 				   KOBJ_CHANGE, parity_event);
 
 		DRM_DEBUG("Parity error: Slice = %d, Row = %d, Bank = %d, Sub bank = %d.\n",
@@ -1353,7 +1385,7 @@ static irqreturn_t valleyview_irq_handler(int irq, void *arg)
 		spin_unlock_irqrestore(&dev_priv->irq_lock, irqflags);
 
 		for_each_pipe(pipe) {
-			if (pipe_stats[pipe] & PIPE_VBLANK_INTERRUPT_STATUS)
+			if (pipe_stats[pipe] & PIPE_START_VBLANK_INTERRUPT_STATUS)
 				drm_handle_vblank(dev, pipe);
 
 			if (pipe_stats[pipe] & PLANE_FLIPDONE_INT_STATUS_VLV) {
@@ -1739,7 +1771,7 @@ static void i915_error_work_func(struct work_struct *work)
 	char *reset_done_event[] = { I915_ERROR_UEVENT "=0", NULL };
 	int ret;
 
-	kobject_uevent_env(&dev->primary->kdev.kobj, KOBJ_CHANGE, error_event);
+	kobject_uevent_env(&dev->primary->kdev->kobj, KOBJ_CHANGE, error_event);
 
 	/*
 	 * Note that there's only one work item which does gpu resets, so we
@@ -1753,7 +1785,7 @@ static void i915_error_work_func(struct work_struct *work)
 	 */
 	if (i915_reset_in_progress(error) && !i915_terminally_wedged(error)) {
 		DRM_DEBUG_DRIVER("resetting chip\n");
-		kobject_uevent_env(&dev->primary->kdev.kobj, KOBJ_CHANGE,
+		kobject_uevent_env(&dev->primary->kdev->kobj, KOBJ_CHANGE,
 				   reset_event);
 
 		/*
@@ -1780,7 +1812,7 @@ static void i915_error_work_func(struct work_struct *work)
 			smp_mb__before_atomic_inc();
 			atomic_inc(&dev_priv->gpu_error.reset_counter);
 
-			kobject_uevent_env(&dev->primary->kdev.kobj,
+			kobject_uevent_env(&dev->primary->kdev->kobj,
 					   KOBJ_CHANGE, reset_done_event);
 		} else {
 			atomic_set(&error->reset_counter, I915_WEDGED);
