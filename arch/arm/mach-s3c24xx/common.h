@@ -107,4 +107,11 @@ extern void s3c2443_init_irq(void);
 #define s3c2443_init NULL
 #endif
 
+extern struct syscore_ops s3c24xx_irq_syscore_ops;
+
+extern struct platform_device s3c2410_device_dma;
+extern struct platform_device s3c2412_device_dma;
+extern struct platform_device s3c2440_device_dma;
+extern struct platform_device s3c2443_device_dma;
+
 #endif /* __ARCH_ARM_MACH_S3C24XX_COMMON_H */
