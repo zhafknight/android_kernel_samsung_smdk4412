@@ -41,7 +41,7 @@
 #define FL_MIN_LINGER	6	/* Minimal linger. It is set to 6sec specified
 				   in old IPv6 RFC. Well, it was reasonable value.
 				 */
-#define FL_MAX_LINGER	60	/* Maximal linger timeout */
+#define FL_MAX_LINGER	150	/* Maximal linger timeout */
 
 /* FL hash table */
 
@@ -345,6 +345,8 @@ static int fl6_renew(struct ip6_flowlabel *fl, unsigned long linger, unsigned lo
 	expires = check_linger(expires);
 	if (!expires)
 		return -EPERM;
+
+	spin_lock_bh(&ip6_fl_lock);
 	fl->lastuse = jiffies;
 	if (time_before(fl->linger, linger))
 		fl->linger = linger;
@@ -352,6 +354,8 @@ static int fl6_renew(struct ip6_flowlabel *fl, unsigned long linger, unsigned lo
 		expires = fl->linger;
 	if (time_before(fl->expires, fl->lastuse + expires))
 		fl->expires = fl->lastuse + expires;
+	spin_unlock_bh(&ip6_fl_lock);
+
 	return 0;
 }
 
@@ -453,8 +457,10 @@ static int mem_check(struct sock *sk)
 	if (room > FL_MAX_SIZE - FL_MAX_PER_SOCK)
 		return 0;
 
+	rcu_read_lock_bh();
 	for_each_sk_fl_rcu(np, sfl)
 		count++;
+	rcu_read_unlock_bh();
 
 	if (room <= 0 ||
 	    ((count >= FL_MAX_PER_SOCK ||
@@ -473,6 +479,32 @@ static inline void fl_link(struct ipv6_pinfo *np, struct ipv6_fl_socklist *sfl,
 	sfl->next = np->ipv6_fl_list;
 	rcu_assign_pointer(np->ipv6_fl_list, sfl);
 	spin_unlock_bh(&ip6_sk_fl_lock);
+}
+
+int ipv6_flowlabel_opt_get(struct sock *sk, struct in6_flowlabel_req *freq)
+{
+	struct ipv6_pinfo *np = inet6_sk(sk);
+	struct ipv6_fl_socklist *sfl;
+
+	rcu_read_lock_bh();
+
+	for_each_sk_fl_rcu(np, sfl) {
+		if (sfl->fl->label == (np->flow_label & IPV6_FLOWLABEL_MASK)) {
+			spin_lock_bh(&ip6_fl_lock);
+			freq->flr_label = sfl->fl->label;
+			freq->flr_dst = sfl->fl->dst;
+			freq->flr_share = sfl->fl->share;
+			freq->flr_expires = (sfl->fl->expires - jiffies) / HZ;
+			freq->flr_linger = sfl->fl->linger / HZ;
+
+			spin_unlock_bh(&ip6_fl_lock);
+			rcu_read_unlock_bh();
+			return 0;
+		}
+	}
+	rcu_read_unlock_bh();
+
+	return -ENOENT;
 }
 
 int ipv6_flowlabel_opt(struct sock *sk, char __user *optval, int optlen)

@@ -133,7 +133,7 @@ static struct notifier_block dca_notifier = {
 static unsigned int max_vfs;
 module_param(max_vfs, uint, 0);
 MODULE_PARM_DESC(max_vfs,
-		 "Maximum number of virtual functions to allocate per physical function - default is zero and maximum value is 63");
+		 "Maximum number of virtual functions to allocate per physical function - default is zero and maximum value is 63. (Deprecated)");
 #endif /* CONFIG_PCI_IOV */
 
 static unsigned int allow_unsupported_sfp;
@@ -4164,7 +4164,7 @@ static void ixgbe_add_mac_filter(struct ixgbe_adapter *adapter,
 static void ixgbe_fwd_psrtype(struct ixgbe_fwd_adapter *vadapter)
 {
 	struct ixgbe_adapter *adapter = vadapter->real_adapter;
-	int rss_i = vadapter->netdev->real_num_rx_queues;
+	int rss_i = adapter->num_rx_queues_per_pool;
 	struct ixgbe_hw *hw = &adapter->hw;
 	u16 pool = vadapter->pool;
 	u32 psrtype = IXGBE_PSRTYPE_TCPHDR |
@@ -4315,8 +4315,6 @@ static int ixgbe_fwd_ring_up(struct net_device *vdev,
 	if (err)
 		goto fwd_queue_err;
 
-	queues = min_t(unsigned int,
-		       adapter->num_rx_queues_per_pool, vdev->num_rx_queues);
 	err = netif_set_real_num_rx_queues(vdev, queues);
 	if (err)
 		goto fwd_queue_err;
@@ -5025,11 +5023,20 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
 	hw->fc.disable_fc_autoneg = ixgbe_device_supports_autoneg_fc(hw);
 
 #ifdef CONFIG_PCI_IOV
-	/* assign number of SR-IOV VFs */
-	if (hw->mac.type != ixgbe_mac_82598EB)
-		adapter->num_vfs = (max_vfs > 63) ? 0 : max_vfs;
+	if (max_vfs > 0)
+		e_dev_warn("Enabling SR-IOV VFs using the max_vfs module parameter is deprecated - please use the pci sysfs interface instead.\n");
 
-#endif
+	/* assign number of SR-IOV VFs */
+	if (hw->mac.type != ixgbe_mac_82598EB) {
+		if (max_vfs > 63) {
+			adapter->num_vfs = 0;
+			e_dev_warn("max_vfs parameter out of range. Not assigning any SR-IOV VFs\n");
+		} else {
+			adapter->num_vfs = max_vfs;
+		}
+	}
+#endif /* CONFIG_PCI_IOV */
+
 	/* enable itr by default in dynamic mode */
 	adapter->rx_itr_setting = 1;
 	adapter->tx_itr_setting = 1;
@@ -7538,11 +7545,18 @@ static void *ixgbe_fwd_add(struct net_device *pdev, struct net_device *vdev)
 {
 	struct ixgbe_fwd_adapter *fwd_adapter = NULL;
 	struct ixgbe_adapter *adapter = netdev_priv(pdev);
+	unsigned int limit;
 	int pool, err;
 
+#ifdef CONFIG_RPS
+	if (vdev->num_rx_queues != vdev->num_tx_queues) {
+		netdev_info(pdev, "%s: Only supports a single queue count for TX and RX\n",
+			    vdev->name);
+		return ERR_PTR(-EINVAL);
+	}
+#endif
 	/* Check for hardware restriction on number of rx/tx queues */
-	if (vdev->num_rx_queues != vdev->num_tx_queues ||
-	    vdev->num_tx_queues > IXGBE_MAX_L2A_QUEUES ||
+	if (vdev->num_tx_queues > IXGBE_MAX_L2A_QUEUES ||
 	    vdev->num_tx_queues == IXGBE_BAD_L2A_QUEUE) {
 		netdev_info(pdev,
 			    "%s: Supports RX/TX Queue counts 1,2, and 4\n",
@@ -7562,11 +7576,12 @@ static void *ixgbe_fwd_add(struct net_device *pdev, struct net_device *vdev)
 	pool = find_first_zero_bit(&adapter->fwd_bitmask, 32);
 	adapter->num_rx_pools++;
 	set_bit(pool, &adapter->fwd_bitmask);
+	limit = find_last_bit(&adapter->fwd_bitmask, 32);
 
 	/* Enable VMDq flag so device will be set in VM mode */
 	adapter->flags |= IXGBE_FLAG_VMDQ_ENABLED | IXGBE_FLAG_SRIOV_ENABLED;
-	adapter->ring_feature[RING_F_VMDQ].limit = adapter->num_rx_pools;
-	adapter->ring_feature[RING_F_RSS].limit = vdev->num_rx_queues;
+	adapter->ring_feature[RING_F_VMDQ].limit = limit + 1;
+	adapter->ring_feature[RING_F_RSS].limit = vdev->num_tx_queues;
 
 	/* Force reinit of ring allocation with VMDQ enabled */
 	err = ixgbe_setup_tc(pdev, netdev_get_num_tc(pdev));
@@ -7593,11 +7608,13 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
 {
 	struct ixgbe_fwd_adapter *fwd_adapter = priv;
 	struct ixgbe_adapter *adapter = fwd_adapter->real_adapter;
+	unsigned int limit;
 
 	clear_bit(fwd_adapter->pool, &adapter->fwd_bitmask);
 	adapter->num_rx_pools--;
 
-	adapter->ring_feature[RING_F_VMDQ].limit = adapter->num_rx_pools;
+	limit = find_last_bit(&adapter->fwd_bitmask, 32);
+	adapter->ring_feature[RING_F_VMDQ].limit = limit + 1;
 	ixgbe_fwd_ring_down(fwd_adapter->netdev, fwd_adapter);
 	ixgbe_setup_tc(pdev, netdev_get_num_tc(pdev));
 	netdev_dbg(pdev, "pool %i:%i queues %i:%i VSI bitmask %lx\n",
