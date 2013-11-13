@@ -37,6 +37,8 @@
 #define THUMB(x...)	x
 #ifdef __ASSEMBLY__
 #define W(instr)	instr.w
+#else
+#define WASM(instr)	#instr ".w"
 #endif
 #define BSYM(sym)	sym + 1
 
@@ -49,6 +51,8 @@
 #define THUMB(x...)
 #ifdef __ASSEMBLY__
 #define W(instr)	instr
+#else
+#define WASM(instr)	#instr
 #endif
 #define BSYM(sym)	sym
 
