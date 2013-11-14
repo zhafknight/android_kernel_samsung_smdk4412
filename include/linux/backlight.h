@@ -102,6 +102,9 @@ struct backlight_device {
 	/* The framebuffer notifier block */
 	struct notifier_block fb_notif;
 
+	/* list entry of all registered backlight devices */
+	struct list_head entry;
+
 	struct device dev;
 };
 
@@ -133,6 +136,7 @@ extern void backlight_force_update(struct backlight_device *bd,
 				   enum backlight_update_reason reason);
 extern int backlight_dimming_mode_register_client(struct notifier_block *nb);
 extern int backlight_dimming_mode_unregister_client(struct notifier_block *nb);
+extern bool backlight_device_registered(enum backlight_type type);
 
 #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
 
