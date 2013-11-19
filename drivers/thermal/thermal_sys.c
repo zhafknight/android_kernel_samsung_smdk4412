@@ -1426,15 +1426,17 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
 EXPORT_SYMBOL(thermal_zone_device_unregister);
 
 #ifdef CONFIG_NET
+static const struct genl_multicast_group thermal_event_mcgrps[] = {
+	{ .name = THERMAL_GENL_MCAST_GROUP_NAME, },
+};
+
 static struct genl_family thermal_event_genl_family = {
 	.id = GENL_ID_GENERATE,
 	.name = THERMAL_GENL_FAMILY_NAME,
 	.version = THERMAL_GENL_VERSION,
 	.maxattr = THERMAL_GENL_ATTR_MAX,
-};
-
-static struct genl_multicast_group thermal_event_mcgrp = {
-	.name = THERMAL_GENL_MCAST_GROUP_NAME,
+	.mcgrps = thermal_event_mcgrps,
+	.n_mcgrps = ARRAY_SIZE(thermal_event_mcgrps),
 };
 
 int thermal_generate_netlink_event(u32 orig, enum events event)
@@ -1492,7 +1494,7 @@ int thermal_generate_netlink_event(u32 orig, enum events event)
 	}
 
 	result = genlmsg_multicast(&thermal_event_genl_family, skb, 0,
-				   thermal_event_mcgrp.id, GFP_ATOMIC);
+				   0, GFP_ATOMIC);
 	if (result)
 		pr_info("failed to send netlink event:%d\n", result);
 
@@ -1502,17 +1504,7 @@ EXPORT_SYMBOL(thermal_generate_netlink_event);
 
 static int genetlink_init(void)
 {
-	int result;
-
-	result = genl_register_family(&thermal_event_genl_family);
-	if (result)
-		return result;
-
-	result = genl_register_mc_group(&thermal_event_genl_family,
-					&thermal_event_mcgrp);
-	if (result)
-		genl_unregister_family(&thermal_event_genl_family);
-	return result;
+	return genl_register_family(&thermal_event_genl_family);
 }
 
 static void genetlink_exit(void)
