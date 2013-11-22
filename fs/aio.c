@@ -251,8 +251,10 @@ static void aio_free_ring(struct kioctx *ctx)
 
 	put_aio_ring_file(ctx);
 
-	if (ctx->ring_pages && ctx->ring_pages != ctx->internal_pages)
+	if (ctx->ring_pages && ctx->ring_pages != ctx->internal_pages) {
 		kfree(ctx->ring_pages);
+		ctx->ring_pages = NULL;
+	}
 }
 
 static int aio_ring_mmap(struct file *file, struct vm_area_struct *vma)
@@ -661,7 +663,6 @@ static struct kioctx *ioctx_alloc(unsigned nr_events)
 err_cleanup:
 	aio_nr_sub(ctx->max_reqs);
 err:
-	aio_free_ring(ctx);
 	free_percpu(ctx->cpu);
 	free_percpu(ctx->reqs.pcpu_count);
 	free_percpu(ctx->users.pcpu_count);
