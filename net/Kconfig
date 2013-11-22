@@ -237,8 +237,8 @@ source "net/mpls/Kconfig"
 source "net/hsr/Kconfig"
 
 config RPS
-	boolean "RPS"
-	depends on SMP && SYSFS && USE_GENERIC_SMP_HELPERS
+	boolean
+	depends on SMP && SYSFS
 	default y
 
 config RFS_ACCEL
@@ -249,7 +249,7 @@ config RFS_ACCEL
 
 config XPS
 	boolean
-	depends on SMP && USE_GENERIC_SMP_HELPERS
+	depends on SMP
 	default y
 
 config NETPRIO_CGROUP
