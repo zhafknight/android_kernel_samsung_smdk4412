@@ -384,15 +384,6 @@ void blk_abort_flushes(struct request_queue *q)
 	}
 }
 
-static void bio_end_flush(struct bio *bio, int err)
-{
-	if (err)
-		clear_bit(BIO_UPTODATE, &bio->bi_flags);
-	if (bio->bi_private)
-		complete(bio->bi_private);
-	bio_put(bio);
-}
-
 /**
  * blkdev_issue_flush - queue a flush
  * @bdev:	blockdev to issue flush for
@@ -408,7 +399,6 @@ static void bio_end_flush(struct bio *bio, int err)
 int blkdev_issue_flush(struct block_device *bdev, gfp_t gfp_mask,
 		sector_t *error_sector)
 {
-	DECLARE_COMPLETION_ONSTACK(wait);
 	struct request_queue *q;
 	struct bio *bio;
 	int ret = 0;
@@ -430,13 +420,9 @@ int blkdev_issue_flush(struct block_device *bdev, gfp_t gfp_mask,
 		return -ENXIO;
 
 	bio = bio_alloc(gfp_mask, 0);
-	bio->bi_end_io = bio_end_flush;
 	bio->bi_bdev = bdev;
-	bio->bi_private = &wait;
 
-	bio_get(bio);
-	submit_bio(WRITE_FLUSH, bio);
-	wait_for_completion(&wait);
+	ret = submit_bio_wait(WRITE_FLUSH, bio);
 
 	/*
 	 * The driver must store the error location in ->bi_sector, if
@@ -445,9 +431,6 @@ int blkdev_issue_flush(struct block_device *bdev, gfp_t gfp_mask,
 	 */
 	if (error_sector)
                *error_sector = bio->bi_iter.bi_sector;
-
-	if (!bio_flagged(bio, BIO_UPTODATE))
-		ret = -EIO;
 
 	bio_put(bio);
 	return ret;
