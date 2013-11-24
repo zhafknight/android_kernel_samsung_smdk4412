@@ -1563,6 +1563,7 @@ int test_range_bit(struct extent_io_tree *tree, u64 start, u64 end,
 	struct rb_node *node;
 	int bitset = 0;
 
+
 	spin_lock(&tree->lock);
 	if (cached && cached->tree && cached->start == start)
 		node = &cached->rb_node;

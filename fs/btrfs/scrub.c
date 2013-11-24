@@ -101,6 +101,7 @@ struct scrub_dev {
 };
 
 static void scrub_free_csums(struct scrub_dev *sdev)
+
 {
 	while (!list_empty(&sdev->csum_list)) {
 		struct btrfs_ordered_sum *sum;
@@ -193,6 +194,7 @@ struct scrub_dev *scrub_setup_dev(struct btrfs_device *dev)
 nomem:
 	scrub_free_dev(sdev);
 	return ERR_PTR(-ENOMEM);
+
 }
 
 /*
