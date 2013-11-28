@@ -22,5 +22,6 @@ extern void combiner_cascade_irq(unsigned int combiner_nr, unsigned int irq);
 
 extern void exynos_cpu_die(unsigned int cpu);
 extern void __init exynos_timer_init(void);
+void exynos_cpufreq_init(void);
 
 #endif /* __ARCH_ARM_MACH_EXYNOS_COMMON_H */

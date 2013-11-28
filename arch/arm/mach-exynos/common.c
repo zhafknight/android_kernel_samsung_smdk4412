@@ -376,6 +376,11 @@ void exynos5_restart(char mode, const char *cmd)
 	__raw_writel(val, addr);
 }
 
+void __init exynos_cpufreq_init(void)
+{
+	platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
+}
+
 void __init exynos_init_late(void)
 {
 	if (of_machine_is_compatible("samsung,exynos5440"))

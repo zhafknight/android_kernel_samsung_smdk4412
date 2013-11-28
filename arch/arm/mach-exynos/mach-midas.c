@@ -3074,6 +3074,8 @@ static void __init midas_machine_init(void)
 	exynos4_sleep_gpio_table_set = midas_config_sleep_gpio_table;
 #endif
 
+	exynos_cpufreq_init();
+
 	midas_power_init();
 
 	s3c_i2c0_set_platdata(NULL);
