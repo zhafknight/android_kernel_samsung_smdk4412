@@ -29,15 +29,17 @@
 #include <linux/gpio.h>
 #include <linux/io.h>
 
-#include <mach/hardware.h>
-
 #include <asm/mach-types.h>
 
+#include <mach/hardware.h>
 #include <mach/regs-gpio.h>
-#include <mach/h1940.h>
+#include <mach/gpio-samsung.h>
 
+#include <plat/gpio-cfg.h>
 #include <plat/cpu.h>
 #include <plat/pm.h>
+
+#include "h1940.h"
 
 static void s3c2410_pm_prepare(void)
 {
@@ -115,7 +117,7 @@ struct syscore_ops s3c2410_pm_syscore_ops = {
 	.resume		= s3c2410_pm_resume,
 };
 
-static int s3c2410_pm_add(struct device *dev)
+static int s3c2410_pm_add(struct device *dev, struct subsys_interface *sif)
 {
 	pm_cpu_prep = s3c2410_pm_prepare;
 	pm_cpu_sleep = s3c2410_cpu_suspend;
@@ -124,52 +126,60 @@ static int s3c2410_pm_add(struct device *dev)
 }
 
 #if defined(CONFIG_CPU_S3C2410)
-static struct dev_driver s3c2410_pm_driver = {
-	.add		= s3c2410_pm_add,
+static struct subsys_interface s3c2410_pm_interface = {
+	.name		= "s3c2410_pm",
+	.subsys		= &s3c2410_subsys,
+	.add_dev	= s3c2410_pm_add,
 };
 
 /* register ourselves */
 
 static int __init s3c2410_pm_drvinit(void)
 {
-	return dev_driver_register(&s3c2410_subsys, &s3c2410_pm_driver);
+	return subsys_interface_register(&s3c2410_pm_interface);
 }
 
 arch_initcall(s3c2410_pm_drvinit);
 
-static struct dev_driver s3c2410a_pm_driver = {
-	.add		= s3c2410_pm_add,
+static struct subsys_interface s3c2410a_pm_interface = {
+	.name		= "s3c2410a_pm",
+	.subsys		= &s3c2410a_subsys,
+	.add_dev	= s3c2410_pm_add,
 };
 
 static int __init s3c2410a_pm_drvinit(void)
 {
-	return dev_driver_register(&s3c2410a_subsys, &s3c2410a_pm_driver);
+	return subsys_interface_register(&s3c2410a_pm_interface);
 }
 
 arch_initcall(s3c2410a_pm_drvinit);
 #endif
 
 #if defined(CONFIG_CPU_S3C2440)
-static struct dev_driver s3c2440_pm_driver = {
-	.add		= s3c2410_pm_add,
+static struct subsys_interface s3c2440_pm_interface = {
+	.name		= "s3c2440_pm",
+	.subsys		= &s3c2440_subsys,
+	.add_dev	= s3c2410_pm_add,
 };
 
 static int __init s3c2440_pm_drvinit(void)
 {
-	return dev_driver_register(&s3c2440_subsys, &s3c2440_pm_driver);
+	return subsys_interface_register(&s3c2440_pm_interface);
 }
 
 arch_initcall(s3c2440_pm_drvinit);
 #endif
 
 #if defined(CONFIG_CPU_S3C2442)
-static struct dev_driver s3c2442_pm_driver = {
-	.add		= s3c2410_pm_add,
+static struct subsys_interface s3c2442_pm_interface = {
+	.name		= "s3c2442_pm",
+	.subsys		= &s3c2442_subsys,
+	.add_dev	= s3c2410_pm_add,
 };
 
 static int __init s3c2442_pm_drvinit(void)
 {
-	return dev_driver_register(&s3c2442_subsys, &s3c2442_pm_driver);
+	return subsys_interface_register(&s3c2442_pm_interface);
 }
 
 arch_initcall(s3c2442_pm_drvinit);

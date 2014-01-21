@@ -40,6 +40,7 @@
 #include <mach/regs-gpio.h>
 #include <mach/regs-mem.h>
 #include <mach/regs-irq.h>
+#include <mach/gpio-samsung.h>
 
 #include <asm/mach/time.h>
 
