@@ -107,6 +107,7 @@ config GENERIC_GPIO
 config DMI
 	bool
 	default y
+	select DMI_SCAN_MACHINE_NON_EFI_FALLBACK
 
 config EFI
 	bool
