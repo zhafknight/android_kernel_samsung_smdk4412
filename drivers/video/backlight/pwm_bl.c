@@ -112,7 +112,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
 
 	pb = kzalloc(sizeof(*pb), GFP_KERNEL);
 	if (!pb) {
-		dev_err(&pdev->dev, "no memory for state\n");
 		ret = -ENOMEM;
 		goto err_alloc;
 	}
