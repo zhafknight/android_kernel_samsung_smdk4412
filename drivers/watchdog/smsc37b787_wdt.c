@@ -58,7 +58,7 @@
 #include <linux/io.h>
 #include <linux/uaccess.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 
 /* enable support for minutes as units? */
 /* (does not always work correctly, so disabled by default!) */

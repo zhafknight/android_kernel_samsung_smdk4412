@@ -52,7 +52,7 @@
 #include <asm/byteorder.h>
 #include <asm/dma.h>
 #include <asm/gpio.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <asm/mach-types.h>
 #include <asm/unaligned.h>
 

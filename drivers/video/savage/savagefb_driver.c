@@ -56,7 +56,7 @@
 #include <asm/io.h>
 #include <asm/irq.h>
 #include <asm/pgtable.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 
 #ifdef CONFIG_MTRR
 #include <asm/mtrr.h>

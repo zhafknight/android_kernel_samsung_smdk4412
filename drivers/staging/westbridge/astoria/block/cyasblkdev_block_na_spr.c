@@ -58,7 +58,7 @@
 #include <linux/kdev_t.h>
 #include <linux/blkdev.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 /*#if defined (__FOR_KERNEL_2_6_35__) || defined (__FOR_KERNEL_2_6_32__)*/
 #include <linux/uaccess.h>
 /*#else

@@ -45,7 +45,7 @@
 #include <asm/uaccess.h>
 #include <asm/io.h>
 #include <asm/irq.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 
 #include "uhci-hcd.h"
 

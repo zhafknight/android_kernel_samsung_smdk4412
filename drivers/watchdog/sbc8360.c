@@ -51,7 +51,7 @@
 #include <linux/io.h>
 #include <linux/uaccess.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 
 static unsigned long sbc8360_is_open;
 static char expect_close;

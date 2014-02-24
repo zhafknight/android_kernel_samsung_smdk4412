@@ -21,7 +21,7 @@
 #include <linux/uaccess.h>
 
 #include <asm/reg_booke.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <asm/time.h>
 #include <asm/div64.h>
 

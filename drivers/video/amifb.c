@@ -53,7 +53,7 @@
 #include <linux/platform_device.h>
 #include <linux/uaccess.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <asm/irq.h>
 #include <asm/amigahw.h>
 #include <asm/amigaints.h>

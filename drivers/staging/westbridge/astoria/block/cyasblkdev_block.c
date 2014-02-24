@@ -57,7 +57,7 @@
 #include <linux/kdev_t.h>
 #include <linux/blkdev.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <linux/uaccess.h>
 
 #include <linux/scatterlist.h>

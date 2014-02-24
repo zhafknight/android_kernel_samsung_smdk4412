@@ -40,7 +40,7 @@
 #include <linux/io.h>
 
 #include <asm/irq.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <asm/unaligned.h>
 
 #include <linux/irq.h>

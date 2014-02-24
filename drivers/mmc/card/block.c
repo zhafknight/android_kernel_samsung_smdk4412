@@ -41,7 +41,7 @@
 #include <linux/mmc/mmc.h>
 #include <linux/mmc/sd.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <asm/uaccess.h>
 
 #include "queue.h"

@@ -35,7 +35,7 @@
 #include <linux/fs.h>
 #include <linux/gpio.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 
 #include <plat/gpio-cfg.h>
 #include <plat/cpu.h>

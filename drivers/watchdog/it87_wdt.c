@@ -44,7 +44,7 @@
 #include <linux/uaccess.h>
 #include <linux/io.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 
 #define WATCHDOG_VERSION	"1.14"
 #define WATCHDOG_NAME		"IT87 WDT"

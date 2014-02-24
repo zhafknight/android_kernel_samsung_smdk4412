@@ -20,7 +20,7 @@
 #include <linux/workqueue.h>
 
 #include <asm/page.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 
 #include <dvb_demux.h>
 

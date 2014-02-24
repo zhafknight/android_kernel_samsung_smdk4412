@@ -22,7 +22,7 @@
 #include <linux/irq.h>
 #include <linux/platform_device.h>
 #include <linux/clk.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <asm/unaligned.h>
 
 #include "mv_udc.h"

@@ -34,7 +34,7 @@
 
 #include <asm/io.h>
 #include <asm/byteorder.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <asm/unaligned.h>
 
 

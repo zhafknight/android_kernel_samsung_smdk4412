@@ -30,7 +30,7 @@
 #include <linux/device.h>
 #include <linux/cdev.h>
 #include <linux/io.h>
-#include <asm/system.h>
+#include <asm/system_misc.h>
 #include <linux/uaccess.h>
 #include <linux/poll.h>
 #include <linux/kfifo.h>
