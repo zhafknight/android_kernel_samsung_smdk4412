@@ -50,7 +50,6 @@ static bool exynos_cpufreq_lock_disable;
 static bool exynos_cpufreq_init_done;
 
 static unsigned int locking_frequency;
-static bool frequency_locked;
 static DEFINE_MUTEX(cpufreq_lock);
 static DEFINE_MUTEX(set_cpufreq_lock);
 
@@ -189,20 +188,7 @@ out:
 
 static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
 {
-	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
-	int ret = 0;
-
-	mutex_lock(&cpufreq_lock);
-
-	if (frequency_locked)
-		goto out;
-
-	ret = exynos_cpufreq_scale(freq_table[index].frequency);
-
-out:
-	mutex_unlock(&cpufreq_lock);
-
-	return ret;
+	return exynos_cpufreq_scale(exynos_info->freq_table[index].frequency);
 }
 
 /**
@@ -615,18 +601,6 @@ int exynos_cpufreq_is_fixed(void)
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_is_fixed);
 
-#ifdef CONFIG_PM
-static int exynos_cpufreq_suspend(struct cpufreq_policy *policy)
-{
-	return 0;
-}
-
-static int exynos_cpufreq_resume(struct cpufreq_policy *policy)
-{
-	return 0;
-}
-#endif
-
 static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 {
 	int retval;
@@ -642,52 +616,6 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 	return retval;
 }
 
-/**
- * exynos_cpufreq_pm_notifier - block CPUFREQ's activities in suspend-resume
- *			context
- * @notifier
- * @pm_event
- * @v
- *
- * While frequency_locked == true, target() ignores every frequency but
- * locking_frequency. The locking_frequency value is the initial frequency,
- * which is set by the bootloader. In order to eliminate possible
- * inconsistency in clock values, we save and restore frequencies during
- * suspend and resume and block CPUFREQ activities. Note that the standard
- * suspend/resume cannot be used as they are too deep (syscore_ops) for
- * regulator actions.
- */
-static int exynos_cpufreq_pm_notifier(struct notifier_block *notifier,
-				       unsigned long pm_event, void *v)
-{
-	int ret;
-
-	switch (pm_event) {
-	case PM_SUSPEND_PREPARE:
-		mutex_lock(&cpufreq_lock);
-		frequency_locked = true;
-		mutex_unlock(&cpufreq_lock);
-
-		ret = exynos_cpufreq_scale(locking_frequency);
-		if (ret < 0)
-			return NOTIFY_BAD;
-
-		break;
-
-	case PM_POST_SUSPEND:
-		mutex_lock(&cpufreq_lock);
-		frequency_locked = false;
-		mutex_unlock(&cpufreq_lock);
-		break;
-	}
-
-	return NOTIFY_OK;
-}
-
-static struct notifier_block exynos_cpufreq_nb = {
-	.notifier_call = exynos_cpufreq_pm_notifier,
-};
-
 static struct cpufreq_driver exynos_driver = {
 	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
 	.verify		= cpufreq_generic_frequency_table_verify,
@@ -701,8 +629,7 @@ static struct cpufreq_driver exynos_driver = {
 	.boost_supported = true,
 #endif
 #ifdef CONFIG_PM
-	.suspend	= exynos_cpufreq_suspend,
-	.resume		= exynos_cpufreq_resume,
+	.suspend	= cpufreq_generic_suspend,
 #endif
 };
 
@@ -752,8 +679,6 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
 	g_cpufreq_limit_level = exynos_info->max_support_idx;
 
 	locking_frequency = clk_get_rate(exynos_info->cpu_clk) / 1000;
-
-	register_pm_notifier(&exynos_cpufreq_nb);
 
 	if (cpufreq_register_driver(&exynos_driver)) {
 		pr_err("failed to register cpufreq driver\n");
