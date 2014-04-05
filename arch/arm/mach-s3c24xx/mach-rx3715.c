@@ -23,6 +23,7 @@
 #include <linux/device.h>
 #include <linux/platform_device.h>
 #include <linux/serial_core.h>
+#include <linux/serial_s3c.h>
 #include <linux/serial.h>
 #include <linux/io.h>
 #include <linux/mtd/mtd.h>
@@ -31,33 +32,28 @@
 #include <linux/mtd/partitions.h>
 
 #include <asm/mach/arch.h>
-#include <asm/mach/map.h>
 #include <asm/mach/irq.h>
+#include <asm/mach/map.h>
 
-#include <mach/hardware.h>
+#include <linux/platform_data/mtd-nand-s3c2410.h>
+
 #include <asm/irq.h>
 #include <asm/mach-types.h>
 
-#include <plat/regs-serial.h>
+#include <mach/fb.h>
+#include <mach/hardware.h>
 #include <mach/regs-gpio.h>
 #include <mach/regs-lcd.h>
 #include <mach/gpio-samsung.h>
 
-#include <mach/h1940.h>
-#include <linux/platform_data/mtd-nand-s3c2410.h>
-#include <mach/fb.h>
-
 #include <plat/clock.h>
-#include <plat/devs.h>
 #include <plat/cpu.h>
+#include <plat/devs.h>
 #include <plat/pm.h>
-<<<<<<< HEAD
-=======
-#include <plat/regs-serial.h>
 #include <plat/samsung-time.h>
->>>>>>> 6fa52ed33bea
 
 #include "common.h"
+#include "h1940.h"
 
 static struct map_desc rx3715_iodesc[] __initdata = {
 	/* dump ISA space somewhere unused */
@@ -214,10 +210,6 @@ MACHINE_START(RX3715, "IPAQ-RX3715")
 	.reserve	= rx3715_reserve,
 	.init_irq	= s3c2440_init_irq,
 	.init_machine	= rx3715_init_machine,
-<<<<<<< HEAD
-	.timer		= &s3c24xx_timer,
-=======
 	.init_time	= samsung_timer_init,
->>>>>>> 6fa52ed33bea
 	.restart	= s3c244x_restart,
 MACHINE_END
