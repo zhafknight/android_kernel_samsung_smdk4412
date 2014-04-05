@@ -16,6 +16,7 @@ obj-$(CONFIG_ARM_TIMER_SP804)	+= timer-sp.o
 obj-$(CONFIG_FIQ_GLUE)		+= fiq_glue.o fiq_glue_setup.o
 obj-$(CONFIG_FIQ_DEBUGGER)	+= fiq_debugger.o
 obj-$(CONFIG_MCPM)		+= mcpm_head.o mcpm_entry.o mcpm_platsmp.o vlock.o
+CFLAGS_REMOVE_mcpm_entry.o	= -pg
 AFLAGS_mcpm_head.o		:= -march=armv7-a
 AFLAGS_vlock.o			:= -march=armv7-a
 obj-$(CONFIG_TI_PRIV_EDMA)	+= edma.o
