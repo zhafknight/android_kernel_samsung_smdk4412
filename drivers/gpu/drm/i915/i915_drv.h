@@ -1001,9 +1001,6 @@ struct intel_gen6_power_mgmt {
 	u8 rp1_freq;		/* "less than" RP0 power/freqency */
 	u8 rp0_freq;		/* Non-overclocked max frequency. */
 
-	bool rp_up_masked;
-	bool rp_down_masked;
-
 	int last_adj;
 	enum { LOW_POWER, BETWEEN, HIGH_POWER } power;
 
@@ -2131,11 +2128,11 @@ extern void intel_uncore_check_errors(struct drm_device *dev);
 extern void intel_uncore_fini(struct drm_device *dev);
 
 void
-i915_enable_pipestat(drm_i915_private_t *dev_priv, enum pipe pipe,
+i915_enable_pipestat(struct drm_i915_private *dev_priv, enum pipe pipe,
 		     u32 status_mask);
 
 void
-i915_disable_pipestat(drm_i915_private_t *dev_priv, enum pipe pipe,
+i915_disable_pipestat(struct drm_i915_private *dev_priv, enum pipe pipe,
 		      u32 status_mask);
 
 void valleyview_enable_display_irqs(struct drm_i915_private *dev_priv);
@@ -2505,7 +2502,7 @@ void i915_gem_object_release_stolen(struct drm_i915_gem_object *obj);
 /* i915_gem_tiling.c */
 static inline bool i915_gem_object_needs_bit17_swizzle(struct drm_i915_gem_object *obj)
 {
-	drm_i915_private_t *dev_priv = obj->base.dev->dev_private;
+	struct drm_i915_private *dev_priv = obj->base.dev->dev_private;
 
 	return dev_priv->mm.bit_6_swizzle_x == I915_BIT_6_SWIZZLE_9_10_17 &&
 		obj->tiling_mode != I915_TILING_NONE;
