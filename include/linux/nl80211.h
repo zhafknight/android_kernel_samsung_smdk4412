@@ -566,6 +566,12 @@
  *	(&struct nl80211_vendor_cmd_info) of the supported vendor commands.
  *	This may also be sent as an event with the same attributes.
  *
+ * @NL80211_CMD_SET_QOS_MAP: Set Interworking QoS mapping for IP DSCP values.
+ *	The QoS mapping information is included in %NL80211_ATTR_QOS_MAP. If
+ *	that attribute is not included, QoS mapping is disabled. Since this
+ *	QoS mapping is relevant for IP packets, it is only valid during an
+ *	association. This is cleared on disassociation and AP restart.
+ *
  * @NL80211_CMD_CH_SWITCH_NOTIFY: An AP or GO may decide to switch channels
  *	independently of the userspace SME, send this event indicating
  *	%NL80211_ATTR_IFINDEX is now on %NL80211_ATTR_WIPHY_FREQ and the
@@ -766,6 +772,8 @@ enum nl80211_commands {
 	NL80211_CMD_SET_NOACK_MAP,
 
 	NL80211_CMD_VENDOR,
+
+	NL80211_CMD_SET_QOS_MAP,
 
 	NL80211_CMD_CH_SWITCH_NOTIFY,
 
@@ -1393,6 +1401,10 @@ enum nl80211_commands {
  * @NL80211_ATTR_VENDOR_EVENTS: used for event list advertising in the wiphy
  *	info, containing a nested array of possible events
  *
+ * @NL80211_ATTR_QOS_MAP: IP DSCP mapping for Interworking QoS mapping. This
+ *	data is in the format defined for the payload of the QoS Map Set element
+ *	in IEEE Std 802.11-2012, 8.4.2.97.
+ *
  * @NL80211_ATTR_SCAN_FLAGS: scan request control flags (u32)
  *
  * @NL80211_ATTR_P2P_CTWINDOW: P2P GO Client Traffic Window (u8), used with
@@ -1726,6 +1738,8 @@ enum nl80211_attrs {
 	NL80211_ATTR_VENDOR_DATA,
 
 	NL80211_ATTR_VENDOR_EVENTS,
+
+	NL80211_ATTR_QOS_MAP,
 
 	NL80211_ATTR_SCAN_FLAGS,
 
