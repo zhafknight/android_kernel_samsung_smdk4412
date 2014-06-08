@@ -22,9 +22,17 @@
 #include <asm/assembler.h>
 #include <asm/asm-offsets.h>
 
+@ VFP entry point.
+@
+@  r0  = instruction opcode (32-bit ARM or two 16-bit Thumb)
+@  r2  = PC value to resume execution after successful emulation
+@  r9  = normal "successful" return address
+@  r10 = this threads thread_info structure
+@  lr  = unrecognised instruction return address
+@  IRQs enabled.
+@
 ENTRY(do_vfp)
 	inc_preempt_count r10, r4
-	enable_irq
 	str	r2, [sp, #S_PC]		@ update regs->ARM_pc for Thumb 2 case
  	ldr	r4, .LCvfp
 	ldr	r11, [r10, #TI_CPU]	@ CPU number

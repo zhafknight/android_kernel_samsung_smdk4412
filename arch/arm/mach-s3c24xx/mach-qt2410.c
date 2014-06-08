@@ -304,9 +304,14 @@ __setup("tft=", qt2410_tft_setup);
 static void __init qt2410_map_io(void)
 {
 	s3c24xx_init_io(qt2410_iodesc, ARRAY_SIZE(qt2410_iodesc));
-	s3c24xx_init_clocks(12*1000*1000);
 	s3c24xx_init_uarts(smdk2410_uartcfgs, ARRAY_SIZE(smdk2410_uartcfgs));
 	samsung_set_timer_source(SAMSUNG_PWM3, SAMSUNG_PWM4);
+}
+
+static void __init qt2410_init_time(void)
+{
+	s3c2410_init_clocks(12000000);
+	samsung_timer_init();
 }
 
 static void __init qt2410_machine_init(void)
@@ -347,9 +352,13 @@ MACHINE_START(QT2410, "QT2410")
 	.init_irq	= s3c2410_init_irq,
 	.init_machine	= qt2410_machine_init,
 <<<<<<< HEAD
+<<<<<<< HEAD
 	.timer		= &s3c24xx_timer,
 =======
 	.init_time	= samsung_timer_init,
 >>>>>>> 6fa52ed33bea
+=======
+	.init_time	= qt2410_init_time,
+>>>>>>> 3f17ea6dea8b
 	.restart	= s3c2410_restart,
 MACHINE_END

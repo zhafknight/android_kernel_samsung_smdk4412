@@ -51,6 +51,7 @@
 #include <plat/gpio-cfg.h>
 #include <plat/gpio-cfg-helpers.h>
 
+<<<<<<< HEAD
 /* S3C2442 extended clock support */
 
 static unsigned long s3c2442_camif_upll_round(struct clk *clk,
@@ -161,6 +162,9 @@ static __init int s3c2442_clk_init(void)
 
 arch_initcall(s3c2442_clk_init);
 
+=======
+#include "common.h"
+>>>>>>> 3f17ea6dea8b
 
 static struct device s3c2442_dev = {
 	.bus		= &s3c2442_subsys,

@@ -55,7 +55,6 @@
 #include <linux/mtd/partitions.h>
 
 #include <plat/gpio-cfg.h>
-#include <plat/clock.h>
 #include <plat/devs.h>
 #include <plat/cpu.h>
 #include <plat/samsung-time.h>
@@ -526,9 +525,14 @@ static struct platform_device *mini2440_devices[] __initdata = {
 static void __init mini2440_map_io(void)
 {
 	s3c24xx_init_io(mini2440_iodesc, ARRAY_SIZE(mini2440_iodesc));
-	s3c24xx_init_clocks(12000000);
 	s3c24xx_init_uarts(mini2440_uartcfgs, ARRAY_SIZE(mini2440_uartcfgs));
 	samsung_set_timer_source(SAMSUNG_PWM3, SAMSUNG_PWM4);
+}
+
+static void __init mini2440_init_time(void)
+{
+	s3c2440_init_clocks(12000000);
+	samsung_timer_init();
 }
 
 /*
@@ -695,7 +699,11 @@ MACHINE_START(MINI2440, "MINI2440")
 	.timer		= &s3c24xx_timer,
 =======
 	.init_irq	= s3c2440_init_irq,
+<<<<<<< HEAD
 	.init_time	= samsung_timer_init,
 >>>>>>> 6fa52ed33bea
+=======
+	.init_time	= mini2440_init_time,
+>>>>>>> 3f17ea6dea8b
 	.restart	= s3c244x_restart,
 MACHINE_END
