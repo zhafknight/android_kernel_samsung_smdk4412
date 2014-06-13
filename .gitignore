@@ -22,7 +22,6 @@
 *.lst
 *.symtypes
 *.order
-modules.builtin
 *.elf
 *.gz
 *.bz2
@@ -32,6 +31,8 @@ modules.builtin
 *.lzo
 *.patch
 *.gcno
+modules.builtin
+Module.symvers
 
 #
 # Top-level generic files
@@ -43,7 +44,6 @@ modules.builtin
 /vmlinuz
 /System.map
 /Module.markers
-/Module.symvers
 
 #
 # Debian directory (make deb-pkg)
