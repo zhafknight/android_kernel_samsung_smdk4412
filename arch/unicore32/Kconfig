@@ -54,9 +54,6 @@ config ARCH_HAS_ILOG2_U32
 config ARCH_HAS_ILOG2_U64
 	bool
 
-config ARCH_HAS_CPUFREQ
-	bool
-
 config GENERIC_HWEIGHT
 	def_bool y
 
@@ -90,7 +87,6 @@ config ARCH_PUV3
 	select GENERIC_CLOCKEVENTS
 	select HAVE_CLK
 	select ARCH_REQUIRE_GPIOLIB
-	select ARCH_HAS_CPUFREQ
 
 # CONFIGs for ARCH_PUV3
 
@@ -201,9 +197,7 @@ menu "Power management options"
 
 source "kernel/power/Kconfig"
 
-if ARCH_HAS_CPUFREQ
 source "drivers/cpufreq/Kconfig"
-endif
 
 config ARCH_SUSPEND_POSSIBLE
 	def_bool y if !ARCH_FPGA
