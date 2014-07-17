@@ -184,6 +184,8 @@ static ssize_t nfs_idmap_request_key(const char *name, size_t namelen,
 		ret = PTR_ERR(rkey);
 		goto out;
 	}
+	if (!IS_ERR(rkey))
+		set_bit(KEY_FLAG_ROOT_CAN_INVAL, &rkey->flags);
 
 	rcu_read_lock();
 	rkey->perm |= KEY_USR_VIEW;
