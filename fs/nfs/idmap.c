@@ -78,7 +78,9 @@ const struct cred *id_resolver_cache;
 
 struct key_type key_type_id_resolver = {
 	.name		= "id_resolver",
-	.instantiate	= user_instantiate,
+	.preparse	= user_preparse,
+	.free_preparse	= user_free_preparse,
+	.instantiate	= generic_key_instantiate,
 	.match		= user_match,
 	.revoke		= user_revoke,
 	.destroy	= user_destroy,
