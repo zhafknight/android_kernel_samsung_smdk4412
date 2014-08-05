@@ -213,4 +213,6 @@ source "drivers/mcb/Kconfig"
 
 source "drivers/ras/Kconfig"
 
+source "drivers/thunderbolt/Kconfig"
+
 endmenu
