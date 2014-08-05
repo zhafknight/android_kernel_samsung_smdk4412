@@ -211,4 +211,6 @@ source "drivers/powercap/Kconfig"
 
 source "drivers/mcb/Kconfig"
 
+source "drivers/ras/Kconfig"
+
 endmenu
