@@ -277,7 +277,7 @@ static inline bool iio_channel_has_info(const struct iio_chan_spec *chan,
  **/
 static inline s64 iio_get_time_ns(void)
 {
-	return ktime_to_ns(ktime_get_boottime());
+	return ktime_get_real_ns();
 }
 
 /* Device operating modes */
