@@ -6,7 +6,6 @@
 #include <mach/gpio.h>
 #endif
 
-#ifndef __ARM_GPIOLIB_COMPLEX
 /* Note: this may rely upon the value of ARCH_NR_GPIOS set in mach/gpio.h */
 #include <asm-generic/gpio.h>
 
@@ -14,7 +13,6 @@
 #define gpio_get_value  __gpio_get_value
 #define gpio_set_value  __gpio_set_value
 #define gpio_cansleep   __gpio_cansleep
-#endif
 
 /*
  * Provide a default gpio_to_irq() which should satisfy every case.
