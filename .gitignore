@@ -33,6 +33,7 @@
 *.gcno
 modules.builtin
 Module.symvers
+*.dwo
 
 #
 # Top-level generic files
