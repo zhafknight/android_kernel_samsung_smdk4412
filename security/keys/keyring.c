@@ -512,8 +512,8 @@ struct key *keyring_alloc(const char *description, uid_t uid, gid_t gid,
 /*
  * By default, we keys found by getting an exact match on their descriptions.
  */
-int key_default_cmp(const struct key *key,
-		    const struct key_match_data *match_data)
+bool key_default_cmp(const struct key *key,
+		     const struct key_match_data *match_data)
 {
 	return strcmp(key->description, match_data->raw_data) == 0;
 }
