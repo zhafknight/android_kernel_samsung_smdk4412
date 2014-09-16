@@ -40,7 +40,6 @@ static long rxrpc_read(const struct key *, char __user *, size_t);
 struct key_type key_type_rxrpc = {
 	.name		= "rxrpc",
 	.instantiate	= rxrpc_instantiate,
-	.match		= user_match,
 	.destroy	= rxrpc_destroy,
 	.describe	= rxrpc_describe,
 	.read		= rxrpc_read,
@@ -55,7 +54,6 @@ struct key_type key_type_rxrpc_s = {
 	.name		= "rxrpc_s",
 	.vet_description = rxrpc_vet_description_s,
 	.instantiate	= rxrpc_instantiate_s,
-	.match		= user_match,
 	.destroy	= rxrpc_destroy_s,
 	.describe	= rxrpc_describe,
 };

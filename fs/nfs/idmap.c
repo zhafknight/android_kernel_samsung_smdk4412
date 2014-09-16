@@ -81,7 +81,6 @@ struct key_type key_type_id_resolver = {
 	.preparse	= user_preparse,
 	.free_preparse	= user_free_preparse,
 	.instantiate	= generic_key_instantiate,
-	.match		= user_match,
 	.revoke		= user_revoke,
 	.destroy	= user_destroy,
 	.describe	= user_describe,

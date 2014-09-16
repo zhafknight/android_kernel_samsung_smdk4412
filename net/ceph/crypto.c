@@ -472,7 +472,6 @@ void ceph_key_destroy(struct key *key) {
 struct key_type key_type_ceph = {
 	.name		= "ceph",
 	.instantiate	= ceph_key_instantiate,
-	.match		= ceph_key_match,
 	.destroy	= ceph_key_destroy,
 };
 
