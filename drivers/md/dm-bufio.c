@@ -1484,11 +1484,12 @@ static void __scan(struct dm_bufio_client *c, unsigned long nr_to_scan,
 	struct dm_buffer *b, *tmp;
 
 	for (l = 0; l < LIST_SIZE; l++) {
-		list_for_each_entry_safe_reverse(b, tmp, &c->lru[l], lru_list)
+		list_for_each_entry_safe_reverse(b, tmp, &c->lru[l], lru_list) {
 			if (!__cleanup_old_buffer(b, sc->gfp_mask, 0) &&
 			    !--nr_to_scan)
 				return;
-		dm_bufio_cond_resched();
+			dm_bufio_cond_resched();
+		}
 	}
 }
 
