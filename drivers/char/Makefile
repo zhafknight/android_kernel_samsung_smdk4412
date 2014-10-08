@@ -66,3 +66,4 @@ obj-$(CONFIG_EXYNOS_MEM)	+= exynos_mem.o
 
 obj-$(CONFIG_DIAG_CHAR)		+= diag/
 obj-$(CONFIG_TILE_SROM)		+= tile-srom.o
+obj-$(CONFIG_XILLYBUS)		+= xillybus/
