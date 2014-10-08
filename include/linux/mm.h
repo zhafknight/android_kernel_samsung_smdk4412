@@ -1991,6 +1991,7 @@ static inline struct page *follow_page(struct vm_area_struct *vma,
 #define FOLL_NO_CMA	0x200	/* avoid putting pages to CMA regions */
 #define FOLL_NUMA	0x400	/* force NUMA hinting page fault */
 #define FOLL_MIGRATION	0x800	/* wait for page to replace migration entry */
+#define FOLL_TRIED	0x1000	/* a retry, previous pass started an IO */
 
 typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
 			void *data);
