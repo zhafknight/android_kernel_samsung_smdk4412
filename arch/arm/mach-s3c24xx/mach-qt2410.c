@@ -351,14 +351,5 @@ MACHINE_START(QT2410, "QT2410")
 	.map_io		= qt2410_map_io,
 	.init_irq	= s3c2410_init_irq,
 	.init_machine	= qt2410_machine_init,
-<<<<<<< HEAD
-<<<<<<< HEAD
-	.timer		= &s3c24xx_timer,
-=======
-	.init_time	= samsung_timer_init,
->>>>>>> 6fa52ed33bea
-=======
 	.init_time	= qt2410_init_time,
->>>>>>> 3f17ea6dea8b
-	.restart	= s3c2410_restart,
 MACHINE_END

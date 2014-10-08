@@ -14,6 +14,7 @@
 
 #include <linux/kernel.h>
 #include <linux/types.h>
+#include <linux/gpio.h>
 #include <linux/interrupt.h>
 #include <linux/list.h>
 #include <linux/timer.h>
@@ -34,7 +35,6 @@
 #include <asm/mach-types.h>
 
 #include <mach/regs-gpio.h>
-#include <mach/regs-mem.h>
 #include <mach/regs-lcd.h>
 #include <mach/gpio-samsung.h>
 #include <linux/platform_data/mtd-nand-s3c2410.h>
@@ -216,16 +216,6 @@ MACHINE_START(AT2440EVB, "AT2440EVB")
 	.atag_offset	= 0x100,
 	.map_io		= at2440evb_map_io,
 	.init_machine	= at2440evb_init,
-<<<<<<< HEAD
-	.init_irq	= s3c24xx_init_irq,
-	.timer		= &s3c24xx_timer,
-=======
 	.init_irq	= s3c2440_init_irq,
-<<<<<<< HEAD
-	.init_time	= samsung_timer_init,
->>>>>>> 6fa52ed33bea
-=======
 	.init_time	= at2440evb_init_time,
->>>>>>> 3f17ea6dea8b
-	.restart	= s3c244x_restart,
 MACHINE_END

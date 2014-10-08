@@ -35,7 +35,6 @@
 #include <mach/regs-gpio.h>
 #include <mach/regs-lcd.h>
 
-#include <mach/idle.h>
 #include <mach/fb.h>
 #include <linux/platform_data/i2c-s3c2410.h>
 
@@ -185,14 +184,5 @@ MACHINE_START(S3C2440, "SMDK2440")
 	.init_irq	= s3c2440_init_irq,
 	.map_io		= smdk2440_map_io,
 	.init_machine	= smdk2440_machine_init,
-<<<<<<< HEAD
-<<<<<<< HEAD
-	.timer		= &s3c24xx_timer,
-=======
-	.init_time	= samsung_timer_init,
->>>>>>> 6fa52ed33bea
-=======
 	.init_time	= smdk2440_init_time,
->>>>>>> 3f17ea6dea8b
-	.restart	= s3c244x_restart,
 MACHINE_END

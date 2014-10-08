@@ -40,7 +40,6 @@
 
 #include <mach/regs-gpio.h>
 #include <linux/platform_data/leds-s3c24xx.h>
-#include <mach/regs-mem.h>
 #include <mach/regs-lcd.h>
 #include <mach/irqs.h>
 #include <mach/gpio-samsung.h>
@@ -694,16 +693,6 @@ MACHINE_START(MINI2440, "MINI2440")
 	.atag_offset	= 0x100,
 	.map_io		= mini2440_map_io,
 	.init_machine	= mini2440_init,
-<<<<<<< HEAD
-	.init_irq	= s3c24xx_init_irq,
-	.timer		= &s3c24xx_timer,
-=======
 	.init_irq	= s3c2440_init_irq,
-<<<<<<< HEAD
-	.init_time	= samsung_timer_init,
->>>>>>> 6fa52ed33bea
-=======
 	.init_time	= mini2440_init_time,
->>>>>>> 3f17ea6dea8b
-	.restart	= s3c244x_restart,
 MACHINE_END
