@@ -8,6 +8,7 @@ menuconfig DRM
 	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
 	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && MMU && HAS_DMA
 	select HDMI
+	select FB_CMDLINE
 	select I2C
 	select I2C_ALGOBIT
 	select DMA_SHARED_BUFFER
@@ -23,11 +24,6 @@ menuconfig DRM
 config DRM_MIPI_DSI
 	bool
 	depends on DRM
-
-config DRM_USB
-	tristate
-	depends on DRM
-	select USB
 
 config DRM_KMS_HELPER
 	tristate
@@ -114,6 +110,7 @@ config DRM_RADEON
 	select HWMON
 	select BACKLIGHT_CLASS_DEVICE
 	select INTERVAL_TREE
+	select MMU_NOTIFIER
 	help
 	  Choose this option if you have an ATI Radeon graphics card.  There
 	  are both PCI and AGP versions.  You don't need to choose this to
@@ -169,9 +166,6 @@ config DRM_SAVAGE
 	  chipset. If M is selected the module will be called savage.
 
 source "drivers/gpu/drm/exynos/Kconfig"
-
-config DRM_MALI
-	bool "Mali 200/400 DRM"
 
 source "drivers/gpu/drm/vmwgfx/Kconfig"
 
