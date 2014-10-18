@@ -3085,15 +3085,13 @@ S:	Supported
 F:	drivers/acpi/dock.c
 
 DOCUMENTATION
-M:	Randy Dunlap <rdunlap@infradead.org>
+M:	Jonathan Corbet <corbet@lwn.net>
 L:	linux-doc@vger.kernel.org
-T:	quilt http://www.infradead.org/~rdunlap/Doc/patches/
 S:	Maintained
 F:	Documentation/
 X:	Documentation/ABI/
 X:	Documentation/devicetree/
 X:	Documentation/[a-z][a-z]_[A-Z][A-Z]/
-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jikos/doc.git
 
 DOUBLETALK DRIVER
 M:	"James R. Van Zandt" <jrv@vanzandt.mv.com>
@@ -4205,8 +4203,7 @@ S:	Maintained
 F:	drivers/media/usb/gspca/t613.c
 
 GSPCA USB WEBCAM DRIVER
-M:	Jean-Francois Moine <moinejf@free.fr>
-W:	http://moinejf.free.fr
+M:	Hans de Goede <hdegoede@redhat.com>
 L:	linux-media@vger.kernel.org
 T:	git git://linuxtv.org/media_tree.git
 S:	Maintained
@@ -4566,7 +4563,6 @@ M:	Mika Westerberg <mika.westerberg@linux.intel.com>
 L:	linux-i2c@vger.kernel.org
 L:	linux-acpi@vger.kernel.org
 S:	Maintained
-F:	drivers/i2c/i2c-acpi.c
 
 I2C-TAOS-EVM DRIVER
 M:	Jean Delvare <jdelvare@suse.de>
