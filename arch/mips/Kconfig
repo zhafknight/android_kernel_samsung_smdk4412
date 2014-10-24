@@ -2069,6 +2069,7 @@ config MIPS_CPS
 	  support is unavailable.
 
 config MIPS_CPS_PM
+	depends on MIPS_CPS
 	select MIPS_CPC
 	bool
 
