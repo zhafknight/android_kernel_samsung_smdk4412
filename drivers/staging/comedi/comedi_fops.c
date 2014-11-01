@@ -1462,6 +1462,7 @@ static int __comedi_get_user_chanlist(struct comedi_device *dev,
 	unsigned int *chanlist;
 	int ret;
 
+	cmd->chanlist = NULL;
 	chanlist = memdup_user(user_chanlist,
 			       cmd->chanlist_len * sizeof(unsigned int));
 	if (IS_ERR(chanlist))
@@ -1615,6 +1616,8 @@ static int do_cmdtest_ioctl(struct comedi_device *dev,
 
 	ret = s->do_cmdtest(dev, s, &cmd);
 
+	kfree(cmd.chanlist);	/* free kernel copy of user chanlist */
+
 	/* restore chanlist pointer before copying back */
 	cmd.chanlist = (unsigned int __force *)user_chanlist;
 
@@ -1641,7 +1644,7 @@ static int do_cmdtest_ioctl(struct comedi_device *dev,
 
 */
 
-static int do_lock_ioctl(struct comedi_device *dev, unsigned int arg,
+static int do_lock_ioctl(struct comedi_device *dev, unsigned long arg,
 			 void *file)
 {
 	int ret = 0;
@@ -1678,7 +1681,7 @@ static int do_lock_ioctl(struct comedi_device *dev, unsigned int arg,
 	This function isn't protected by the semaphore, since
 	we already own the lock.
 */
-static int do_unlock_ioctl(struct comedi_device *dev, unsigned int arg,
+static int do_unlock_ioctl(struct comedi_device *dev, unsigned long arg,
 			   void *file)
 {
 	struct comedi_subdevice *s;
@@ -1713,7 +1716,7 @@ static int do_unlock_ioctl(struct comedi_device *dev, unsigned int arg,
 		nothing
 
 */
-static int do_cancel_ioctl(struct comedi_device *dev, unsigned int arg,
+static int do_cancel_ioctl(struct comedi_device *dev, unsigned long arg,
 			   void *file)
 {
 	struct comedi_subdevice *s;
@@ -1750,7 +1753,7 @@ static int do_cancel_ioctl(struct comedi_device *dev, unsigned int arg,
 		nothing
 
 */
-static int do_poll_ioctl(struct comedi_device *dev, unsigned int arg,
+static int do_poll_ioctl(struct comedi_device *dev, unsigned long arg,
 			 void *file)
 {
 	struct comedi_subdevice *s;
