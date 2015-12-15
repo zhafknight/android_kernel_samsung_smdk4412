@@ -49,3 +49,7 @@ obj-$(CONFIG_DM_VERITY)		+= dm-verity.o
 ifeq ($(CONFIG_DM_UEVENT),y)
 dm-mod-objs			+= dm-uevent.o
 endif
+
+ifeq ($(CONFIG_DM_ANDROID_VERITY),y)
+dm-verity-objs			+= dm-android-verity.o
+endif
