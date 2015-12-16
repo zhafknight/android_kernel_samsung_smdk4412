@@ -14,12 +14,10 @@
  * access behavior.
  */
 
-#include "dm-bufio.h"
+#include "dm-verity.h"
 
 #include <linux/module.h>
-#include <linux/device-mapper.h>
 #include <linux/reboot.h>
-#include <crypto/hash.h>
 
 #define DM_MSG_PREFIX			"verity"
 
@@ -28,7 +26,6 @@
 
 #define DM_VERITY_DEFAULT_PREFETCH_SIZE	262144
 
-#define DM_VERITY_MAX_LEVELS		63
 #define DM_VERITY_MAX_CORRUPTED_ERRS	100
 
 #define DM_VERITY_OPT_LOGGING		"ignore_corruption"
@@ -39,90 +36,6 @@
 static unsigned dm_verity_prefetch_cluster = DM_VERITY_DEFAULT_PREFETCH_SIZE;
 
 module_param_named(prefetch_cluster, dm_verity_prefetch_cluster, uint, S_IRUGO | S_IWUSR);
-
-enum verity_mode {
-	DM_VERITY_MODE_EIO,
-	DM_VERITY_MODE_LOGGING,
-	DM_VERITY_MODE_RESTART
-};
-
-enum verity_block_type {
-	DM_VERITY_BLOCK_TYPE_DATA,
-	DM_VERITY_BLOCK_TYPE_METADATA
-};
-
-struct dm_verity {
-	struct dm_dev *data_dev;
-	struct dm_dev *hash_dev;
-	struct dm_target *ti;
-	struct dm_bufio_client *bufio;
-	char *alg_name;
-	struct crypto_shash *tfm;
-	u8 *root_digest;	/* digest of the root block */
-	u8 *salt;		/* salt: its size is salt_size */
-	unsigned salt_size;
-	sector_t data_start;	/* data offset in 512-byte sectors */
-	sector_t hash_start;	/* hash start in blocks */
-	sector_t data_blocks;	/* the number of data blocks */
-	sector_t hash_blocks;	/* the number of hash blocks */
-	unsigned char data_dev_block_bits;	/* log2(data blocksize) */
-	unsigned char hash_dev_block_bits;	/* log2(hash blocksize) */
-	unsigned char hash_per_block_bits;	/* log2(hashes in hash block) */
-	unsigned char levels;	/* the number of tree levels */
-	unsigned char version;
-	unsigned digest_size;	/* digest size for the current hash algorithm */
-	unsigned shash_descsize;/* the size of temporary space for crypto */
-	int hash_failed;	/* set to 1 if hash of any block failed */
-	enum verity_mode mode;	/* mode for handling verification errors */
-	unsigned corrupted_errs;/* Number of errors for corrupted blocks */
-
-	struct workqueue_struct *verify_wq;
-
-	/* starting blocks for each tree level. 0 is the lowest level. */
-	sector_t hash_level_block[DM_VERITY_MAX_LEVELS];
-};
-
-struct dm_verity_io {
-	struct dm_verity *v;
-
-	/* original values of bio->bi_end_io and bio->bi_private */
-	bio_end_io_t *orig_bi_end_io;
-	void *orig_bi_private;
-
-	sector_t block;
-	unsigned n_blocks;
-
-	/* saved bio vector */
-	struct bio_vec *io_vec;
-	unsigned io_vec_size;
-
-	struct work_struct work;
-
-	/*
-	 * Three variably-size fields follow this struct:
-	 *
-	 * u8 hash_desc[v->shash_descsize];
-	 * u8 real_digest[v->digest_size];
-	 * u8 want_digest[v->digest_size];
-	 *
-	 * To access them use: io_hash_desc(), io_real_digest() and io_want_digest().
-	 */
-};
-
-static struct shash_desc *io_hash_desc(struct dm_verity *v, struct dm_verity_io *io)
-{
-	return (struct shash_desc *)(io + 1);
-}
-
-static u8 *io_real_digest(struct dm_verity *v, struct dm_verity_io *io)
-{
-	return (u8 *)(io + 1) + v->shash_descsize;
-}
-
-static u8 *io_want_digest(struct dm_verity *v, struct dm_verity_io *io)
-{
-	return (u8 *)(io + 1) + v->shash_descsize + v->digest_size;
-}
 
 /*
  * Auxiliary structure appended to each dm-bufio buffer. If the value
@@ -169,6 +82,7 @@ static sector_t verity_position_at_level(struct dm_verity *v, sector_t block,
 {
 	return block >> (level * v->hash_per_block_bits);
 }
+
 
 static void verity_hash_at_level(struct dm_verity *v, sector_t block, int level,
 				 sector_t *hash_block, unsigned *offset)
@@ -243,12 +157,12 @@ out:
  * Verify hash of a metadata block pertaining to the specified data block
  * ("block" argument) at a specified level ("level" argument).
  *
- * On successful return, io_want_digest(v, io) contains the hash value for
- * a lower tree level or for the data block (if we're at the lowest leve).
+ * On successful return, verity_io_want_digest(v, io) contains the hash value
+ * for a lower tree level or for the data block (if we're at the lowest level).
  *
  * If "skip_unverified" is true, unverified buffer is skipped and 1 is returned.
  * If "skip_unverified" is false, unverified buffer is hashed and verified
- * against current value of io_want_digest(v, io).
+ * against current value of verity_io_want_digest(v, io).
  */
 static int verity_verify_level(struct dm_verity_io *io, sector_t block,
 			       int level, bool skip_unverified)
@@ -278,7 +192,7 @@ static int verity_verify_level(struct dm_verity_io *io, sector_t block,
 			goto release_ret_r;
 		}
 
-		desc = io_hash_desc(v, io);
+		desc = verity_io_hash_desc(v, io);
 		desc->tfm = v->tfm;
 		desc->flags = CRYPTO_TFM_REQ_MAY_SLEEP;
 		r = crypto_shash_init(desc);
@@ -309,13 +223,13 @@ static int verity_verify_level(struct dm_verity_io *io, sector_t block,
 			}
 		}
 
-		result = io_real_digest(v, io);
+		result = verity_io_real_digest(v, io);
 		r = crypto_shash_final(desc, result);
 		if (r < 0) {
 			DMERR("crypto_shash_final failed: %d", r);
 			goto release_ret_r;
 		}
-		if (unlikely(memcmp(result, io_want_digest(v, io), v->digest_size))) {
+		if (unlikely(memcmp(result, verity_io_want_digest(v, io), v->digest_size))) {
 			if (verity_handle_err(v, DM_VERITY_BLOCK_TYPE_METADATA,
 					      hash_block)) {
 				r = -EIO;
@@ -327,7 +241,7 @@ static int verity_verify_level(struct dm_verity_io *io, sector_t block,
 
 	data += offset;
 
-	memcpy(io_want_digest(v, io), data, v->digest_size);
+	memcpy(verity_io_want_digest(v, io), data, v->digest_size);
 
 	dm_bufio_release(buf);
 	return 0;
@@ -369,7 +283,7 @@ static int verity_verify_io(struct dm_verity_io *io)
 				return r;
 		}
 
-		memcpy(io_want_digest(v, io), v->root_digest, v->digest_size);
+		memcpy(verity_io_want_digest(v, io), v->root_digest, v->digest_size);
 
 		for (i = v->levels - 1; i >= 0; i--) {
 			int r = verity_verify_level(io, io->block + b, i, false);
@@ -378,7 +292,7 @@ static int verity_verify_io(struct dm_verity_io *io)
 		}
 
 test_block_hash:
-		desc = io_hash_desc(v, io);
+		desc = verity_io_hash_desc(v, io);
 		desc->tfm = v->tfm;
 		desc->flags = CRYPTO_TFM_REQ_MAY_SLEEP;
 		r = crypto_shash_init(desc);
@@ -430,19 +344,18 @@ test_block_hash:
 			}
 		}
 
-		result = io_real_digest(v, io);
+		result = verity_io_real_digest(v, io);
 		r = crypto_shash_final(desc, result);
 		if (r < 0) {
 			DMERR("crypto_shash_final failed: %d", r);
 			return r;
 		}
-		if (unlikely(memcmp(result, io_want_digest(v, io), v->digest_size))) {
+		if (unlikely(memcmp(result, verity_io_real_digest(v, io), v->digest_size))) {
 			if (verity_handle_err(v, DM_VERITY_BLOCK_TYPE_DATA,
 					      io->block + b))
 				return -EIO;
 		}
 	}
-	BUG_ON(vector != io->io_vec_size);
 	BUG_ON(offset);
 
 	return 0;
