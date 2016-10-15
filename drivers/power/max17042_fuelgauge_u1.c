@@ -27,6 +27,8 @@
 #include <linux/irq.h>
 #include <linux/gpio.h>
 
+#define BATTERY_WEAR_CAPACITY 20
+
 static ssize_t sec_fg_show_property(struct device *dev,
 				    struct device_attribute *attr, char *buf);
 
@@ -58,6 +60,10 @@ struct max17042_chip {
 #endif
 };
 
+static int compensate_soc(int wearCapacity, int socValue)
+{
+	return (((socValue - wearCapacity ) * 100) / (100 - wearCapacity));
+}
 static int max17042_get_property(struct power_supply *psy,
 			    enum power_supply_property psp,
 			    union power_supply_propval *val)
@@ -411,6 +417,8 @@ static void max17042_get_soc(struct i2c_client *client)
 
 	soc = min(soc, 100);
 
+	soc = compensate_soc(BATTERY_WEAR_CAPACITY, soc); 
+	soc = max(soc, 0);
 	chip->soc = soc;
 
 #ifndef PRODUCT_SHIP
