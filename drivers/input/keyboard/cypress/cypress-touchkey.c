@@ -204,6 +204,8 @@ static bool blnww = false;
 static int led_fadein = 0, led_fadeout = 0;
 static int led_on_touch = 0;
 
+static DEFINE_MUTEX(touchkey_power_control_mutex);
+
 #endif
 
 MODULE_DEVICE_TABLE(i2c, sec_touchkey_id);
@@ -1038,13 +1040,16 @@ static int sec_touchkey_early_suspend(struct early_suspend *h)
 	}
 	bln_suspended = 1;
 #endif
+	mutex_lock(&touchkey_power_control_mutex);
+	printk(KERN_DEBUG "[TouchKey-LED] %s: Locking touchkey_power_control_mutex \n", __func__);
 
 	/* disable ldo18 */
 	tkey_i2c->pdata->led_power_on(0);
 
 	/* disable ldo11 */
 	tkey_i2c->pdata->power_on(0);
-
+	printk(KERN_DEBUG "[TouchKey-LED] %s: Unlocking touchkey_power_control_mutex \n", __func__);
+	mutex_unlock(&touchkey_power_control_mutex);
 
 	mutex_unlock(&touchkey_enable_mutex);
 	return 0;
@@ -2109,6 +2114,8 @@ static DEFINE_MUTEX(led_fadeout_mutex);
 static void led_fadeout_process(struct work_struct *work)
 {
 	printk(KERN_DEBUG "[TouchKey-LED] %s\n", __func__);
+	mutex_lock(&touchkey_power_control_mutex);
+	printk(KERN_DEBUG "[TouchKey-LED] %s: Locking touchkey_power_control_mutex \n", __func__);
 
 	if (bln_tkey_i2c == NULL) {
 		printk(KERN_ERR "%s: no bln_tkey_i2c\n", __func__);
@@ -2143,6 +2150,8 @@ static void led_fadeout_process(struct work_struct *work)
 	printk(KERN_DEBUG "[TouchKey-LED] %s: Restore voltage after turning LED off\n", __func__);
 	touchkey_voltage = touchkey_voltage_brightness;
 	change_touch_key_led_voltage(touchkey_voltage);
+	printk(KERN_DEBUG "[TouchKey-LED] %s: Unlocking touchkey_power_control_mutex \n", __func__);
+	mutex_unlock(&touchkey_power_control_mutex);
 }
 
 static void led_fadein_process(struct work_struct *work)
