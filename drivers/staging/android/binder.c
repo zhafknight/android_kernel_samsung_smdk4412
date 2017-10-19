@@ -837,7 +837,7 @@ binder_enqueue_work_ilocked(struct binder_work *work,
 }
 
 /**
- * binder_enqueue_deferred_thread_work_ilocked() - Add deferred thread work
+ * binder_enqueue_thread_work_ilocked_nowake() - Add thread work
  * @thread:       thread to queue work to
  * @work:         struct binder_work to add to list
  *
@@ -848,10 +848,9 @@ binder_enqueue_work_ilocked(struct binder_work *work,
  * Requires the proc->inner_lock to be held.
  */
 static void
-binder_enqueue_deferred_thread_work_ilocked(struct binder_thread *thread,
-					    struct binder_work *work)
+binder_enqueue_thread_work_ilocked_nowake(struct binder_thread *thread,
+					  struct binder_work *work)
 {
-	WARN_ON(!list_empty(&thread->waiting_thread_node));
 	binder_enqueue_work_ilocked(work, &thread->todo);
 }
 
@@ -869,7 +868,6 @@ static void
 binder_enqueue_thread_work_ilocked(struct binder_thread *thread,
 				   struct binder_work *work)
 {
-	WARN_ON(!list_empty(&thread->waiting_thread_node));
 	binder_enqueue_work_ilocked(work, &thread->todo);
 	thread->process_todo = true;
 }
@@ -1435,9 +1433,18 @@ static int binder_inc_node_nilocked(struct binder_node *node, int strong,
 			struct binder_thread *thread = container_of(target_list,
 						    struct binder_thread, todo);
 			binder_dequeue_work_ilocked(&node->work);
-			BUG_ON(&thread->todo != target_list);
-			binder_enqueue_deferred_thread_work_ilocked(thread,
-								   &node->work);
+			/*
+			 * Note: this function is the only place where we queue
+			 * directly to a thread->todo without using the
+			 * corresponding binder_enqueue_thread_work() helper
+			 * functions; in this case it's ok to not set the
+			 * process_todo flag, since we know this node work will
+			 * always be followed by other work that starts queue
+			 * processing: in case of synchronous transactions, a
+			 * BR_REPLY or BR_ERROR; in case of oneway
+			 * transactions, a BR_TRANSACTION_COMPLETE.
+			 */
+			binder_enqueue_work_ilocked(&node->work, target_list);
 		}
 	} else {
 		if (!internal)
@@ -3429,14 +3436,7 @@ static void binder_transaction(struct binder_proc *proc,
 	} else if (!(t->flags & TF_ONE_WAY)) {
 		BUG_ON(t->buffer->async_transaction != 0);
 		binder_inner_proc_lock(proc);
-		/*
-		 * Defer the TRANSACTION_COMPLETE, so we don't return to
-		 * userspace immediately; this allows the target process to
-		 * immediately start processing this transaction, reducing
-		 * latency. We will then return the TRANSACTION_COMPLETE when
-		 * the target replies (or there is an error).
-		 */
-		binder_enqueue_deferred_thread_work_ilocked(thread, tcomplete);
+		binder_enqueue_thread_work_ilocked_nowake(thread, tcomplete);
 		t->need_reply = 1;
 		t->from_parent = thread->transaction_stack;
 		thread->transaction_stack = t;
