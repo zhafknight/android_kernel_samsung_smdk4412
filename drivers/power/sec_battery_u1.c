@@ -256,6 +256,8 @@ enum batt_temp_extra {
 };
 #endif
 
+int poweroff_charging;
+
 static ssize_t sec_bat_show_property(struct device *dev,
 				     struct device_attribute *attr, char *buf);
 
@@ -924,7 +926,8 @@ static int sec_bat_check_temper(struct sec_bat_info *info)
 	info->batt_temp = temp;
 
 	if (info->get_lpcharging_state) {
-		if (info->get_lpcharging_state()) {
+		poweroff_charging = info->get_lpcharging_state();
+		if (poweroff_charging) {
 			if (temp_radc >= HIGH_BLOCK_TEMP_ADC_LPM) {
 				if (health != POWER_SUPPLY_HEALTH_OVERHEAT &&
 				    health !=
