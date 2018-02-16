@@ -926,8 +926,7 @@ static int sec_bat_check_temper(struct sec_bat_info *info)
 	info->batt_temp = temp;
 
 	if (info->get_lpcharging_state) {
-		poweroff_charging = info->get_lpcharging_state();
-		if (poweroff_charging) {
+		if (info->get_lpcharging_state()) {
 			if (temp_radc >= HIGH_BLOCK_TEMP_ADC_LPM) {
 				if (health != POWER_SUPPLY_HEALTH_OVERHEAT &&
 				    health !=
@@ -3238,7 +3237,8 @@ static __devinit int sec_bat_probe(struct platform_device *pdev)
 	info->event_expired_time = 0xFFFFFFFF;
 #endif
 	if (info->get_lpcharging_state) {
-		if (info->get_lpcharging_state())
+		poweroff_charging = info->get_lpcharging_state();
+		if (poweroff_charging)
 			info->polling_interval = POLLING_INTERVAL / 4;
 		else
 			info->polling_interval = POLLING_INTERVAL;
