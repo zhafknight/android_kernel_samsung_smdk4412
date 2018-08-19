@@ -413,6 +413,18 @@
 /* WxKEYCON1 (1~4) */
 #define S3C_KEYCON1_COLVAL(x)			(((x) & 0xffffff) << 0)
 
+/* Window alpha control */
+#define S3C_VIDW_ALPHA0(_x)			(0x21C + ((_x) * 8))
+#define S3C_VIDW_ALPHA1(_x)			(0x220 + ((_x) * 8))
+
+/*  Window rgborder controls */
+
+#define WIN_RGB_ORDER(_win)			(0x2020 + ((_win) * 4))
+
+/* WIN_RGB_ORDERx */
+#define WIN_RGB_ORDER_FORWARD			(0 << 11)
+#define WIN_RGB_ORDER_REVERSE			(1 << 11)
+
 /* DUALRGB */
 #define S3C_DUALRGB_BYPASS_SINGLE	(0 << 0)
 #define S3C_DUALRGB_BYPASS_DUAL	(1 << 0)

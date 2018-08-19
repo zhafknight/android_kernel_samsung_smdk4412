@@ -1330,6 +1330,24 @@ static u32 s3c_fb_padding(int format)
 
 }
 
+static u32 s3c_fb_rgborder(int format)
+{
+	switch (format) {
+	case S3C_FB_PIXEL_FORMAT_RGBX_8888:
+	case S3C_FB_PIXEL_FORMAT_RGBA_8888:
+	case S3C_FB_PIXEL_FORMAT_RGBA_5551:
+		return WIN_RGB_ORDER_REVERSE;
+
+	case S3C_FB_PIXEL_FORMAT_RGB_565:
+	case S3C_FB_PIXEL_FORMAT_BGRA_8888:
+		return WIN_RGB_ORDER_FORWARD;
+
+	default:
+		pr_warn("s3c-fb: unrecognized pixel format %u\n", format);
+		return 0;
+	}
+}
+
 static inline u32 fb_visual(u32 bits_per_pixel, unsigned short palette_sz)
 {
 	switch (bits_per_pixel) {
@@ -1577,6 +1595,25 @@ void s3c_fb_update_regs(struct s3cfb_global *fbdev, struct s3c_reg_data *regs)
 #endif
 }
 
+static bool s3c_fb_validate_x_alignment(struct s3cfb_global *fbdev, int x, u32 w,
+		u32 bits_per_pixel)
+{
+	uint8_t pixel_alignment = 32 / bits_per_pixel;
+
+	if (x % pixel_alignment) {
+		dev_err(fbdev->dev, "left X coordinate not properly aligned to %u-pixel boundary (bpp = %u, x = %u)\n",
+				pixel_alignment, bits_per_pixel, x);
+		return 0;
+	}
+	if ((x + w) % pixel_alignment) {
+		dev_err(fbdev->dev, "right X coordinate not properly aligned to %u-pixel boundary (bpp = %u, x = %u, w = %u)\n",
+				pixel_alignment, bits_per_pixel, x, w);
+		return 0;
+	}
+
+	return 1;
+}
+
 static int s3c_fb_set_win_buffer(struct s3cfb_global *fbdev,
 		struct fb_info *fb, struct s3c_fb_win_config *win_config,
 		struct s3c_reg_data *regs)
@@ -1608,6 +1645,42 @@ static int s3c_fb_set_win_buffer(struct s3cfb_global *fbdev,
 			fb->var.blue.length +
 			fb->var.transp.length +
 			s3c_fb_padding(win_config->format);
+
+	regs->win_rgborder[win_no] = s3c_fb_rgborder(win_config->format);
+
+	if (win_config->w * fb->var.bits_per_pixel / 8 < 128) {
+		dev_err(fbdev->dev, "window must be at least 128 bytes wide "
+				"(width = %u, bpp = %u)\n",
+				win_config->w,
+				fb->var.bits_per_pixel);
+		ret = -EINVAL;
+		goto err_invalid;
+	}
+
+	if (win_config->stride <
+			win_config->w * fb->var.bits_per_pixel / 8) {
+		dev_err(fbdev->dev, "stride shorter than buffer width "
+				"(stride = %u, width = %u, bpp = %u)\n",
+				win_config->stride, win_config->w,
+				fb->var.bits_per_pixel);
+		ret = -EINVAL;
+		goto err_invalid;
+	}
+
+	if (!s3c_fb_validate_x_alignment(fbdev, win_config->x, win_config->w,
+			fb->var.bits_per_pixel)) {
+		ret = -EINVAL;
+		goto err_invalid;
+	}
+	if (win_config->fence_fd >= 0) {
+		regs->fence[win_no] = sync_fence_fdget(win_config->fence_fd);
+		if (!regs->fence[win_no]) {
+			dev_err(fbdev->dev, "failed to import fence fd\n");
+			ret = -EINVAL;
+			goto err_invalid;
+		}
+	} else
+		regs->fence[win_no] = NULL;
 
 	window_size = win_config->stride * win_config->h;
 
@@ -1679,6 +1752,10 @@ static int s3c_fb_set_win_buffer(struct s3cfb_global *fbdev,
 			fb->var.red.length);
 
 	return 0;
+
+err_invalid:
+	fb->var = prev_var;
+	return ret;
 }
 
 static int s3c_fb_set_win_config(struct s3cfb_global *fbdev,

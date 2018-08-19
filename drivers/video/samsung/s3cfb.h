@@ -243,6 +243,8 @@ struct s3cfb_global {
 #ifdef CONFIG_FB_S5P_SYSMMU
 	struct sysmmu_flag	sysmmu;
 #endif
+        struct fb_fix_screeninfo initial_fix;
+        struct fb_var_screeninfo initial_var;
 };
 
 struct s3cfb_window {
@@ -291,6 +293,13 @@ enum s3c_fb_pixel_format {
 	S3C_FB_PIXEL_FORMAT_MAX = 7,
 };
 
+enum s3c_fb_blending {
+	S3C_FB_BLENDING_NONE = 0,
+	S3C_FB_BLENDING_PREMULT = 1,
+	S3C_FB_BLENDING_COVERAGE = 2,
+	S3C_FB_BLENDING_MAX = 3,
+};
+
 struct s3c_fb_win_config {
 	enum {
 		S3C_FB_WIN_STATE_DISABLED = 0,
@@ -307,6 +316,9 @@ struct s3c_fb_win_config {
 			__u32	offset;
 			__u32	stride;
 			enum s3c_fb_pixel_format format;
+			enum s3c_fb_blending blending;
+			int	fence_fd;
+			int     plane_alpha;
 		};
 	};
 
@@ -325,14 +337,19 @@ struct s3c_reg_data {
 	struct list_head	list;
 	u32			shadowcon;
 	u32			wincon[S3C_FB_MAX_WIN];
+	u32			win_rgborder[S3C_FB_MAX_WIN];
 	u32			winmap[S3C_FB_MAX_WIN];
 	u32			vidosd_a[S3C_FB_MAX_WIN];
 	u32			vidosd_b[S3C_FB_MAX_WIN];
 	u32			vidosd_c[S3C_FB_MAX_WIN];
 	u32			vidosd_d[S3C_FB_MAX_WIN];
+	u32			vidw_alpha0[S3C_FB_MAX_WIN];
+	u32			vidw_alpha1[S3C_FB_MAX_WIN];
+	u32			blendeq[S3C_FB_MAX_WIN - 1];
 	u32			vidw_buf_start[S3C_FB_MAX_WIN];
 	u32			vidw_buf_end[S3C_FB_MAX_WIN];
 	u32			vidw_buf_size[S3C_FB_MAX_WIN];
+	struct sync_fence	*fence[S3C_FB_MAX_WIN];
 };
 
 #define BLENDING_NONE			0x0100
