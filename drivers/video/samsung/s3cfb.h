@@ -56,6 +56,9 @@
  */
 #define S3C_FB_MAX_WIN	(5)
 
+#define FENCE_SUPPORT		1
+#define FENCE_NOT_SUPPORT	0
+
 enum s3cfb_data_path_t {
 	DATA_PATH_FIFO = 0,
 	DATA_PATH_DMA = 1,
@@ -204,6 +207,7 @@ struct s3cfb_global {
 	void __iomem		*ielcd_regs;
 	void			*data;
 	struct mutex		lock;
+	struct mutex		output_lock;
 	spinlock_t		slock;
 	struct device		*dev;
 #ifdef CONFIG_BUSFREQ_OPP
@@ -232,6 +236,7 @@ struct s3cfb_global {
 
 	struct sw_sync_timeline *timeline;
 	int			timeline_max;
+        unsigned int            support_fence;
 #ifdef CONFIG_HAS_WAKELOCK
 	struct early_suspend	early_suspend;
 	struct wake_lock	idle_lock;
@@ -243,6 +248,8 @@ struct s3cfb_global {
 #ifdef CONFIG_FB_S5P_SYSMMU
 	struct sysmmu_flag	sysmmu;
 #endif
+        struct fb_fix_screeninfo initial_fix;
+        struct fb_var_screeninfo initial_var;
 };
 
 struct s3cfb_window {
@@ -307,6 +314,7 @@ struct s3c_fb_win_config {
 			__u32	offset;
 			__u32	stride;
 			enum s3c_fb_pixel_format format;
+			int     fence_fd;
 		};
 	};
 
@@ -333,6 +341,7 @@ struct s3c_reg_data {
 	u32			vidw_buf_start[S3C_FB_MAX_WIN];
 	u32			vidw_buf_end[S3C_FB_MAX_WIN];
 	u32			vidw_buf_size[S3C_FB_MAX_WIN];
+	struct sync_fence       *fence[S3C_FB_MAX_WIN];
 };
 
 #define BLENDING_NONE			0x0100
@@ -366,6 +375,8 @@ struct s3c_reg_data {
 #define S3CFB_SET_WIN_MEM_START		_IOW('F', 312, u32)
 #endif
 #define S3CFB_SET_ALPHA_MODE		_IOW('F', 313, unsigned int)
+#define S3CFB_SET_INITIAL_CONFIG        _IO('F', 314)
+#define S3CFB_SUPPORT_FENCE             _IOW('F', 315, unsigned int)
 
 extern struct fb_ops			s3cfb_ops;
 extern struct s3cfb_global	*get_fimd_global(int id);
@@ -473,6 +484,7 @@ extern void s3cfb_late_resume(struct early_suspend *h);
 extern void s3cfb_set_lcd_info(struct s3cfb_global *ctrl);
 
 #ifdef CONFIG_FB_S5P_MIPI_DSIM
+extern int s3cfb_vsync_status_check(void)
 extern void s5p_dsim_early_suspend(void);
 extern void s5p_dsim_late_resume(void);
 extern void set_dsim_hs_clk_toggle_count(u8 count);

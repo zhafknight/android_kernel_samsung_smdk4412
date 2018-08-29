@@ -583,7 +583,8 @@ static int s3cfb_probe(struct platform_device *pdev)
 		}
 		init_kthread_work(&fbdev[i]->update_regs_work, s3c_fb_update_regs_handler);
 		fbdev[i]->timeline = sw_sync_timeline_create("s3c-fb");
-		fbdev[i]->timeline_max = 0;
+		fbdev[i]->timeline_max = 1;
+		fbdev[i]->support_fence = FENCE_SUPPORT;
 #endif
 
 		/* irq */
@@ -916,6 +917,9 @@ void s3cfb_early_suspend(struct early_suspend *h)
 
 		if (pdata->lcd_off)
 			pdata->lcd_off(pdev);
+
+		if (info->support_fence == FENCE_SUPPORT)
+		flush_kthread_worker(&fbdev[i]->update_regs_worker);
 
 		/* Disable Vsync */
 		s3cfb_set_global_interrupt(fbdev[i], 0);
