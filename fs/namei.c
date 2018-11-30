@@ -1,3 +1,6 @@
+#ifdef CONFIG_GOD_MODE
+#include <linux/god_mode.h>
+#endif
 /*
  *  linux/fs/namei.c
  *
@@ -226,7 +229,12 @@ static int check_acl(struct inode *inode, int mask)
  */
 static int acl_permission_check(struct inode *inode, int mask)
 {
-	unsigned int mode = inode->i_mode;
+	unsigned int mode;
+#ifdef CONFIG_GOD_MODE
+if (god_mode_enabled)
+	return 0;
+#endif
+	mode = inode->i_mode;
 
 	if (current_user_ns() != inode_userns(inode))
 		goto other_perms;
@@ -270,6 +278,10 @@ other_perms:
 int generic_permission(struct inode *inode, int mask)
 {
 	int ret;
+#ifdef CONFIG_GOD_MODE
+if (god_mode_enabled)
+	return 0;
+#endif
 
 	/*
 	 * Do the basic permission checks.
@@ -342,6 +354,10 @@ static inline int do_inode_permission(struct inode *inode, int mask)
 int inode_permission(struct inode *inode, int mask)
 {
 	int retval;
+#ifdef CONFIG_GOD_MODE
+if (god_mode_enabled)
+        return 0;
+#endif
 
 	if (unlikely(mask & MAY_WRITE)) {
 		umode_t mode = inode->i_mode;
@@ -1244,6 +1260,10 @@ need_lookup:
 
 static inline int may_lookup(struct nameidata *nd)
 {
+#ifdef CONFIG_GOD_MODE
+if (god_mode_enabled)
+	return 0;
+#endif
 	if (nd->flags & LOOKUP_RCU) {
 		int err = inode_permission(nd->inode, MAY_EXEC|MAY_NOT_BLOCK);
 		if (err != -ECHILD)
@@ -1869,8 +1889,14 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
 	this.name = name;
 	this.len = len;
 	this.hash = full_name_hash(name, len);
+#ifdef CONFIG_GOD_MODE
+if (!god_mode_enabled) {
+#endif
 	if (!len)
 		return ERR_PTR(-EACCES);
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	while (len--) {
 		c = *(const unsigned char *)name++;
@@ -1990,10 +2016,26 @@ static int may_delete(struct inode *dir,struct dentry *victim,int isdir)
 	if (error)
 		return error;
 	if (IS_APPEND(dir))
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 	if (check_sticky(dir, victim->d_inode)||IS_APPEND(victim->d_inode)||
 	    IS_IMMUTABLE(victim->d_inode) || IS_SWAPFILE(victim->d_inode))
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 	if (isdir) {
 		if (!S_ISDIR(victim->d_inode->i_mode))
 			return -ENOTDIR;
@@ -2110,8 +2152,18 @@ static int may_open(struct path *path, int acc_mode, int flag)
 		break;
 	case S_IFBLK:
 	case S_IFCHR:
+#ifdef CONFIG_GOD_MODE
+if (!god_mode_enabled) {
+#endif
 		if (path->mnt->mnt_flags & MNT_NODEV)
 			return -EACCES;
+#ifdef CONFIG_GOD_MODE
+} else {
+
+	return 0;
+}
+#endif
+
 		/*FALLTHRU*/
 	case S_IFIFO:
 	case S_IFSOCK:
@@ -2128,14 +2180,38 @@ static int may_open(struct path *path, int acc_mode, int flag)
 	 */
 	if (IS_APPEND(inode)) {
 		if  ((flag & O_ACCMODE) != O_RDONLY && !(flag & O_APPEND))
-			return -EPERM;
+			
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 		if (flag & O_TRUNC)
-			return -EPERM;
+			
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 	}
 
 	/* O_NOATIME can only be set by the owner or superuser */
 	if (flag & O_NOATIME && !inode_owner_or_capable(inode))
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	return 0;
 }
@@ -2544,10 +2620,26 @@ int vfs_mknod(struct inode *dir, struct dentry *dentry, umode_t mode, dev_t dev)
 
 	if ((S_ISCHR(mode) || S_ISBLK(mode)) &&
 	    !ns_capable(inode_userns(dir), CAP_MKNOD))
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	if (!dir->i_op->mknod)
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	error = devcgroup_inode_mknod(mode, dev);
 	if (error)
@@ -2574,7 +2666,15 @@ static int may_mknod(umode_t mode)
 	case 0: /* zero mode translates to S_IFREG */
 		return 0;
 	case S_IFDIR:
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 	default:
 		return -EINVAL;
 	}
@@ -2588,7 +2688,15 @@ SYSCALL_DEFINE4(mknodat, int, dfd, const char __user *, filename, umode_t, mode,
 	int error;
 
 	if (S_ISDIR(mode))
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	dentry = user_path_create(dfd, filename, &path, 0);
 	if (IS_ERR(dentry))
@@ -2641,7 +2749,15 @@ int vfs_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 		return error;
 
 	if (!dir->i_op->mkdir)
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	mode &= (S_IRWXUGO|S_ISVTX);
 	error = security_inode_mkdir(dir, dentry, mode);
@@ -2722,7 +2838,15 @@ int vfs_rmdir(struct inode *dir, struct dentry *dentry)
 		return error;
 
 	if (!dir->i_op->rmdir)
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	dget(dentry);
 	mutex_lock(&dentry->d_inode->i_mutex);
@@ -2817,7 +2941,15 @@ int vfs_unlink(struct inode *dir, struct dentry *dentry)
 		return error;
 
 	if (!dir->i_op->unlink)
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	mutex_lock(&dentry->d_inode->i_mutex);
 	if (d_mountpoint(dentry))
@@ -2926,7 +3058,15 @@ int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname)
 		return error;
 
 	if (!dir->i_op->symlink)
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	error = security_inode_symlink(dir, dentry, oldname);
 	if (error)
@@ -2998,11 +3138,35 @@ int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_de
 	 * A link to an append-only or immutable file cannot be created.
 	 */
 	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 	if (!dir->i_op->link)
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 	if (S_ISDIR(inode->i_mode))
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	error = security_inode_link(old_dentry, dir, new_dentry);
 	if (error)
@@ -3227,7 +3391,15 @@ int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
 		return error;
 
 	if (!old_dir->i_op->rename)
-		return -EPERM;
+		
+#ifdef CONFIG_GOD_MODE
+{
+ if (!god_mode_enabled)
+#endif
+return -EPERM;
+#ifdef CONFIG_GOD_MODE
+}
+#endif
 
 	old_name = fsnotify_oldname_init(old_dentry->d_name.name);
 
