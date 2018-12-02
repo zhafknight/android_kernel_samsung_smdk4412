@@ -618,9 +618,9 @@ void s3cfb_early_suspend(struct early_suspend *h)
 	}
 #ifdef CONFIG_FB_S5P_GD2EVF
 	if (current_mipi_lcd)
-		s5p_dsim_early_suspend();
+		s5p_dsim_fb_suspend();
 #elif defined(CONFIG_FB_S5P_MIPI_DSIM)
-	s5p_dsim_early_suspend();
+	s5p_dsim_fb_suspend();
 #endif
 #ifdef CONFIG_EXYNOS_DEV_PD
 	/* disable the power domain */
@@ -662,9 +662,9 @@ void s3cfb_late_resume(struct early_suspend *h)
 
 #ifdef CONFIG_FB_S5P_GD2EVF
 	if (current_mipi_lcd)
-		s5p_dsim_late_resume();
+		s5p_dsim_fb_resume();
 #elif defined(CONFIG_FB_S5P_MIPI_DSIM)
-	s5p_dsim_late_resume();
+	s5p_dsim_fb_resume();
 #endif
 
 	for (i = 0; i < FIMD_MAX; i++) {
@@ -748,14 +748,14 @@ void s3cfb_late_resume(struct early_suspend *h)
 	}
 
 #ifdef CONFIG_FB_S5P_GD2EVF
-	if (lcd_late_resume && current_mipi_lcd)
-		lcd_late_resume();
+	if (lcd_fb_resume && current_mipi_lcd)
+		lcd_fb_resume();
 	else
 		gd2evf_power_ext(1);
 	info->suspend = 0;
 #elif defined(CONFIG_FB_S5P_MIPI_DSIM)
-	if (lcd_late_resume)
-		lcd_late_resume();
+	if (lcd_fb_resume)
+		lcd_fb_resume();
 #endif
 
 #ifdef CONFIG_FB_S5P_TRACE_UNDERRUN
@@ -905,7 +905,7 @@ static int s3cfb_disable(struct s3cfb_global *fbdev)
 
 	dev_info(fbdev->dev, "+%s\n", __func__);
 
-	if (lcd_early_suspend && current_mipi_lcd)
+	if (lcd_fb_suspend && current_mipi_lcd)
 		s6d6aa1_power_ext(0);
 	else
 		gd2evf_power_ext(0);
@@ -961,7 +961,7 @@ static int s3cfb_enable(struct s3cfb_global *fbdev)
 #endif
 
 	if (current_mipi_lcd)
-		s5p_dsim_late_resume();
+		s5p_dsim_fb_resume();
 
 	mutex_lock(&fbdev->output_lock);
 
@@ -1017,11 +1017,11 @@ static int s3cfb_enable(struct s3cfb_global *fbdev)
 
 	mutex_unlock(&fbdev->output_lock);
 
-	if (lcd_late_resume && current_mipi_lcd)
+	if (lcd_fb_resume && current_mipi_lcd)
 		s6d6aa1_power_ext(1);
 	else {
 		gd2evf_power_ext(1);
-		s5p_dsim_early_suspend();
+		s5p_dsim_fb_suspend();
 	}
 
 #ifdef CONFIG_FB_S5P_TRACE_UNDERRUN
