@@ -28,7 +28,7 @@
 #include <linux/delay.h>
 
 #include <asm/cacheflush.h>
-#include <linux/pm_qos.h>
+#include <linux/pm_qos_params.h>
 
 #include "fimc.h"
 
@@ -36,7 +36,7 @@
 extern fimc_is;
 #endif
 
-static struct pm_qos_request bus_qos_pm_qos_req;
+static struct pm_qos_request_list bus_qos_pm_qos_req;
 
 static const struct v4l2_fmtdesc capture_fmts[] = {
 	{
@@ -593,13 +593,14 @@ int fimc_g_parm(struct file *file, void *fh, struct v4l2_streamparm *a)
 	fimc_dbg("%s\n", __func__);
 
 	/* WriteBack doesn't have subdev_call */
+	if (ctrl->cam != NULL) {
+		if ((ctrl->cam->id == CAMERA_WB) || (ctrl->cam->id == CAMERA_WB_B))
+			return 0;
 
-	if ((ctrl->cam->id == CAMERA_WB) || (ctrl->cam->id == CAMERA_WB_B))
-		return 0;
-
-	mutex_lock(&ctrl->v4l2_lock);
-	ret = v4l2_subdev_call(ctrl->cam->sd, video, g_parm, a);
-	mutex_unlock(&ctrl->v4l2_lock);
+		mutex_lock(&ctrl->v4l2_lock);
+		ret = v4l2_subdev_call(ctrl->cam->sd, video, g_parm, a);
+		mutex_unlock(&ctrl->v4l2_lock);
+	}
 
 	return ret;
 }
@@ -634,9 +635,7 @@ int fimc_s_parm(struct file *file, void *fh, struct v4l2_streamparm *a)
 int fimc_queryctrl(struct file *file, void *fh, struct v4l2_queryctrl *qc)
 {
 	struct fimc_control *ctrl = ((struct fimc_prv_data *)fh)->ctrl;
-	int i, ret;
-
-	fimc_dbg("%s\n", __func__);
+	int i, ret = -EINVAL;
 
 	for (i = 0; i < ARRAY_SIZE(fimc_controls); i++) {
 		if (fimc_controls[i].id == qc->id) {
@@ -644,11 +643,11 @@ int fimc_queryctrl(struct file *file, void *fh, struct v4l2_queryctrl *qc)
 			return 0;
 		}
 	}
-
-	mutex_lock(&ctrl->v4l2_lock);
-	ret = v4l2_subdev_call(ctrl->cam->sd, core, queryctrl, qc);
-	mutex_unlock(&ctrl->v4l2_lock);
-
+	if (ctrl->cam != NULL) {
+		mutex_lock(&ctrl->v4l2_lock);
+		ret = v4l2_subdev_call(ctrl->cam->sd, core, queryctrl, qc);
+		mutex_unlock(&ctrl->v4l2_lock);
+	}
 	return ret;
 }
 
@@ -874,6 +873,7 @@ static struct v4l2_subdev *exynos_flite_get_subdev(int id)
 
 	ret = driver_for_each_device(drv, NULL, &sd[0],
 				     flite_register_callback);
+	put_driver(drv);
 
 	return ret ? NULL : sd[id];
 }
@@ -964,6 +964,7 @@ static struct v4l2_subdev *fimc_is_get_subdev(int id)
 
 	ret = driver_for_each_device(drv, NULL, &sd,
 				     fimc_is_register_callback);
+	put_driver(drv);
 	return ret ? NULL : sd;
 }
 
