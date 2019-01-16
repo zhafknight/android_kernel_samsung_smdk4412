@@ -14,15 +14,7 @@
 #include <linux/backing-dev.h>
 #include <linux/sysctl.h>
 #include <linux/sysfs.h>
-#include <linux/workqueue.h>
-#include <linux/pm_qos_params.h>
 #include "internal.h"
-
-#ifdef CONFIG_ARCH_EXYNOS
-#include <mach/cpufreq.h>
-#endif
-
-static struct workqueue_struct *compaction_wq;
 
 #if defined CONFIG_COMPACTION || defined CONFIG_DMA_CMA
 
@@ -828,36 +820,13 @@ static int compact_node(int nid)
 	return __compact_pgdat(NODE_DATA(nid), &cc);
 }
 
-//int compaction_pm_hint = 0;
-
 /* Compact all nodes in the system */
-static void __compact_nodes(void)
+static int compact_nodes(void)
 {
-	int nid, ret;
-
-#ifdef CONFIG_ARCH_EXYNOS
-	ret = exynos_pm_hook_add();
-#endif
+	int nid;
 
 	for_each_online_node(nid)
 		compact_node(nid);
-
-#ifdef CONFIG_ARCH_EXYNOS
-	if (!ret)
-		exynos_pm_hook_remove();
-#endif
-}
-
-static void compact_nodes_fn(struct work_struct *work)
-{
-	__compact_nodes();
-}
-static DECLARE_DELAYED_WORK(compact_nodes_delayedwork, compact_nodes_fn);
-
-static int compact_nodes(void)
-{
-	queue_delayed_work(compaction_wq,
-                &compact_nodes_delayedwork, 0);
 
 	return COMPACT_COMPLETE;
 }
