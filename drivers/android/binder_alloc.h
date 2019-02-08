@@ -22,7 +22,7 @@
 #include <linux/vmalloc.h>
 #include <linux/slab.h>
 #include <linux/list_lru.h>
-#include "binder.h"
+#include <uapi/linux/android/binder.h>
 
 extern struct list_lru binder_alloc_lru;
 struct binder_transaction;
@@ -101,7 +101,6 @@ struct binder_lru_page {
  */
 struct binder_alloc {
 	struct mutex mutex;
-	struct task_struct *tsk;
 	struct vm_area_struct *vma;
 	struct mm_struct *vma_vm_mm;
 	void *buffer;
@@ -123,6 +122,7 @@ void binder_selftest_alloc(struct binder_alloc *alloc);
 static inline void binder_selftest_alloc(struct binder_alloc *alloc) {}
 #endif
 enum lru_status binder_alloc_free_page(struct list_head *item,
+				       struct list_lru_one *lru,
 				       spinlock_t *lock, void *cb_arg);
 extern struct binder_buffer *binder_alloc_new_buf(struct binder_alloc *alloc,
 						  size_t data_size,
@@ -130,7 +130,7 @@ extern struct binder_buffer *binder_alloc_new_buf(struct binder_alloc *alloc,
 						  size_t extra_buffers_size,
 						  int is_async);
 extern void binder_alloc_init(struct binder_alloc *alloc);
-void binder_alloc_shrinker_init(void);
+extern int binder_alloc_shrinker_init(void);
 extern void binder_alloc_vma_close(struct binder_alloc *alloc);
 extern struct binder_buffer *
 binder_alloc_prepare_to_free(struct binder_alloc *alloc,
@@ -190,5 +190,6 @@ binder_alloc_copy_user_to_buffer(struct binder_alloc *alloc,
 				 binder_size_t buffer_offset,
 				 const void __user *from,
 				 size_t bytes);
+
 #endif /* _LINUX_BINDER_ALLOC_H */
 
