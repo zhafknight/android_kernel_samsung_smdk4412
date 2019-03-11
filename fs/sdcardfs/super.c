@@ -194,10 +194,6 @@ static void sdcardfs_umount_begin(struct super_block *sb)
 static int sdcardfs_show_options(struct seq_file *m, struct dentry *root)
 {
 	struct sdcardfs_sb_info *sbi = SDCARDFS_SB(root->d_sb);
-
-	if (sbi == NULL)
-		return 0;
-
 	struct sdcardfs_mount_options *opts = &sbi->options;
 
 	if (opts->fs_low_uid != 0)
