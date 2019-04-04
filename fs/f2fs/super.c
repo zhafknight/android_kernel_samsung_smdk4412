@@ -496,34 +496,46 @@ static int f2fs_statfs(struct dentry *dentry, struct kstatfs *buf)
 
 static int f2fs_show_options(struct seq_file *seq, struct vfsmount *vfs)
 {
+printk("xxxxxx F2FS-fs ----- 0 - %p", vfs);
+printk("xxxxxx F2FS-fs ----- 0a - %p", vfs->mnt_sb);
+
 	struct f2fs_sb_info *sbi = F2FS_SB(vfs->mnt_sb);
+printk("xxxxxx F2FS-fs ----- 1");
 
 	if (!(vfs->mnt_sb->s_flags & MS_RDONLY) && test_opt(sbi, BG_GC))
 		seq_printf(seq, ",background_gc=%s", "on");
 	else
 		seq_printf(seq, ",background_gc=%s", "off");
+printk("xxxxxx F2FS-fs ----- 2");
 	if (test_opt(sbi, DISABLE_ROLL_FORWARD))
 		seq_puts(seq, ",disable_roll_forward");
+printk("xxxxxx F2FS-fs ----- 3");
 	if (test_opt(sbi, DISCARD))
 		seq_puts(seq, ",discard");
+printk("xxxxxx F2FS-fs ----- 4");
 	if (test_opt(sbi, NOHEAP))
 		seq_puts(seq, ",no_heap_alloc");
 #ifdef CONFIG_F2FS_FS_XATTR
+printk("xxxxxx F2FS-fs ----- 5");
 	if (test_opt(sbi, XATTR_USER))
 		seq_puts(seq, ",user_xattr");
 	else
 		seq_puts(seq, ",nouser_xattr");
+printk("xxxxxx F2FS-fs ----- 6");
 	if (test_opt(sbi, INLINE_XATTR))
 		seq_puts(seq, ",inline_xattr");
 #endif
 #ifdef CONFIG_F2FS_FS_POSIX_ACL
+printk("xxxxxx F2FS-fs ----- 7");
 	if (test_opt(sbi, POSIX_ACL))
 		seq_puts(seq, ",acl");
 	else
 		seq_puts(seq, ",noacl");
 #endif
+printk("xxxxxx F2FS-fs ----- 8");
 	if (test_opt(sbi, DISABLE_EXT_IDENTIFY))
 		seq_puts(seq, ",disable_ext_identify");
+printk("xxxxxx F2FS-fs ----- 9");
 	if (test_opt(sbi, INLINE_DATA))
 		seq_puts(seq, ",inline_data");
 	seq_printf(seq, ",active_logs=%u", sbi->active_logs);
