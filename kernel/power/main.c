@@ -8,27 +8,26 @@
  *
  */
 
-#include <linux/export.h>
 #include <linux/kobject.h>
 #include <linux/string.h>
 #include <linux/resume-trace.h>
 #include <linux/workqueue.h>
-#include <linux/hrtimer.h>
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
+
+#if defined(CONFIG_CPU_FREQ) && defined(CONFIG_ARCH_EXYNOS4)
+#define CONFIG_DVFS_LIMIT
+#endif
 
 #if defined(CONFIG_CPU_EXYNOS4210)
 #define CONFIG_GPU_LOCK
 #define CONFIG_ROTATION_BOOSTER_SUPPORT
 #endif
 
-#if defined(CONFIG_CPU_EXYNOS4412) && defined(CONFIG_MALI400) \
-			&& defined(CONFIG_MALI_DVFS)
-#define CONFIG_EXYNOS4_GPU_LOCK
-#endif
-
+#ifdef CONFIG_DVFS_LIMIT
 #include <linux/cpufreq.h>
 #include <mach/cpufreq.h>
+#endif
 
 #ifdef CONFIG_GPU_LOCK
 #include <mach/gpufreq.h>
@@ -43,8 +42,6 @@ extern int mali_dvfs_bottom_lock_pop(void);
 
 #include "power.h"
 
-#define MAX_BUF 100
-
 DEFINE_MUTEX(pm_mutex);
 
 #ifdef CONFIG_PM_SLEEP
@@ -52,13 +49,6 @@ DEFINE_MUTEX(pm_mutex);
 /* Routines for PM-transition notifications */
 
 static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
-
-static void touch_event_fn(struct work_struct *work);
-static DECLARE_WORK(touch_event_struct, touch_event_fn);
-
-static struct hrtimer tc_ev_timer;
-static int tc_ev_processed;
-static ktime_t touch_evt_timer_val;
 
 int register_pm_notifier(struct notifier_block *nb)
 {
@@ -103,81 +93,6 @@ static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
 }
 
 power_attr(pm_async);
-
-static ssize_t
-touch_event_show(struct kobject *kobj,
-		 struct kobj_attribute *attr, char *buf)
-{
-	if (tc_ev_processed == 0)
-		return snprintf(buf, strnlen("touch_event", MAX_BUF) + 1,
-				"touch_event");
-	else
-		return snprintf(buf, strnlen("null", MAX_BUF) + 1,
-				"null");
-}
-
-static ssize_t
-touch_event_store(struct kobject *kobj,
-		  struct kobj_attribute *attr,
-		  const char *buf, size_t n)
-{
-
-	hrtimer_cancel(&tc_ev_timer);
-	tc_ev_processed = 0;
-
-	/* set a timer to notify the userspace to stop processing
-	 * touch event
-	 */
-	hrtimer_start(&tc_ev_timer, touch_evt_timer_val, HRTIMER_MODE_REL);
-
-	/* wakeup the userspace poll */
-	sysfs_notify(kobj, NULL, "touch_event");
-
-	return n;
-}
-
-power_attr(touch_event);
-
-static ssize_t
-touch_event_timer_show(struct kobject *kobj,
-		 struct kobj_attribute *attr, char *buf)
-{
-	return snprintf(buf, MAX_BUF, "%lld", touch_evt_timer_val.tv64);
-}
-
-static ssize_t
-touch_event_timer_store(struct kobject *kobj,
-			struct kobj_attribute *attr,
-			const char *buf, size_t n)
-{
-	unsigned long val;
-
-	if (strict_strtoul(buf, 10, &val))
-		return -EINVAL;
-
-	touch_evt_timer_val = ktime_set(0, val*1000);
-
-	return n;
-}
-
-power_attr(touch_event_timer);
-
-static void touch_event_fn(struct work_struct *work)
-{
-	/* wakeup the userspace poll */
-	tc_ev_processed = 1;
-	sysfs_notify(power_kobj, NULL, "touch_event");
-
-	return;
-}
-
-static enum hrtimer_restart tc_ev_stop(struct hrtimer *hrtimer)
-{
-
-	schedule_work(&touch_event_struct);
-
-	return HRTIMER_NORESTART;
-}
 
 #ifdef CONFIG_PM_DEBUG
 int pm_test_level = TEST_NONE;
@@ -429,7 +344,11 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 #endif
 #else
 		error = enter_state(state);
-		suspend_stats_update(error);
+		if (error) {
+			suspend_stats.fail++;
+			dpm_save_failed_errno(error);
+		} else
+			suspend_stats.success++;
 #endif
 	}
 #endif
@@ -541,8 +460,8 @@ power_attr(wake_lock);
 power_attr(wake_unlock);
 #endif
 
-int cpufreq_max_limit_val = -1;
-int cpufreq_max_limit_coupled = SCALING_MAX_UNDEFINED; /* Yank555.lu - not yet defined at startup */
+#ifdef CONFIG_DVFS_LIMIT
+static int cpufreq_max_limit_val = -1;
 static int cpufreq_min_limit_val = -1;
 DEFINE_MUTEX(cpufreq_limit_mutex);
 
@@ -570,10 +489,8 @@ static ssize_t cpufreq_table_show(struct kobject *kobj,
 		min_freq = policy->min_freq;
 		max_freq = policy->max_freq;
 	#else /* /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min&max_freq */
-/*		min_freq = policy->cpuinfo.min_freq;
-		max_freq = policy->cpuinfo.max_freq;*/
-		min_freq = policy->min; /* Yank555.lu :                                            */
-		max_freq = policy->max; /*   use govenor's min/max scaling to limit the freq table */
+		min_freq = policy->cpuinfo.min_freq;
+		max_freq = policy->cpuinfo.max_freq;
 	#endif
 	}
 
@@ -598,7 +515,7 @@ static ssize_t cpufreq_table_store(struct kobject *kobj,
 }
 
 #define VALID_LEVEL 1
-int get_cpufreq_level(unsigned int freq, unsigned int *level)
+static int get_cpufreq_level(unsigned int freq, unsigned int *level)
 {
 	struct cpufreq_frequency_table *table;
 	unsigned int i = 0;
@@ -636,7 +553,6 @@ static ssize_t cpufreq_max_limit_store(struct kobject *kobj,
 	unsigned int cpufreq_level;
 	int lock_ret;
 	ssize_t ret = -EINVAL;
-	struct cpufreq_policy *policy;
 
 	mutex_lock(&cpufreq_limit_mutex);
 
@@ -648,27 +564,19 @@ static ssize_t cpufreq_max_limit_store(struct kobject *kobj,
 	if (val == -1) { /* Unlock request */
 		if (cpufreq_max_limit_val != -1) {
 			exynos_cpufreq_upper_limit_free(DVFS_LOCK_ID_USER);
-			/* Yank555.lu - unlock now means set lock to scaling max to support powersave mode properly */
-			/* cpufreq_max_limit_val = -1; */
-			policy = cpufreq_cpu_get(0);
-			if (get_cpufreq_level(policy->max, &cpufreq_level) == VALID_LEVEL) {
-				lock_ret = exynos_cpufreq_upper_limit(DVFS_LOCK_ID_USER, cpufreq_level);
-				cpufreq_max_limit_val = policy->max;
-				cpufreq_max_limit_coupled = SCALING_MAX_COUPLED;
-			}
+			cpufreq_max_limit_val = -1;
 		} else /* Already unlocked */
 			printk(KERN_ERR "%s: Unlock request is ignored\n",
 				__func__);
 	} else { /* Lock request */
-		if (get_cpufreq_level((unsigned int)val, &cpufreq_level) == VALID_LEVEL) {
-			if (cpufreq_max_limit_val != -1) {
+		if (get_cpufreq_level((unsigned int)val, &cpufreq_level)
+		    == VALID_LEVEL) {
+			if (cpufreq_max_limit_val != -1)
 				/* Unlock the previous lock */
-				exynos_cpufreq_upper_limit_free(DVFS_LOCK_ID_USER);
-				cpufreq_max_limit_coupled = SCALING_MAX_UNCOUPLED; /* if a limit existed, uncouple */
-			} else {
-				cpufreq_max_limit_coupled = SCALING_MAX_COUPLED; /* if no limit existed, we're booting, couple */
-			}
-			lock_ret = exynos_cpufreq_upper_limit(DVFS_LOCK_ID_USER, cpufreq_level);
+				exynos_cpufreq_upper_limit_free(
+					DVFS_LOCK_ID_USER);
+			lock_ret = exynos_cpufreq_upper_limit(
+					DVFS_LOCK_ID_USER, cpufreq_level);
 			/* ret of exynos_cpufreq_upper_limit is meaningless.
 			   0 is fail? success? */
 			cpufreq_max_limit_val = val;
@@ -742,6 +650,7 @@ out:
 power_attr(cpufreq_table);
 power_attr(cpufreq_max_limit);
 power_attr(cpufreq_min_limit);
+#endif /* CONFIG_DVFS_LIMIT */
 
 #ifdef CONFIG_GPU_LOCK
 static int gpu_lock_val;
@@ -912,7 +821,7 @@ out:
 power_attr(mali_lock);
 #endif
 
-static struct attribute *g[] = {
+static struct attribute * g[] = {
 	&state_attr.attr,
 #ifdef CONFIG_PM_TRACE
 	&pm_trace_attr.attr,
@@ -921,8 +830,6 @@ static struct attribute *g[] = {
 #ifdef CONFIG_PM_SLEEP
 	&pm_async_attr.attr,
 	&wakeup_count_attr.attr,
-	&touch_event_attr.attr,
-	&touch_event_timer_attr.attr,
 #ifdef CONFIG_PM_DEBUG
 	&pm_test_attr.attr,
 #endif
@@ -931,9 +838,14 @@ static struct attribute *g[] = {
 	&wake_unlock_attr.attr,
 #endif
 #endif
+#ifdef CONFIG_DVFS_LIMIT
 	&cpufreq_table_attr.attr,
 	&cpufreq_max_limit_attr.attr,
 	&cpufreq_min_limit_attr.attr,
+#endif
+#ifdef CONFIG_GPU_LOCK
+	&gpu_lock_attr.attr,
+#endif
 #ifdef CONFIG_PEGASUS_GPU_LOCK
 	&mali_lock_attr.attr,
 #endif
@@ -968,12 +880,6 @@ static int __init pm_init(void)
 		return error;
 	hibernate_image_size_init();
 	hibernate_reserved_size_init();
-
-	touch_evt_timer_val = ktime_set(2, 0);
-	hrtimer_init(&tc_ev_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	tc_ev_timer.function = &tc_ev_stop;
-	tc_ev_processed = 1;
-
 	power_kobj = kobject_create_and_add("power", NULL);
 	if (!power_kobj)
 		return -ENOMEM;
