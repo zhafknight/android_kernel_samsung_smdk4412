@@ -954,8 +954,8 @@ enum lru_status binder_alloc_free_page(struct list_head *item,
 	/* Same as mmget_not_zero() in later kernel versions */
 	if (!atomic_inc_not_zero(&alloc->vma_vm_mm->mm_users))
 		goto err_mmget;
-	if (!down_write_trylock(&mm->mmap_sem))
-		goto err_down_write_mmap_sem_failed;
+	if (!down_read_trylock(&mm->mmap_sem))
+		goto err_down_read_mmap_sem_failed;
 	vma = binder_alloc_get_vma(alloc);
 	list_del_init(item);
 	spin_unlock(lock);
@@ -967,7 +967,7 @@ enum lru_status binder_alloc_free_page(struct list_head *item,
 			       PAGE_SIZE, NULL);
 		trace_binder_unmap_user_end(alloc, index);
 	}
-	up_write(&mm->mmap_sem);
+	up_read(&mm->mmap_sem);
 	mmput(mm);
 
 	trace_binder_unmap_kernel_start(alloc, index);
@@ -983,7 +983,7 @@ enum lru_status binder_alloc_free_page(struct list_head *item,
 	mutex_unlock(&alloc->mutex);
 	return LRU_REMOVED;
 
-err_down_write_mmap_sem_failed:
+err_down_read_mmap_sem_failed:
 	mmput(mm);
 err_mmget:
 err_get_task_mm_failed:
