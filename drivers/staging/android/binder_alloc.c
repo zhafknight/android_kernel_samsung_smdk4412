@@ -913,6 +913,7 @@ enum lru_status binder_alloc_free_page(struct list_head *item,
 	struct binder_alloc *alloc;
 	uintptr_t page_addr;
 	size_t index;
+	struct vm_area_struct *vma;
 
 	alloc = page->alloc;
 	if (!mutex_trylock(&alloc->mutex))
@@ -923,25 +924,25 @@ enum lru_status binder_alloc_free_page(struct list_head *item,
 
 	index = page - alloc->pages;
 	page_addr = (uintptr_t)alloc->buffer + index * PAGE_SIZE;
-	if (alloc->vma) {
-		mm = get_task_mm(alloc->tsk);
-		if (!mm)
-			goto err_get_task_mm_failed;
-		if (!down_write_trylock(&mm->mmap_sem))
-			goto err_down_write_mmap_sem_failed;
-
+	mm = alloc->vma_vm_mm;
+	/* Same as mmget_not_zero() in later kernel versions */
+	if (!atomic_inc_not_zero(&alloc->vma_vm_mm->mm_users))
+		goto err_mmget;
+	if (!down_write_trylock(&mm->mmap_sem))
+		goto err_down_write_mmap_sem_failed;
+	vma = alloc->vma;
+	list_del_init(item);
+	spin_unlock(lock);
+	if (vma) {
 		trace_binder_unmap_user_start(alloc, index);
-
-		zap_page_range(alloc->vma,
+		zap_page_range(vma,
 			       page_addr +
 			       alloc->user_buffer_offset,
 			       PAGE_SIZE, NULL);
-
 		trace_binder_unmap_user_end(alloc, index);
-
-		up_write(&mm->mmap_sem);
-		mmput(mm);
 	}
+	up_write(&mm->mmap_sem);
+	mmput(mm);
 
 	trace_binder_unmap_kernel_start(alloc, index);
 
@@ -958,6 +959,7 @@ enum lru_status binder_alloc_free_page(struct list_head *item,
 
 err_down_write_mmap_sem_failed:
 	mmput(mm);
+err_mmget:
 err_get_task_mm_failed:
 err_page_already_freed:
 	mutex_unlock(&alloc->mutex);
