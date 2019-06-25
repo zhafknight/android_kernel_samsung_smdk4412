@@ -147,7 +147,7 @@ struct s3cfb_extdsp_lcd {
 #include <mach/midas-tsp.h>
 #include <mach/regs-clock.h>
 
-#include <mach/board-lcd.h>
+#include <mach/midas-lcd.h>
 #include <mach/midas-sound.h>
 
 #ifdef CONFIG_INPUT_WACOM
@@ -244,53 +244,6 @@ static struct spi_board_info spi1_board_info[] __initdata = {
 	}
 };
 #endif
-
-#if defined(CONFIG_VIDEO_DRIME4_SPI)
-
-static struct s3c64xx_spi_csinfo spi1_csi[] = {
-	[0] = {
-		.line = EXYNOS4_GPB(5),
-		.set_level = gpio_set_value,
-		.fb_delay = 0x00,
-	},
-};
-
-static struct spi_board_info spi1_board_info[] __initdata = {
-	{
-		.modalias = "drime4_spi",
-		.platform_data = NULL,
-		.max_speed_hz = 12000000,
-		.bus_num = 1,
-		.chip_select = 0,
-		.mode = SPI_MODE_0,
-		.controller_data = &spi1_csi[0],
-	}
-};
-#endif
-
-#if defined(CONFIG_VIDEO_M9MO_SPI)
-
-static struct s3c64xx_spi_csinfo spi1_csi[] = {
-	[0] = {
-		.line = EXYNOS4_GPB(5),
-		.set_level = gpio_set_value,
-		.fb_delay = 0x00,
-	},
-};
-
-static struct spi_board_info spi1_board_info[] __initdata = {
-	{
-		.modalias = "m9mo_spi",
-		.platform_data = NULL,
-		.max_speed_hz = 10000000,
-		.bus_num = 1,
-		.chip_select = 0,
-		.mode = SPI_MODE_1,
-		.controller_data = &spi1_csi[0],
-	}
-};
-#endif
-
 
 #if defined(CONFIG_LINK_DEVICE_SPI)  \
 	|| defined(CONFIG_TDMB) || defined(CONFIG_TDMB_MODULE) \
@@ -2181,9 +2134,6 @@ static struct platform_device *midas_devices[] __initdata = {
 
 #ifdef CONFIG_FB_S5P_MDNIE
 	&mdnie_device,
-#endif
-#ifdef CONFIG_LCD_FREQ_SWITCH
-	&lcdfreq_device,
 #endif
 #ifdef CONFIG_HAVE_PWM
 	&s3c_device_timer[0],
