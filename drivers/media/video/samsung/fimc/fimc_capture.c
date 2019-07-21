@@ -873,7 +873,6 @@ static struct v4l2_subdev *exynos_flite_get_subdev(int id)
 
 	ret = driver_for_each_device(drv, NULL, &sd[0],
 				     flite_register_callback);
-	put_driver(drv);
 
 	return ret ? NULL : sd[id];
 }
@@ -964,7 +963,6 @@ static struct v4l2_subdev *fimc_is_get_subdev(int id)
 
 	ret = driver_for_each_device(drv, NULL, &sd,
 				     fimc_is_register_callback);
-	put_driver(drv);
 	return ret ? NULL : sd;
 }
 
