@@ -31,6 +31,7 @@
 #include <linux/regulator/machine.h>
 #include <linux/mfd/max77686.h>
 #include <linux/mfd/max77686-private.h>
+#include <mach/gpio.h>
 
 //#define MAX77686_DEBUG
 
