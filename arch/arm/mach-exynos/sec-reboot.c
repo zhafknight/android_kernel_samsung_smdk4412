@@ -1,4 +1,5 @@
 #include <linux/delay.h>
+#include <linux/gpio.h>
 #include <linux/pm.h>
 #include <asm/io.h>
 #include <asm/cacheflush.h>
