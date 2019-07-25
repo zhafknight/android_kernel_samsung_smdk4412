@@ -223,7 +223,7 @@ static inline int report_iommu_fault(struct iommu_domain *domain,
 	 * invoke it.
 	 */
 	if (domain->handler)
-		ret = domain->handler(domain, dev, iova, flags);
+		ret = domain->handler(domain, dev, iova, flags, domain->handler_token);
 
 	return ret;
 }
