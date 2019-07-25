@@ -15,6 +15,7 @@
  *
  */
 
+#include <mach/gpio.h>
 #include "battery-factory.h"
 
 /* prototype */

@@ -13,11 +13,6 @@
 #ifndef __ASM_ARCH_GPIO_EXYNOS5_H
 #define __ASM_ARCH_GPIO_EXYNOS5_H __FILE__
 
-#define gpio_get_value	__gpio_get_value
-#define gpio_set_value	__gpio_set_value
-#define gpio_cansleep	__gpio_cansleep
-#define gpio_to_irq	__gpio_to_irq
-
 /* Practically, GPIO banks up to GPZ are the configurable gpio banks */
 
 /* Common GPIO bank sizes */
