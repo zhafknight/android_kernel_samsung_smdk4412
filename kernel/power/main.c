@@ -3,12 +3,11 @@
  *
  * Copyright (c) 2003 Patrick Mochel
  * Copyright (c) 2003 Open Source Development Lab
- *
+ * 
  * This file is released under the GPLv2
  *
  */
 
-#include <linux/export.h>
 #include <linux/kobject.h>
 #include <linux/string.h>
 #include <linux/resume-trace.h>
@@ -65,9 +64,8 @@ EXPORT_SYMBOL_GPL(unregister_pm_notifier);
 
 int pm_notifier_call_chain(unsigned long val)
 {
-	int ret = blocking_notifier_call_chain(&pm_chain_head, val, NULL);
-
-	return notifier_to_errno(ret);
+	return (blocking_notifier_call_chain(&pm_chain_head, val, NULL)
+			== NOTIFY_BAD) ? -EINVAL : 0;
 }
 
 /* If set, devices may be suspended and resumed asynchronously. */
@@ -141,7 +139,7 @@ static ssize_t pm_test_store(struct kobject *kobj, struct kobj_attribute *attr,
 	p = memchr(buf, '\n', n);
 	len = p ? p - buf : n;
 
-	lock_system_sleep();
+	mutex_lock(&pm_mutex);
 
 	level = TEST_FIRST;
 	for (s = &pm_tests[level]; level <= TEST_MAX; s++, level++)
@@ -151,13 +149,15 @@ static ssize_t pm_test_store(struct kobject *kobj, struct kobj_attribute *attr,
 			break;
 		}
 
-	unlock_system_sleep();
+	mutex_unlock(&pm_mutex);
 
 	return error ? error : n;
 }
 
 power_attr(pm_test);
 #endif /* CONFIG_PM_DEBUG */
+
+#endif /* CONFIG_PM_SLEEP */
 
 #ifdef CONFIG_DEBUG_FS
 static char *suspend_step_name(enum suspend_stat_step step)
@@ -190,20 +190,16 @@ static int suspend_stats_show(struct seq_file *s, void *unused)
 	last_errno %= REC_FAILED_NUM;
 	last_step = suspend_stats.last_failed_step + REC_FAILED_NUM - 1;
 	last_step %= REC_FAILED_NUM;
-	seq_printf(s, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
-			"%s: %d\n%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
+	seq_printf(s, "%s: %d\n%s: %d\n%s: %d\n%s: %d\n"
+			"%s: %d\n%s: %d\n%s: %d\n%s: %d\n",
 			"success", suspend_stats.success,
 			"fail", suspend_stats.fail,
 			"failed_freeze", suspend_stats.failed_freeze,
 			"failed_prepare", suspend_stats.failed_prepare,
 			"failed_suspend", suspend_stats.failed_suspend,
-			"failed_suspend_late",
-				suspend_stats.failed_suspend_late,
 			"failed_suspend_noirq",
 				suspend_stats.failed_suspend_noirq,
 			"failed_resume", suspend_stats.failed_resume,
-			"failed_resume_early",
-				suspend_stats.failed_resume_early,
 			"failed_resume_noirq",
 				suspend_stats.failed_resume_noirq);
 	seq_printf(s,	"failures:\n  last_failed_dev:\t%-s\n",
@@ -258,8 +254,6 @@ static int __init pm_debugfs_init(void)
 late_initcall(pm_debugfs_init);
 #endif /* CONFIG_DEBUG_FS */
 
-#endif /* CONFIG_PM_SLEEP */
-
 struct kobject *power_kobj;
 
 /**
@@ -269,7 +263,7 @@ struct kobject *power_kobj;
  *	'standby' (Power-On Suspend), 'mem' (Suspend-to-RAM), and
  *	'disk' (Suspend-to-Disk).
  *
- *	store() accepts one of those strings, translates it into the
+ *	store() accepts one of those strings, translates it into the 
  *	proper enumerated value, and initiates a suspend transition.
  */
 static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
@@ -293,6 +287,12 @@ static ssize_t state_show(struct kobject *kobj, struct kobj_attribute *attr,
 #endif
 	return (s - buf);
 }
+#ifdef CONFIG_FAST_BOOT
+bool fake_shut_down = false;
+EXPORT_SYMBOL(fake_shut_down);
+
+extern void wakelock_force_suspend(void);
+#endif
 
 static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 			   const char *buf, size_t n)
@@ -315,22 +315,33 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 	/* First, check if we are requested to hibernate */
 	if (len == 4 && !strncmp(buf, "disk", len)) {
 		error = hibernate();
-		goto Exit;
+  goto Exit;
 	}
 
 #ifdef CONFIG_SUSPEND
 	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++) {
-		if (*s && len == strlen(*s) && !strncmp(buf, *s, len)) {
-			error = pm_suspend(state);
+		if (*s && len == strlen(*s) && !strncmp(buf, *s, len))
 			break;
 	}
+
+#ifdef CONFIG_FAST_BOOT
+	if (len == 4 && !strncmp(buf, "dmem", len)) {
+		pr_info("%s: fake shut down!!!\n", __func__);
+		fake_shut_down = true;
+		state = PM_SUSPEND_MEM;
+	}
+#endif
+
 	if (state < PM_SUSPEND_MAX && *s) {
-	{
 #ifdef CONFIG_EARLYSUSPEND
 		if (state == PM_SUSPEND_ON || valid_state(state)) {
 			error = 0;
 			request_suspend_state(state);
 		}
+#ifdef CONFIG_FAST_BOOT
+		if (fake_shut_down)
+			wakelock_force_suspend();
+#endif
 #else
 		error = enter_state(state);
 		if (error) {
@@ -339,7 +350,6 @@ static ssize_t state_store(struct kobject *kobj, struct kobj_attribute *attr,
 		} else
 			suspend_stats.success++;
 #endif
-		}
 	}
 #endif
 
@@ -555,9 +565,7 @@ static ssize_t cpufreq_max_limit_store(struct kobject *kobj,
 		if (cpufreq_max_limit_val != -1) {
 			exynos_cpufreq_upper_limit_free(DVFS_LOCK_ID_USER);
 			cpufreq_max_limit_val = -1;
-		} else /* Already unlocked */
-			printk(KERN_ERR "%s: Unlock request is ignored\n",
-				__func__);
+		}
 	} else { /* Lock request */
 		if (get_cpufreq_level((unsigned int)val, &cpufreq_level)
 		    == VALID_LEVEL) {
@@ -570,9 +578,7 @@ static ssize_t cpufreq_max_limit_store(struct kobject *kobj,
 			/* ret of exynos_cpufreq_upper_limit is meaningless.
 			   0 is fail? success? */
 			cpufreq_max_limit_val = val;
-		} else /* Invalid lock request --> No action */
-			printk(KERN_ERR "%s: Lock request is invalid\n",
-				__func__);
+		}
 	}
 
 	ret = n;
@@ -608,9 +614,7 @@ static ssize_t cpufreq_min_limit_store(struct kobject *kobj,
 		if (cpufreq_min_limit_val != -1) {
 			exynos_cpufreq_lock_free(DVFS_LOCK_ID_USER);
 			cpufreq_min_limit_val = -1;
-		} else /* Already unlocked */
-			printk(KERN_ERR "%s: Unlock request is ignored\n",
-				__func__);
+		}
 	} else { /* Lock request */
 		if (get_cpufreq_level((unsigned int)val, &cpufreq_level)
 			== VALID_LEVEL) {
@@ -671,15 +675,11 @@ static ssize_t gpu_lock_store(struct kobject *kobj,
 		if (gpu_lock_val != 0) {
 			exynos_gpufreq_unlock();
 			gpu_lock_val = 0;
-		} else {
-			pr_info("%s: Unlock request is ignored\n", __func__);
 		}
 	} else if (val == 1) {
 		if (gpu_lock_val == 0) {
 			exynos_gpufreq_lock();
 			gpu_lock_val = val;
-		} else {
-			pr_info("%s: Lock request is ignored\n", __func__);
 		}
 	} else {
 		pr_info("%s: Lock request is invalid\n", __func__);
@@ -795,7 +795,7 @@ static ssize_t mali_lock_store(struct kobject *kobj,
 		mali_lock_cnt = mali_dvfs_bottom_lock_pop();
 		if (mali_lock_cnt == 0)
 			mali_lock_val = 0;
-	} else if (val > 0 && val < 4) { /* lock with level */
+	} else if (val > 0 && val < 5) { /* lock with level */
 		mali_lock_cnt = mali_dvfs_bottom_lock_push(val);
 		if (mali_lock_val < val)
 			mali_lock_val = val;
