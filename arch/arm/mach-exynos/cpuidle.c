@@ -20,7 +20,6 @@
 #include <asm/smp_scu.h>
 #include <asm/suspend.h>
 #include <asm/unified.h>
-#include <asm/cpuidle.h>
 #include <mach/regs-pmu.h>
 #include <mach/pmu.h>
 
@@ -36,12 +35,22 @@
 
 #define S5P_CHECK_AFTR		0xFCBA0D10
 
+static int exynos4_enter_idle(struct cpuidle_device *dev,
+			struct cpuidle_driver *drv,
+			      int index);
 static int exynos4_enter_lowpower(struct cpuidle_device *dev,
 				struct cpuidle_driver *drv,
 				int index);
 
 static struct cpuidle_state exynos4_cpuidle_set[] __initdata = {
-	[0] = ARM_CPUIDLE_WFI_STATE,
+	[0] = {
+		.enter			= exynos4_enter_idle,
+		.exit_latency		= 1,
+		.target_residency	= 100000,
+		.flags			= CPUIDLE_FLAG_TIME_VALID,
+		.name			= "C0",
+		.desc			= "ARM clock gating(WFI)",
+	},
 	[1] = {
 		.enter			= exynos4_enter_lowpower,
 		.exit_latency		= 300,
@@ -55,9 +64,8 @@ static struct cpuidle_state exynos4_cpuidle_set[] __initdata = {
 static DEFINE_PER_CPU(struct cpuidle_device, exynos4_cpuidle_device);
 
 static struct cpuidle_driver exynos4_idle_driver = {
-	.name			= "exynos4_idle",
-	.owner			= THIS_MODULE,
-	.en_core_tk_irqen	= 1,
+	.name		= "exynos4_idle",
+	.owner		= THIS_MODULE,
 };
 
 /* Ext-GIC nIRQ/nFIQ is the only wakeup source in AFTR */
@@ -96,7 +104,12 @@ static int exynos4_enter_core0_aftr(struct cpuidle_device *dev,
 				struct cpuidle_driver *drv,
 				int index)
 {
+	struct timeval before, after;
+	int idle_time;
 	unsigned long tmp;
+
+	local_irq_disable();
+	do_gettimeofday(&before);
 
 	exynos4_set_wakeupmask();
 
@@ -138,6 +151,34 @@ static int exynos4_enter_core0_aftr(struct cpuidle_device *dev,
 	/* Clear wakeup state register */
 	__raw_writel(0x0, S5P_WAKEUP_STAT);
 
+	do_gettimeofday(&after);
+
+	local_irq_enable();
+	idle_time = (after.tv_sec - before.tv_sec) * USEC_PER_SEC +
+		    (after.tv_usec - before.tv_usec);
+
+	dev->last_residency = idle_time;
+	return index;
+}
+
+static int exynos4_enter_idle(struct cpuidle_device *dev,
+				struct cpuidle_driver *drv,
+				int index)
+{
+	struct timeval before, after;
+	int idle_time;
+
+	local_irq_disable();
+	do_gettimeofday(&before);
+
+	cpu_do_idle();
+
+	do_gettimeofday(&after);
+	local_irq_enable();
+	idle_time = (after.tv_sec - before.tv_sec) * USEC_PER_SEC +
+		    (after.tv_usec - before.tv_usec);
+
+	dev->last_residency = idle_time;
 	return index;
 }
 
@@ -152,7 +193,7 @@ static int exynos4_enter_lowpower(struct cpuidle_device *dev,
 		new_index = drv->safe_state_index;
 
 	if (new_index == 0)
-		return arm_cpuidle_simple_enter(dev, drv, new_index);
+		return exynos4_enter_idle(dev, drv, new_index);
 	else
 		return exynos4_enter_core0_aftr(dev, drv, new_index);
 }
