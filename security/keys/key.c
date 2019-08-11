@@ -573,7 +573,7 @@ int key_reject_and_link(struct key *key,
 
 	mutex_unlock(&key_construction_mutex);
 
-	if (keyring && link_ret == 0)
+	if (keyring)
 		__key_link_end(keyring, key->type, prealloc);
 
 	/* wake up anyone waiting for a key to be constructed */
@@ -583,71 +583,6 @@ int key_reject_and_link(struct key *key,
 	return ret == 0 ? link_ret : ret;
 }
 EXPORT_SYMBOL(key_reject_and_link);
-
-/*
- * Garbage collect keys in process context so that we don't have to disable
- * interrupts all over the place.
- *
- * key_put() schedules this rather than trying to do the cleanup itself, which
- * means key_put() doesn't have to sleep.
- */
-static void key_cleanup(struct work_struct *work)
-{
-	struct rb_node *_n;
-	struct key *key;
-
-go_again:
-	/* look for a dead key in the tree */
-	spin_lock(&key_serial_lock);
-
-	for (_n = rb_first(&key_serial_tree); _n; _n = rb_next(_n)) {
-		key = rb_entry(_n, struct key, serial_node);
-
-		if (atomic_read(&key->usage) == 0)
-			goto found_dead_key;
-	}
-
-	spin_unlock(&key_serial_lock);
-	return;
-
-found_dead_key:
-	/* we found a dead key - once we've removed it from the tree, we can
-	 * drop the lock */
-	rb_erase(&key->serial_node, &key_serial_tree);
-	spin_unlock(&key_serial_lock);
-
-	key_check(key);
-
-	security_key_free(key);
-
-	/* deal with the user's key tracking and quota */
-	if (test_bit(KEY_FLAG_IN_QUOTA, &key->flags)) {
-		spin_lock(&key->user->lock);
-		key->user->qnkeys--;
-		key->user->qnbytes -= key->quotalen;
-		spin_unlock(&key->user->lock);
-	}
-
-	atomic_dec(&key->user->nkeys);
-	if (test_bit(KEY_FLAG_INSTANTIATED, &key->flags))
-		atomic_dec(&key->user->nikeys);
-
-	/* now throw away the key memory */
-	if (key->type->destroy)
-		key->type->destroy(key);
-
-	key_user_put(key->user);
-
-	kfree(key->description);
-
-#ifdef KEY_DEBUGGING
-	key->magic = KEY_DEBUG_MAGIC_X;
-#endif
-	kmem_cache_free(key_jar, key);
-
-	/* there may, of course, be more than one key to destroy */
-	goto go_again;
-}
 
 /**
  * key_put - Discard a reference to a key.
