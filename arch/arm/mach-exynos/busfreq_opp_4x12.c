@@ -917,7 +917,7 @@ static int exynos4x12_bus_qos_notifiy(struct notifier_block *nb,
 
 static inline void exynos4x12_bus_qos_notifier_init(struct notifier_block *n)
 {
-	pm_qos_add_notifier(PM_QOS_BUS_QOS, n);
+	//pm_qos_add_notifier(PM_QOS_BUS_QOS, n);
 }
 
 #define ARM_INT_CORRECTION 160160

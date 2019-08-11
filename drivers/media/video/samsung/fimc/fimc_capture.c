@@ -2870,7 +2870,7 @@ int fimc_streamon_capture(void *fh)
 		!((cam->width == 880 && cam->height == 720))) {
 		printk(KERN_INFO "\n\n\n%s pm_qos_req is called..\n", __func__ );
 		/*dev_lock(ctrl->bus_dev, ctrl->dev, (unsigned long)400200);*/
-		pm_qos_add_request(&bus_qos_pm_qos_req, PM_QOS_BUS_QOS, 1);
+		//pm_qos_add_request(&bus_qos_pm_qos_req, PM_QOS_BUS_QOS, 1);
 
 		/* ioremap for register block */
 		qos_regs = ioremap(0x11a00400, 0x10);
