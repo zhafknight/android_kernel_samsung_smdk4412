@@ -24,7 +24,6 @@
 #include <linux/regulator/fixed.h>
 #include <linux/platform_device.h>
 #include <linux/delay.h>
-#include <linux/gpio.h>
 #include <linux/i2c-gpio.h>
 #include <mach/irqs.h>
 #include <mach/pmu.h>

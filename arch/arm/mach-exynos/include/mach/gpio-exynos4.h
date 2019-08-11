@@ -13,6 +13,11 @@
 #ifndef __ASM_ARCH_GPIO_EXYNOS4_H
 #define __ASM_ARCH_GPIO_EXYNOS4_H __FILE__
 
+#define gpio_get_value	__gpio_get_value
+#define gpio_set_value	__gpio_set_value
+#define gpio_cansleep	__gpio_cansleep
+#define gpio_to_irq	__gpio_to_irq
+
 /* Practically, GPIO banks up to GPZ are the configurable gpio banks */
 
 /* Common GPIO bank sizes */
@@ -195,10 +200,6 @@ enum exynos4212_gpio_number {
 #define EXYNOS4_GPIO_END	EXYNOS4XXX_GPIO_END
 
 /* define the number of gpios we need to the one after the GPZ() range */
-#ifdef ARCH_NR_GPIOS
-#undef ARCH_NR_GPIOS
-#endif
-
 #define ARCH_NR_GPIOS		(EXYNOS4XXX_GPIO_END +			\
 				CONFIG_SAMSUNG_GPIO_EXTRA)
 

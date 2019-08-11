@@ -25,7 +25,6 @@
 #include <sound/pcm_params.h>
 #include <sound/jack.h>
 
-#include <mach/gpio.h>
 #include <mach/regs-clock.h>
 #include <mach/pmu.h>
 #include <mach/midas-sound.h>

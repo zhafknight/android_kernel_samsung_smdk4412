@@ -57,7 +57,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <linux/input.h>
 #include <mach/regs-gpio.h>
 #include <plat/gpio-cfg.h>
-#include <linux/gpio.h>
+#include <asm/gpio.h>
 #include <linux/miscdevice.h>
 #include <asm/uaccess.h>
 #include <linux/earlysuspend.h>

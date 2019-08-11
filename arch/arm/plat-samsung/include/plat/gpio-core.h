@@ -15,7 +15,6 @@
 #define GPIODAT_OFF	(0x04)
 
 #include <linux/spinlock_types.h>
-#include <mach/gpio.h>
 
 #define con_4bit_shift(__off) ((__off) * 4)
 

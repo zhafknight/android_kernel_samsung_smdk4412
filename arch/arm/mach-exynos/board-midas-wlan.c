@@ -1,7 +1,6 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/platform_device.h>
-#include <linux/gpio.h>
 #include <linux/delay.h>
 #include <linux/err.h>
 #include <linux/skbuff.h>
