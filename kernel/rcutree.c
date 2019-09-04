@@ -2691,8 +2691,12 @@ static void __init rcu_init_one(struct rcu_state *rsp,
 
 	for (i = 0; i < rcu_num_lvls; i++)
 		rsp->levelcnt[i] = num_rcu_lvl[i];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
 	for (i = 1; i < rcu_num_lvls; i++)
 		rsp->level[i] = rsp->level[i - 1] + rsp->levelcnt[i - 1];
+#pragma GCC diagnostic pop
+
 	rcu_init_levelspread(rsp);
 
 	/* Initialize the elements themselves, starting from the leaves. */
