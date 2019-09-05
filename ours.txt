@@ -2,7 +2,8 @@ arch/arm/mach-exynos
 arch/arm/mach-s5pv210
 arch/arm/plat-s5p
 arch/arm/plat-samsung
-drivers/gpio/gpio-exynos4.c
+drivers/gpio
+include/linux/gpio.h
 drivers/media
 drivers/mfd/Makefile
 drivers/mfd/max8997-irq.c
