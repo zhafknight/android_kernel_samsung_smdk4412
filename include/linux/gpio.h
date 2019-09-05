@@ -20,14 +20,11 @@
 /* Gpio pin is open source */
 #define GPIOF_OPEN_SOURCE	(1 << 3)
 
-<<<<<<< HEAD
-=======
 #define GPIOF_EXPORT		(1 << 4)
 #define GPIOF_EXPORT_CHANGEABLE	(1 << 5)
 #define GPIOF_EXPORT_DIR_FIXED	(GPIOF_EXPORT)
 #define GPIOF_EXPORT_DIR_CHANGEABLE (GPIOF_EXPORT | GPIOF_EXPORT_CHANGEABLE)
 
->>>>>>> 46bada60961396b65d01480e2cadf4af03bc1632
 /**
  * struct gpio - a structure describing a GPIO with configuration
  * @gpio:	the GPIO number
