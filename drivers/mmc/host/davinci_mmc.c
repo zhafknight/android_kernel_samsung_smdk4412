@@ -1476,5 +1476,4 @@ module_exit(davinci_mmcsd_exit);
 MODULE_AUTHOR("Texas Instruments India");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("MMC/SD driver for Davinci MMC controller");
-MODULE_ALIAS("platform:davinci_mmc");
 

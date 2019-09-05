@@ -313,10 +313,14 @@ clear_user(void *addr, unsigned long size)
 	return size;
 }
 
-#define user_addr_max() \
-	(segment_eq(get_fs(), USER_DS) ? TASK_SIZE : ~0UL)
+extern int __strncpy_from_user(char *dst, const char *src, long count);
 
-extern long strncpy_from_user(char *dest, const char __user *src, long count);
+static inline long strncpy_from_user(char *dst, const char *src, long count)
+{
+	if (access_ok(VERIFY_READ, src, 1))
+		return __strncpy_from_user(dst, src, count);
+	return -EFAULT;
+}
 
 extern __must_check long strlen_user(const char __user *str);
 extern __must_check long strnlen_user(const char __user *str, long n);
