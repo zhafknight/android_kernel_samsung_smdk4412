@@ -34,7 +34,6 @@
 #include <linux/suspend.h>
 #endif
 
-#include <mach/sec_debug.h>
 #include <linux/bootmem.h>
 #include "s3cfb.h"
 #define NOT_DEFAULT_WINDOW 99
@@ -797,10 +796,6 @@ int s3cfb_alloc_framebuffer(struct s3cfb_global *fbdev, int fimd_id)
 				memcpy(&(fbdev->initial_var), &(fbdev->fb[i]->var), sizeof(struct fb_var_screeninfo));
 			}
 		}
-		sec_getlog_supply_fbinfo((void *)fbdev->fb[i]->fix.smem_start,
-					 fbdev->fb[i]->var.xres,
-					 fbdev->fb[i]->var.yres,
-					 fbdev->fb[i]->var.bits_per_pixel, 2);
 	}
 
 	return 0;
