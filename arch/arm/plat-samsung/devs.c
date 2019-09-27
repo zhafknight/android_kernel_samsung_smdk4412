@@ -1076,7 +1076,7 @@ static struct resource s5p_pmu_resource[] = {
 
 struct platform_device s5p_device_pmu = {
 	.name		= "arm-pmu",
-	.id		= ARM_PMU_DEVICE_CPU,
+	.id		= -1,
 	.num_resources	= ARRAY_SIZE(s5p_pmu_resource),
 	.resource	= s5p_pmu_resource,
 };
