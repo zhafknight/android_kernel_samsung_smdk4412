@@ -22,10 +22,6 @@ menuconfig DRM
 config DRM_USB
 	tristate
 	depends on DRM
-<<<<<<< HEAD
-=======
-	depends on USB_SUPPORT && USB_ARCH_HAS_HCD
->>>>>>> 268d28371cd3
 	select USB
 
 config DRM_KMS_HELPER
