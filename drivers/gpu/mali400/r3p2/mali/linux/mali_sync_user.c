@@ -28,6 +28,14 @@
 #include "mali_kernel_common.h"
 #include "mali_sync.h"
 
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+static inline void __set_close_on_exec(int fd, struct fdtable *fdt)
+{
+	__set_bit(fd, fdt->close_on_exec);
+}
+#endif
+
 static int mali_stream_close(struct inode * inode, struct file * file)
 {
 	struct sync_timeline * tl;
