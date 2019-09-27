@@ -109,8 +109,7 @@ static inline void __dma_single_cpu_to_dev(const void *kaddr, size_t size,
 	extern void ___dma_single_cpu_to_dev(const void *, size_t,
 		enum dma_data_direction);
 
-	if (!arch_is_coherent())
-		___dma_single_cpu_to_dev(kaddr, size, dir);
+	___dma_single_cpu_to_dev(kaddr, size, dir);
 }
 
 static inline void __dma_single_dev_to_cpu(const void *kaddr, size_t size,
@@ -119,8 +118,7 @@ static inline void __dma_single_dev_to_cpu(const void *kaddr, size_t size,
 	extern void ___dma_single_dev_to_cpu(const void *, size_t,
 		enum dma_data_direction);
 
-	if (!arch_is_coherent())
-		___dma_single_dev_to_cpu(kaddr, size, dir);
+	___dma_single_dev_to_cpu(kaddr, size, dir);
 }
 
 extern int dma_supported(struct device *, u64);
