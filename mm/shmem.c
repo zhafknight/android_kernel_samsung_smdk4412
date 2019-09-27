@@ -2580,7 +2580,6 @@ static const struct file_operations shmem_file_operations = {
 
 static const struct inode_operations shmem_inode_operations = {
 	.setattr	= shmem_setattr,
-	.truncate_range	= shmem_truncate_range,
 #ifdef CONFIG_TMPFS_XATTR
 	.setxattr	= shmem_setxattr,
 	.getxattr	= shmem_getxattr,
@@ -2819,15 +2818,6 @@ put_memory:
 	return ERR_PTR(error);
 }
 EXPORT_SYMBOL_GPL(shmem_file_setup);
-
-void shmem_set_file(struct vm_area_struct *vma, struct file *file)
-{
-	if (vma->vm_file)
-		fput(vma->vm_file);
-	vma->vm_file = file;
-	vma->vm_ops = &shmem_vm_ops;
-	vma->vm_flags |= VM_CAN_NONLINEAR;
-}
 
 /**
  * shmem_zero_setup - setup a shared anonymous mapping
