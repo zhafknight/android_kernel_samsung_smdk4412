@@ -17,11 +17,13 @@ drivers/power/Makefile
 drivers/power/max8997_charger.c
 drivers/regulator
 drivers/rtc/rtc-s3c.c
-drivers/thermal/Kconfig
+drivers/thermal
+include/linux/thermal.h
 drivers/tty/serial/Kconfig
 drivers/tty/serial/s5pv210.c
 drivers/usb
 drivers/video
+include/linux/cpu_cooling.h
 include/linux/mmc
 include/linux/regulator
 include/linux/usb*
