@@ -256,7 +256,6 @@ core-$(CONFIG_VMWARE_MVP)	+= arch/arm/mvp/
 core-y				+= arch/arm/kernel/ arch/arm/mm/ arch/arm/common/
 core-y				+= arch/arm/net/
 core-y				+= $(machdirs) $(platdirs)
-core-y				+= arch/arm/crypto/
 
 drivers-$(CONFIG_OPROFILE)      += arch/arm/oprofile/
 
