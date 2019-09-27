@@ -17,6 +17,7 @@
 #define CLOCK_TICK_RATE 1000000
 #else
 #include <mach/timex.h>
+#endif
 
 typedef unsigned long cycles_t;
 #define get_cycles()	({ cycles_t c; read_current_timer(&c) ? 0 : c; })
