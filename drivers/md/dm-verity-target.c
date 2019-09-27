@@ -458,7 +458,8 @@ no_prefetch_cluster:
  * Bio map function. It allocates dm_verity_io structure and bio vector and
  * fills them. Then it issues prefetches and the I/O.
  */
-static int verity_map(struct dm_target *ti, struct bio *bio)
+static int verity_map(struct dm_target *ti, struct bio *bio,
+		      union map_info *map_context)
 {
 	struct dm_verity *v = ti->private;
 	struct dm_verity_io *io;
