@@ -1168,7 +1168,7 @@ static int s3c24xx_serial_cpufreq_transition(struct notifier_block *nb,
 		 * frequency change is in progress. */
 
 	} else if (val == CPUFREQ_POSTCHANGE) {
-		struct ktermios *termios;
+		struct ktermios termios;
 		struct tty_struct *tty;
 
 		if (uport->state == NULL)
@@ -1181,12 +1181,7 @@ static int s3c24xx_serial_cpufreq_transition(struct notifier_block *nb,
 
 		termios = tty->termios;
 
-		if (termios == NULL) {
-			printk(KERN_WARNING "%s: no termios?\n", __func__);
-			goto exit;
-		}
-
-		s3c24xx_serial_set_termios(uport, termios, NULL);
+		s3c24xx_serial_set_termios(uport, &termios, NULL);
 	}
 
  exit:

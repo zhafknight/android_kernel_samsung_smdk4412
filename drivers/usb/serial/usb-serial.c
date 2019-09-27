@@ -316,8 +316,7 @@ static void serial_close(struct tty_struct *tty, struct file *filp)
  * Do the resource freeing and refcount dropping for the port.
  * Avoid freeing the console.
  *
- * Called asynchronously after the last tty kref is dropped,
- * and the tty layer has already done the tty_shutdown(tty);
+ * Called asynchronously after the last tty kref is dropped.
  */
 static void serial_cleanup(struct tty_struct *tty)
 {
@@ -434,7 +433,7 @@ static void serial_set_termios(struct tty_struct *tty, struct ktermios *old)
 	if (port->serial->type->set_termios)
 		port->serial->type->set_termios(tty, port, old);
 	else
-		tty_termios_copy_hw(tty->termios, old);
+		tty_termios_copy_hw(&tty->termios, old);
 }
 
 static int serial_break(struct tty_struct *tty, int break_state)
