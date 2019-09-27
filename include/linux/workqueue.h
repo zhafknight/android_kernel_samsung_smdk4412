@@ -389,7 +389,6 @@ __alloc_workqueue_key(const char *fmt, unsigned int flags, int max_active,
 
 extern void destroy_workqueue(struct workqueue_struct *wq);
 
-extern int queue_work(struct workqueue_struct *wq, struct work_struct *work);
 extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
 			struct work_struct *work);
 extern bool queue_work(struct workqueue_struct *wq, struct work_struct *work);
