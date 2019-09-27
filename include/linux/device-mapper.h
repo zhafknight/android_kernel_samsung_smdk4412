@@ -46,7 +46,8 @@ typedef void (*dm_dtr_fn) (struct dm_target *ti);
  * = 1: simple remap complete
  * = 2: The target wants to push back the io
  */
-typedef int (*dm_map_fn) (struct dm_target *ti, struct bio *bio);
+typedef int (*dm_map_fn) (struct dm_target *ti, struct bio *bio,
+			  union map_info *map_context);
 typedef int (*dm_map_request_fn) (struct dm_target *ti, struct request *clone,
 				  union map_info *map_context);
 
@@ -59,7 +60,8 @@ typedef int (*dm_map_request_fn) (struct dm_target *ti, struct request *clone,
  * 2   : The target wants to push back the io
  */
 typedef int (*dm_endio_fn) (struct dm_target *ti,
-			    struct bio *bio, int error);
+			    struct bio *bio, int error,
+			    union map_info *map_context);
 typedef int (*dm_request_endio_fn) (struct dm_target *ti,
 				    struct request *clone, int error,
 				    union map_info *map_context);
