@@ -374,7 +374,7 @@ s32 igb_read_nvm_i211(struct e1000_hw *hw, u16 offset, u16 words,
 		break;
 	default:
 		hw_dbg("NVM word 0x%02x is not mapped.\n", offset);
-		*data = NVM_RESERVED_WORD;
+		*data = NVM_DONTEXPAND | VM_DONTDUMP_WORD;
 		break;
 	}
 	return ret_val;

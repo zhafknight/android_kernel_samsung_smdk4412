@@ -724,7 +724,7 @@ static int ipc_spi_mmap(struct file *filp, struct vm_area_struct *vma)
 
 	dev_dbg(od->dev, "(%d) Req region: 0x%08lx 0x%08lx\n", __LINE__, offset, size);
 
-	vma->vm_flags |= VM_RESERVED;
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
 	vma->vm_ops = &ipc_spi_vm_ops;
 	vma->vm_private_data = od;
 

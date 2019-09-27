@@ -2434,7 +2434,7 @@ static int mcKernelModule_mmap(
 			(void *)((unsigned int)physAddr+allocatedSize),
 			allocatedSize, kernelVirtAddr, handle);
 
-		pVmArea->vm_flags |= VM_RESERVED;
+		pVmArea->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
 		/* convert Kernel address to User Address. Kernel address begins
 			at PAGE_OFFSET, user Address range is below PAGE_OFFSET.
 			Remapping the area is always done, so multiple mappings

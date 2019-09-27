@@ -1943,7 +1943,7 @@ static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
 	size = vma->vm_end - vma->vm_start;
 
 	/* To stop the swapper from even considering these pages. */
-	vma->vm_flags |= (VM_IO | VM_RESERVED);
+	vma->vm_flags |= (VM_IO | VM_DONTEXPAND | VM_DONTDUMP);
 
 	if (((vma->vm_pgoff == 0) && (size == info->fix.smem_len)) ||
 	    ((off == info->fix.smem_len) && (size == PAGE_SIZE)))

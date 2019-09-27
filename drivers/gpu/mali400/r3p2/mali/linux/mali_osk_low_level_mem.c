@@ -529,7 +529,7 @@ _mali_osk_errcode_t _mali_osk_mem_mapregion_init( mali_memory_allocation * descr
 	vma->vm_flags |= VM_IO;
 	vma->vm_flags |= VM_DONTCOPY;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0)
-	vma->vm_flags |= VM_RESERVED;
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
 #else
 	vma->vm_flags |= VM_DONTDUMP;
 	vma->vm_flags |= VM_DONTEXPAND;

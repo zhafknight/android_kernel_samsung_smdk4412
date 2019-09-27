@@ -163,7 +163,7 @@ static int secmem_mmap(struct file *file, struct vm_area_struct *vma)
 	BUG_ON(!SECMEM_IS_PAGE_ALIGNED(vma->vm_start));
 	BUG_ON(!SECMEM_IS_PAGE_ALIGNED(vma->vm_end));
 
-	vma->vm_flags |= VM_RESERVED;
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 
 	ret = find_secmem_fd_list(&g_fd_head, phys_addr, size);

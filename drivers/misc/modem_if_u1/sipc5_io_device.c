@@ -1360,7 +1360,7 @@ static int misc_mmap(struct file *filp, struct vm_area_struct *vma)
 
 	/* Set the noncacheable property to the region */
 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-	vma->vm_flags |= VM_RESERVED | VM_IO;
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP | VM_IO;
 
 	pfn = __phys_to_pfn(C2C_CP_RGN_ADDR + offset);
 	r = remap_pfn_range(vma, vma->vm_start, pfn, size, vma->vm_page_prot);

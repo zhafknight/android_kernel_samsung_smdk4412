@@ -653,7 +653,7 @@ int unifb_mmap(struct fb_info *info,
 				vma->vm_page_prot))
 		return -EAGAIN;
 
-	vma->vm_flags |= VM_RESERVED;	/* avoid to swap out this VMA */
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;	/* avoid to swap out this VMA */
 	return 0;
 
 }

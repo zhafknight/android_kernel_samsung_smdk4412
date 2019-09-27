@@ -926,7 +926,7 @@ int fimc_mmap_own_mem(struct file *filp, struct vm_area_struct *vma)
 
 	/* only supports non-cached mmap */
 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-	vma->vm_flags |= VM_RESERVED;
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
 
 	if ((vma->vm_flags & VM_WRITE) && !(vma->vm_flags & VM_SHARED)) {
 		fimc_err("writable mapping must be shared\n");
@@ -967,7 +967,7 @@ int fimc_mmap_out_src(struct file *filp, struct vm_area_struct *vma)
 
 	pri_data = (ctrl->id * 0x100) + (ctx_id * 0x10) + idx;
 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-	vma->vm_flags |= VM_RESERVED;
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
 	vma->vm_ops = &fimc_mmap_ops;
 	vma->vm_private_data = (void *)pri_data;
 
@@ -1004,7 +1004,7 @@ int fimc_mmap_out_dst(struct file *filp, struct vm_area_struct *vma, u32 idx)
 	size = vma->vm_end - vma->vm_start;
 
 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-	vma->vm_flags |= VM_RESERVED;
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
 
 	if (ctrl->out->ctx[ctx_id].dst[idx].base[0])
 		pfn = __phys_to_pfn(ctrl->out->ctx[ctx_id].dst[idx].base[0]);
@@ -1050,7 +1050,7 @@ static inline int fimc_mmap_cap(struct file *filp, struct vm_area_struct *vma)
 	if (!ctrl->cap->cacheable)
 		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
 
-	vma->vm_flags |= VM_RESERVED;
+	vma->vm_flags |= VM_DONTEXPAND | VM_DONTDUMP;
 
 	if (!cma_is_registered_region(ctrl->cap->bufs[idx].base[0], size)) {
 		pr_err("[%s] handling non-cma region (%#x@%#x)is prohibited\n",
