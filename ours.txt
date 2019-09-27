@@ -16,7 +16,6 @@ drivers/power/Kconfig
 drivers/power/Makefile
 drivers/power/max8997_charger.c
 drivers/regulator
-drivers/rtc/class.c
 drivers/rtc/rtc-s3c.c
 drivers/thermal/Kconfig
 drivers/tty/serial/Kconfig
