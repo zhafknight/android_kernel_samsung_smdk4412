@@ -42,7 +42,6 @@ drivers/input/touchscreen
 drivers/mfd
 include/linux/mfd
 drivers/tty/serial/samsung
-drivers/staging/android
 drivers/power
 include/linux/power
 drivers/input/evdev.c
