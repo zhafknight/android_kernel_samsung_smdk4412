@@ -1003,7 +1003,7 @@ static __devinit int s5m8767_pmic_probe(struct platform_device *pdev)
 		}
 	}
 
-	INIT_DELAYED_WORK_DEFERRABLE(&s5m8767->set_buchg,  s5m_set_buchg);
+	INIT_DEFERRABLE_WORK(&s5m8767->set_buchg,  s5m_set_buchg);
 	schedule_delayed_work(&s5m8767->set_buchg, msecs_to_jiffies(40000));
 
 	return 0;

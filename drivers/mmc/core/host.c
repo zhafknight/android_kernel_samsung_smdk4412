@@ -358,7 +358,7 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *dev)
 	wakeup_source_init(&host->detect_wake_lock,
 		kasprintf(GFP_KERNEL, "%s_detect", mmc_hostname(host)));
 	INIT_DELAYED_WORK(&host->detect, mmc_rescan);
-	INIT_DELAYED_WORK_DEFERRABLE(&host->disable, mmc_host_deeper_disable);
+	INIT_DEFERRABLE_WORK(&host->disable, mmc_host_deeper_disable);
 #ifdef CONFIG_PM
 	host->pm_notify.notifier_call = mmc_pm_notify;
 #endif

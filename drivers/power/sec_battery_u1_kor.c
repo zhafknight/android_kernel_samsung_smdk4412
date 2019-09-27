@@ -2175,12 +2175,12 @@ static __devinit int sec_bat_probe(struct platform_device *pdev)
 		sec_main_charger_disable(info);
 
 	INIT_WORK(&info->monitor_work, sec_bat_monitor_work);
-	INIT_DELAYED_WORK_DEFERRABLE(&info->cable_work, sec_bat_cable_work);
+	INIT_DEFERRABLE_WORK(&info->cable_work, sec_bat_cable_work);
 
-	INIT_DELAYED_WORK_DEFERRABLE(&info->polling_work, sec_bat_polling_work);
+	INIT_DEFERRABLE_WORK(&info->polling_work, sec_bat_polling_work);
 	schedule_delayed_work(&info->polling_work, 0);
 
-	INIT_DELAYED_WORK_DEFERRABLE(&info->measure_work, sec_bat_measure_work);
+	INIT_DEFERRABLE_WORK(&info->measure_work, sec_bat_measure_work);
 	schedule_delayed_work(&info->measure_work, 0);
 
 	return 0;

@@ -309,7 +309,7 @@ static int __devinit sec_fuelgauge_probe(struct i2c_client *client,
 				"%s: Failed to Enable Wakeup Source(%d)\n",
 				__func__, ret);
 
-		INIT_DELAYED_WORK_DEFERRABLE(
+		INIT_DEFERRABLE_WORK(
 			&fuelgauge->isr_work, sec_fg_isr_work);
 	}
 

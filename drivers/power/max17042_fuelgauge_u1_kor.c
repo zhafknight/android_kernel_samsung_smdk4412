@@ -773,7 +773,7 @@ static int __devinit max17042_probe(struct i2c_client *client,
 		pr_info("reset status = 0x%x\n", chip->status);
 	}
 
-	INIT_DELAYED_WORK_DEFERRABLE(&chip->work, max17042_work);
+	INIT_DEFERRABLE_WORK(&chip->work, max17042_work);
 	schedule_delayed_work(&chip->work, MAX17042_SHORT_DELAY);
 
 	return 0;

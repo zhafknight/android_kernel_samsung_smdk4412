@@ -604,7 +604,7 @@ static int lcdfreq_probe(struct platform_device *pdev)
 	mutex_init(&info->lock);
 	spin_lock_init(&info->slock);
 
-	INIT_DELAYED_WORK_DEFERRABLE(&info->work, lcdfreq_status_work);
+	INIT_DEFERRABLE_WORK(&info->work, lcdfreq_status_work);
 
 	ret = sysfs_create_group(&fb->dev->kobj, &lcdfreq_attr_group);
 	if (ret < 0) {

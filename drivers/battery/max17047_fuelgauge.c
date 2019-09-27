@@ -891,7 +891,7 @@ static int __devinit max17047_fuelgauge_i2c_probe(struct i2c_client *client,
 	/* Initialize fuelgauge alert */
 	max17047_alert_init(fg_data);
 
-	INIT_DELAYED_WORK_DEFERRABLE(&fg_data->update_work,
+	INIT_DEFERRABLE_WORK(&fg_data->update_work,
 					max17047_update_work);
 
 	/* Request IRQ */
@@ -922,7 +922,7 @@ static int __devinit max17047_fuelgauge_i2c_probe(struct i2c_client *client,
 	}
 
 #ifdef DEBUG_FUELGAUGE_POLLING
-	INIT_DELAYED_WORK_DEFERRABLE(&fg_data->polling_work,
+	INIT_DEFERRABLE_WORK(&fg_data->polling_work,
 					max17047_polling_work);
 	schedule_delayed_work(&fg_data->polling_work, 0);
 #else

@@ -4503,7 +4503,7 @@ static int omap_dsi1hw_probe(struct platform_device *dsidev)
 
 	pm_runtime_enable(&dsidev->dev);
 
-	INIT_DELAYED_WORK_DEFERRABLE(&dsi->framedone_timeout_work,
+	INIT_DEFERRABLE_WORK(&dsi->framedone_timeout_work,
 			dsi_framedone_timeout_work_callback);
 
 #ifdef DSI_CATCH_MISSING_TE

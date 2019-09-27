@@ -308,7 +308,7 @@ static int __devinit sec_charger_probe(
 					__func__, ret);
 		}
 
-		INIT_DELAYED_WORK_DEFERRABLE(
+		INIT_DEFERRABLE_WORK(
 			&charger->isr_work, sec_chg_isr_work);
 	}
 

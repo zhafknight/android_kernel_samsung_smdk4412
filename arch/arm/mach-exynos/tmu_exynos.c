@@ -349,11 +349,11 @@ static int __devinit tmu_probe(struct platform_device *pdev)
 	}
 
 #ifdef CONFIG_TMU_DEBUG
-	INIT_DELAYED_WORK_DEFERRABLE(&info->monitor, cur_temp_monitor);
+	INIT_DEFERRABLE_WORK(&info->monitor, cur_temp_monitor);
 	queue_delayed_work_on(0, tmu_monitor_wq, &info->monitor,
 			usecs_to_jiffies(1000 * 1000));
 #endif
-	INIT_DELAYED_WORK_DEFERRABLE(&info->polling, tmu_monitor);
+	INIT_DEFERRABLE_WORK(&info->polling, tmu_monitor);
 
 	ret = tmu_initialize(pdev);
 	if (ret)
