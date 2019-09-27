@@ -4086,7 +4086,7 @@ static int __devinit mms_ts_probe(struct i2c_client *client,
 	__set_bit(EV_ABS, input_dev->evbit);
 	__set_bit(INPUT_PROP_DIRECT, input_dev->propbit);
 
-	input_mt_init_slots(input_dev, MAX_FINGERS);
+	input_mt_init_slots(input_dev, MAX_FINGERS, 1);
 	input_set_abs_params(input_dev, ABS_MT_TOUCH_MAJOR,
 				0, MAX_PRESSURE, 0, 0);
 	input_set_abs_params(input_dev, ABS_MT_TOUCH_MINOR,
