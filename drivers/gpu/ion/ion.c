@@ -196,7 +196,7 @@ static struct ion_handle *ion_handle_create(struct ion_client *client,
 	if (!handle)
 		return ERR_PTR(-ENOMEM);
 	kref_init(&handle->ref);
-	rb_init_node(&handle->node);
+	RB_CLEAR_NODE(&handle->node);
 	handle->client = client;
 	ion_buffer_get(buffer);
 	handle->buffer = buffer;
@@ -699,15 +699,6 @@ struct ion_handle *ion_import_uva(struct ion_client *client, unsigned long uva,
 
 		*offset = vma->vm_pgoff << PAGE_SHIFT;
 
-		if (is_linear_pfn_mapping(vma)) {
-			/* if vma is VM_PFN_AT_MMAPed, vma->vm_pgoff indicates
-			 * mapped physical address */
-			size_t len;
-			if (ion_phys(client, handle, &phys, &len))
-				return ERR_PTR(-EINVAL);
-
-			*offset -= phys;
-		}
 		*offset += uva - vma->vm_start;
 	}
 

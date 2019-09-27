@@ -20,6 +20,9 @@
 
 #include <linux/cma.h>         /* CMA structures */
 
+#ifdef CONFIG_ARCH_EXYNOS
+#include <mach/stupid.h>
+#endif
 
 /************************* Data Types *************************/
 
