@@ -23,6 +23,7 @@
 #include <linux/regulator/consumer.h>
 #include <linux/mfd/max77693.h>
 #include <linux/mfd/max77693-private.h>
+#include <plat/stupid.h>
 
 #define PWM_MIN 0
 #define PWM_DEFAULT 50
@@ -165,9 +166,9 @@ static void haptic_work(struct work_struct *work)
 
 		max77693_haptic_i2c(hap_data, true);
 
-		pwm_config(hap_data->pwm, pwm_duty, hap_data->pdata->period);
-        pr_info("[VIB] %s: pwm_config duty=%d\n", __func__, pwm_duty);
-		pwm_enable(hap_data->pwm);
+		pwm_config_deprecated(hap_data->pwm, pwm_duty, hap_data->pdata->period);
+        pr_info("[VIB] %s: pwm_config_deprecated duty=%d\n", __func__, pwm_duty);
+		pwm_enable_deprecated(hap_data->pwm);
 
 		if (hap_data->pdata->motor_en)
 			hap_data->pdata->motor_en(true);
@@ -186,7 +187,7 @@ static void haptic_work(struct work_struct *work)
 #else
 		regulator_force_disable(hap_data->regulator);
 #endif
-		pwm_disable(hap_data->pwm);
+		pwm_disable_deprecated(hap_data->pwm);
 
 		max77693_haptic_i2c(hap_data, false);
 
@@ -211,7 +212,7 @@ void vibtonz_en(bool en)
 			return;
 
 		max77693_haptic_i2c(g_hap_data, true);
-		pwm_enable(g_hap_data->pwm);
+		pwm_enable_deprecated(g_hap_data->pwm);
 
 		if (g_hap_data->pdata->motor_en)
 			g_hap_data->pdata->motor_en(true);
@@ -228,7 +229,7 @@ void vibtonz_en(bool en)
 		else
 			regulator_force_disable(g_hap_data->regulator);
 
-		pwm_disable(g_hap_data->pwm);
+		pwm_disable_deprecated(g_hap_data->pwm);
 
 		max77693_haptic_i2c(g_hap_data, false);
 
@@ -256,7 +257,7 @@ void vibtonz_pwm(int nForce)
 		prev_duty = pwm_duty;
 
         pr_debug("[VIB] %s: setting pwm_duty=%d", __func__, pwm_duty);
-		pwm_config(g_hap_data->pwm, pwm_duty, pwm_period);
+		pwm_config_deprecated(g_hap_data->pwm, pwm_duty, pwm_period);
 	}
 #ifdef SEC_DEBUG_VIB
 	printk(KERN_DEBUG "[VIB] vibtonz_pwm is called(%d)\n", nForce);
@@ -373,13 +374,13 @@ static int max77693_haptic_probe(struct platform_device *pdev)
 	INIT_WORK(&(hap_data->work), haptic_work);
 	spin_lock_init(&(hap_data->lock));
 
-	hap_data->pwm = pwm_request(hap_data->pdata->pwm_id, "vibrator");
+	hap_data->pwm = pwm_request_deprecated(hap_data->pdata->pwm_id, "vibrator");
 	if (IS_ERR(hap_data->pwm)) {
 		pr_err("[VIB] Failed to request pwm\n");
 		error = -EFAULT;
-		goto err_pwm_request;
+		goto err_pwm_request_deprecated;
 	}
-	pwm_config(hap_data->pwm, pdata->period / 2, pdata->period);
+	pwm_config_deprecated(hap_data->pwm, pdata->period / 2, pdata->period);
 
 	vibetonz_clk_on(&pdev->dev, true);
 
@@ -444,8 +445,8 @@ static int max77693_haptic_probe(struct platform_device *pdev)
 err_timed_output_register:
 	regulator_put(hap_data->regulator);
 err_regulator_get:
-	pwm_free(hap_data->pwm);
-err_pwm_request:
+	pwm_free_deprecated(hap_data->pwm);
+err_pwm_request_deprecated:
 	kfree(hap_data);
 	g_hap_data = NULL;
 	return error;
@@ -458,7 +459,7 @@ static int __devexit max77693_haptic_remove(struct platform_device *pdev)
 	timed_output_dev_unregister(&data->tout_dev);
 #endif
 	regulator_put(data->regulator);
-	pwm_free(data->pwm);
+	pwm_free_deprecated(data->pwm);
 	destroy_workqueue(data->workqueue);
 	kfree(data);
 	g_hap_data = NULL;

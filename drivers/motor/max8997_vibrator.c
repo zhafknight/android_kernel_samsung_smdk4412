@@ -113,7 +113,7 @@ static void vibrator_work(struct work_struct *_work)
 	if (0 == data->timeout) {
 		if (!data->running)
 			return ;
-		pwm_disable(data->pwm);
+		pwm_disable_deprecated(data->pwm);
 		i2c_max8997_hapticmotor(data, false);
 		if (data->pdata->motor_en)
 			data->pdata->motor_en(false);
@@ -129,9 +129,9 @@ static void vibrator_work(struct work_struct *_work)
 		else
 			regulator_enable(data->regulator);
 		i2c_max8997_hapticmotor(data, true);
-		pwm_config(data->pwm, pwm_duty, data->pdata->period);
-		pr_info("[VIB] %s: pwm_config duty=%d\n", __func__, pwm_duty);
-		pwm_enable(data->pwm);
+		pwm_config_deprecated(data->pwm, pwm_duty, data->pdata->period);
+		pr_info("[VIB] %s: pwm_config_deprecated duty=%d\n", __func__, pwm_duty);
+		pwm_enable_deprecated(data->pwm);
 
 		data->running = true;
 	}
@@ -185,13 +185,13 @@ void vibtonz_en(bool en)
 		else
 			regulator_enable(data->regulator);
 		i2c_max8997_hapticmotor(data, true);
-		pwm_enable(data->pwm);
+		pwm_enable_deprecated(data->pwm);
 		data->running = true;
 	} else {
 		if (!data->running)
 			return ;
 
-		pwm_disable(data->pwm);
+		pwm_disable_deprecated(data->pwm);
 		i2c_max8997_hapticmotor(data, false);
 		if (data->pdata->motor_en)
 			data->pdata->motor_en(false);
@@ -220,7 +220,7 @@ void vibtonz_pwm(int nForce)
 	if (prev_duty != pwm_duty) {
 		prev_duty = pwm_duty;
 		pr_debug("[VIB] %s: setting pwm_duty=%d", __func__, pwm_duty);
-		pwm_config(data->pwm, pwm_duty, pwm_period);
+		pwm_config_deprecated(data->pwm, pwm_duty, pwm_period);
 	}
 }
 EXPORT_SYMBOL(vibtonz_pwm);
@@ -305,13 +305,13 @@ static int __devinit vibrator_probe(struct platform_device *pdev)
 	INIT_WORK(&ddata->work, vibrator_work);
 	spin_lock_init(&ddata->lock);
 
-	ddata->pwm = pwm_request(pdata->pwm_id, "vibrator");
+	ddata->pwm = pwm_request_deprecated(pdata->pwm_id, "vibrator");
 	if (IS_ERR(ddata->pwm)) {
 		pr_err("[VIB] Failed to request pwm.\n");
 		error = -EFAULT;
-		goto err_pwm_request;
+		goto err_pwm_request_deprecated;
 	}
-	pwm_config(ddata->pwm,
+	pwm_config_deprecated(ddata->pwm,
 		ddata->pdata->period/2, ddata->pdata->period);
 
 	vibetonz_clk_on(&pdev->dev, true);
@@ -342,8 +342,8 @@ err_timed_output_register:
 	timed_output_dev_unregister(&ddata->dev);
 err_regulator_get:
 	regulator_put(ddata->regulator);
-err_pwm_request:
-	pwm_free(ddata->pwm);
+err_pwm_request_deprecated:
+	pwm_free_deprecated(ddata->pwm);
 err_free_mem:
 	kfree(ddata);
 	return error;
@@ -358,7 +358,7 @@ static int __devexit vibrator_remove(struct platform_device *pdev)
 #else
 	regulator_put(data->regulator);
 #endif
-	pwm_free(data->pwm);
+	pwm_free_deprecated(data->pwm);
 	kfree(data);
 	return 0;
 }

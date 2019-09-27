@@ -113,12 +113,12 @@ void vibtonz_clk_enable(bool en)
 		if (g_drvdata->vib_clk)
 			clk_enable(g_drvdata->vib_clk);
 		else
-			pwm_enable(g_drvdata->pwm);
+			pwm_enable_deprecated(g_drvdata->pwm);
 	} else {
 		if (g_drvdata->vib_clk)
 			clk_disable(g_drvdata->vib_clk);
 		else
-			pwm_disable(g_drvdata->pwm);
+			pwm_disable_deprecated(g_drvdata->pwm);
 	}
 }
 
@@ -129,7 +129,7 @@ void vibtonz_clk_config(int duty)
 	duty_ns = (u32)(g_drvdata->pwm_period * duty)
 		/ 1000;
 
-	pwm_config(g_drvdata->pwm,
+	pwm_config_deprecated(g_drvdata->pwm,
 		duty_ns,
 		g_drvdata->pwm_period);
 
@@ -340,7 +340,7 @@ static int __devinit isa1200_vibrator_i2c_probe(struct i2c_client *client,
 		}
 	} else {
 		ddata->vib_clk = NULL;
-		ddata->pwm = pwm_request(pdata->pwm_id, "vibrator");
+		ddata->pwm = pwm_request_deprecated(pdata->pwm_id, "vibrator");
 		if (IS_ERR(ddata->pwm)) {
 			pr_err("[VIB] Failed to request pwm.\n");
 			ret = -EFAULT;
