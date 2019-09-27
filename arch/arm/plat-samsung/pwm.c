@@ -26,7 +26,7 @@
 #include <plat/regs-timer.h>
 #include <plat/gpio-cfg.h>
 
-struct pwm_device {
+struct pwm_device_deprecated {
 	struct list_head	 list;
 	struct platform_device	*pdev;
 
@@ -64,7 +64,7 @@ struct s3c_pwm_pdata *to_pwm_pdata(struct device *dev)
 static struct clk *clk_scaler[2];
 static DEFINE_SPINLOCK(pwm_spin_lock);
 
-static inline int pwm_is_tdiv(struct pwm_device *pwm)
+static inline int pwm_is_tdiv(struct pwm_device_deprecated *pwm)
 {
 	return clk_get_parent(pwm->clk) == pwm->clk_div;
 }
@@ -72,9 +72,9 @@ static inline int pwm_is_tdiv(struct pwm_device *pwm)
 static DEFINE_MUTEX(pwm_lock);
 static LIST_HEAD(pwm_list);
 
-struct pwm_device *pwm_request(int pwm_id, const char *label)
+struct pwm_device_deprecated *pwm_request_deprecated(int pwm_id, const char *label)
 {
-	struct pwm_device *pwm;
+	struct pwm_device_deprecated *pwm;
 	int found = 0;
 
 	mutex_lock(&pwm_lock);
@@ -99,10 +99,10 @@ struct pwm_device *pwm_request(int pwm_id, const char *label)
 	return pwm;
 }
 
-EXPORT_SYMBOL(pwm_request);
+EXPORT_SYMBOL(pwm_request_deprecated);
 
 
-void pwm_free(struct pwm_device *pwm)
+void pwm_free_deprecated(struct pwm_device_deprecated *pwm)
 {
 	mutex_lock(&pwm_lock);
 
@@ -115,14 +115,14 @@ void pwm_free(struct pwm_device *pwm)
 	mutex_unlock(&pwm_lock);
 }
 
-EXPORT_SYMBOL(pwm_free);
+EXPORT_SYMBOL(pwm_free_deprecated);
 
 #define pwm_tcon_start(pwm) (1 << (pwm->tcon_base + 0))
 #define pwm_tcon_invert(pwm) (1 << (pwm->tcon_base + 2))
 #define pwm_tcon_autoreload(pwm) (1 << (pwm->tcon_base + 3))
 #define pwm_tcon_manulupdate(pwm) (1 << (pwm->tcon_base + 1))
 
-int pwm_enable(struct pwm_device *pwm)
+int pwm_enable_deprecated(struct pwm_device_deprecated *pwm)
 {
 	unsigned long flags;
 	unsigned long tcon;
@@ -145,9 +145,9 @@ int pwm_enable(struct pwm_device *pwm)
 	return 0;
 }
 
-EXPORT_SYMBOL(pwm_enable);
+EXPORT_SYMBOL(pwm_enable_deprecated);
 
-void pwm_disable(struct pwm_device *pwm)
+void pwm_disable_deprecated(struct pwm_device_deprecated *pwm)
 {
 	unsigned long flags;
 	unsigned long tcon;
@@ -167,9 +167,9 @@ void pwm_disable(struct pwm_device *pwm)
 	spin_unlock_irqrestore(&pwm_spin_lock, flags);
 }
 
-EXPORT_SYMBOL(pwm_disable);
+EXPORT_SYMBOL(pwm_disable_deprecated);
 
-static unsigned long pwm_calc_tin(struct pwm_device *pwm, unsigned long freq)
+static unsigned long pwm_calc_tin(struct pwm_device_deprecated *pwm, unsigned long freq)
 {
 	unsigned long tin_parent_rate;
 	unsigned int div;
@@ -187,7 +187,7 @@ static unsigned long pwm_calc_tin(struct pwm_device *pwm, unsigned long freq)
 
 #define NS_IN_HZ (1000000000UL)
 
-int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
+int pwm_config_deprecated(struct pwm_device_deprecated *pwm, int duty_ns, int period_ns)
 {
 	unsigned long tin_rate;
 	unsigned long tin_ns;
@@ -281,9 +281,9 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 	return 0;
 }
 
-EXPORT_SYMBOL(pwm_config);
+EXPORT_SYMBOL(pwm_config_deprecated);
 
-static int pwm_register(struct pwm_device *pwm)
+static int pwm_register(struct pwm_device_deprecated *pwm)
 {
 	pwm->duty_ns = -1;
 	pwm->period_ns = -1;
@@ -298,7 +298,7 @@ static int pwm_register(struct pwm_device *pwm)
 static int s3c_pwm_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
-	struct pwm_device *pwm;
+	struct pwm_device_deprecated *pwm;
 	struct s3c_pwm_pdata *pdata = to_pwm_pdata(dev);
 	unsigned int id = pdev->id;
 	int ret;
@@ -319,9 +319,9 @@ static int s3c_pwm_probe(struct platform_device *pdev)
 		return -ENXIO;
 	}
 
-	pwm = kzalloc(sizeof(struct pwm_device), GFP_KERNEL);
+	pwm = kzalloc(sizeof(struct pwm_device_deprecated), GFP_KERNEL);
 	if (pwm == NULL) {
-		dev_err(dev, "failed to allocate pwm_device\n");
+		dev_err(dev, "failed to allocate pwm_device_deprecated\n");
 		return -ENOMEM;
 	}
 
@@ -375,7 +375,7 @@ static int s3c_pwm_probe(struct platform_device *pdev)
 
 static int __devexit s3c_pwm_remove(struct platform_device *pdev)
 {
-	struct pwm_device *pwm = platform_get_drvdata(pdev);
+	struct pwm_device_deprecated *pwm = platform_get_drvdata(pdev);
 
 	clk_put(pwm->clk_div);
 	clk_put(pwm->clk);
@@ -387,7 +387,7 @@ static int __devexit s3c_pwm_remove(struct platform_device *pdev)
 #ifdef CONFIG_PM
 static int s3c_pwm_suspend(struct platform_device *pdev, pm_message_t state)
 {
-	struct pwm_device *pwm = platform_get_drvdata(pdev);
+	struct pwm_device_deprecated *pwm = platform_get_drvdata(pdev);
 
 	/* No one preserve these values during suspend so reset them
 	 * Otherwise driver leaves PWM unconfigured if same values
@@ -407,7 +407,7 @@ static int s3c_pwm_suspend(struct platform_device *pdev, pm_message_t state)
 
 static int s3c_pwm_resume(struct platform_device *pdev)
 {
-	struct pwm_device *pwm = platform_get_drvdata(pdev);
+	struct pwm_device_deprecated *pwm = platform_get_drvdata(pdev);
 
 	clk_enable(pwm->clk);
 
