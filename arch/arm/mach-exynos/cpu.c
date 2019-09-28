@@ -18,7 +18,7 @@
 #include <asm/proc-fns.h>
 #include <asm/exception.h>
 #include <asm/hardware/cache-l2x0.h>
-#include <asm/hardware/gic.h>
+#include <linux/irqchip/arm-gic.h>
 
 #include <plat/cpu.h>
 #include <plat/clock.h>

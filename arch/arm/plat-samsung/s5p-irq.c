@@ -14,7 +14,7 @@
 #include <linux/irq.h>
 #include <linux/io.h>
 
-#include <asm/hardware/vic.h>
+#include <linux/irqchip/arm-vic.h>
 
 #include <linux/serial_core.h>
 #include <mach/map.h>

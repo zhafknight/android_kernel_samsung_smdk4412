@@ -64,7 +64,7 @@
 #include <asm/mach/map.h>
 #include <asm/mmu-legacy.h>
 #include <asm/mach/arch.h>
-#include <asm/hardware/gic.h>
+#include <linux/irqchip/arm-gic.h>
 #include <asm/mach-types.h>
 
 #include <plat/regs-serial.h>

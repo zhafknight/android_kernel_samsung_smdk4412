@@ -10,7 +10,7 @@
  * published by the Free Software Foundation.
 */
 
-#include <asm/hardware/vic.h>
+#include <linux/irqchip/arm-vic.h>
 #include <mach/map.h>
 #include <plat/irqs.h>
 

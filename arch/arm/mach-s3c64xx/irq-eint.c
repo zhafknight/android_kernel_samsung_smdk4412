@@ -19,7 +19,7 @@
 #include <linux/irq.h>
 #include <linux/io.h>
 
-#include <asm/hardware/vic.h>
+#include <linux/irqchip/arm-vic.h>
 
 #include <plat/regs-irqtype.h>
 #include <mach/regs-gpio.h>

@@ -28,7 +28,7 @@
 #include <linux/gpio.h>
 #include <linux/platform_data/tegra_usb.h>
 
-#include <asm/hardware/gic.h>
+#include <linux/irqchip/arm-gic.h>
 #include <asm/mach-types.h>
 #include <asm/mach/arch.h>
 #include <asm/setup.h>
