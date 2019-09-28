@@ -284,7 +284,7 @@ int __init exynos_init(void)
 	printk(KERN_INFO "EXYNOS: Initializing architecture\n");
 
 	/* set idle function */
-	pm_idle = exynos_idle;
+	arm_pm_idle = exynos_idle;
 
 	/* set sw_reset function */
 	if (soc_is_exynos4210() || soc_is_exynos4212() || soc_is_exynos4412())

@@ -434,7 +434,7 @@ int __init exynos4_init(void)
 	printk(KERN_INFO "EXYNOS4: Initializing architecture\n");
 
 	/* set idle function */
-	pm_idle = exynos4_idle;
+	arm_pm_idle = exynos4_idle;
 
 	/*
 	 * on exynos4x12, CMU reset system power register should to be set 0x0
