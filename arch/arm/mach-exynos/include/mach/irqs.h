@@ -29,6 +29,9 @@
 
 #define IRQ_SPI(x)		S5P_IRQ(x+32)
 
+#define EXYNOS4_MAX_COMBINER_NR		16
+#define EXYNOS5_MAX_COMBINER_NR		32
+
 #if defined(CONFIG_ARCH_EXYNOS4)
 #include "irqs-exynos4.h"
 #elif defined(CONFIG_ARCH_EXYNOS5)
