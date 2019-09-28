@@ -4,6 +4,7 @@ arch/arm/plat-s5p
 arch/arm/plat-samsung
 drivers/gpio
 include/linux/gpio.h
+drivers/i2c/busses/i2c-s3c2410.c
 drivers/media
 drivers/mfd/Makefile
 drivers/mfd/max8997-irq.c
