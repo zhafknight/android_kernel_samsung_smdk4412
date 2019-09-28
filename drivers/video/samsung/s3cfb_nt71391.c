@@ -374,7 +374,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit nt71391_remove(struct device *dev)
+static int nt71391_remove(struct device *dev)
 {
 	struct lcd_info *lcd = dev_get_drvdata(dev);
 
@@ -395,7 +395,7 @@ static void nt71391_shutdown(struct device *dev)
 static struct mipi_lcd_driver nt71391_mipi_driver = {
 	.name	= "nt71391",
 	.probe		= nt71391_probe,
-	.remove		= __devexit_p(nt71391_remove),
+	.remove		= nt71391_remove,
 	.shutdown	= nt71391_shutdown,
 };
 

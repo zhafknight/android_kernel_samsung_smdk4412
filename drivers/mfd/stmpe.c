@@ -755,7 +755,7 @@ static struct irq_chip stmpe_irq_chip = {
 	.irq_unmask		= stmpe_irq_unmask,
 };
 
-static int __devinit stmpe_irq_init(struct stmpe *stmpe)
+static int stmpe_irq_init(struct stmpe *stmpe)
 {
 	int num_irqs = stmpe->variant->num_irqs;
 	int base = stmpe->irq_base;
@@ -791,7 +791,7 @@ static void stmpe_irq_remove(struct stmpe *stmpe)
 	}
 }
 
-static int __devinit stmpe_chip_init(struct stmpe *stmpe)
+static int stmpe_chip_init(struct stmpe *stmpe)
 {
 	unsigned int irq_trigger = stmpe->pdata->irq_trigger;
 	int autosleep_timeout = stmpe->pdata->autosleep_timeout;
@@ -839,14 +839,14 @@ static int __devinit stmpe_chip_init(struct stmpe *stmpe)
 	return stmpe_reg_write(stmpe, stmpe->regs[STMPE_IDX_ICR_LSB], icr);
 }
 
-static int __devinit stmpe_add_device(struct stmpe *stmpe,
+static int stmpe_add_device(struct stmpe *stmpe,
 				      struct mfd_cell *cell, int irq)
 {
 	return mfd_add_devices(stmpe->dev, stmpe->pdata->id, cell, 1,
 			       NULL, stmpe->irq_base + irq);
 }
 
-static int __devinit stmpe_devices_init(struct stmpe *stmpe)
+static int stmpe_devices_init(struct stmpe *stmpe)
 {
 	struct stmpe_variant_info *variant = stmpe->variant;
 	unsigned int platform_blocks = stmpe->pdata->blocks;
@@ -895,7 +895,7 @@ static int stmpe_resume(struct device *dev)
 }
 #endif
 
-static int __devinit stmpe_probe(struct i2c_client *i2c,
+static int stmpe_probe(struct i2c_client *i2c,
 				 const struct i2c_device_id *id)
 {
 	struct stmpe_platform_data *pdata = i2c->dev.platform_data;
@@ -959,7 +959,7 @@ out_free:
 	return ret;
 }
 
-static int __devexit stmpe_remove(struct i2c_client *client)
+static int stmpe_remove(struct i2c_client *client)
 {
 	struct stmpe *stmpe = i2c_get_clientdata(client);
 
@@ -996,7 +996,7 @@ static struct i2c_driver stmpe_driver = {
 	.driver.pm	= &stmpe_dev_pm_ops,
 #endif
 	.probe		= stmpe_probe,
-	.remove		= __devexit_p(stmpe_remove),
+	.remove		= stmpe_remove,
 	.id_table	= stmpe_id,
 };
 

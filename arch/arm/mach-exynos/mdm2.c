@@ -321,7 +321,7 @@ static int __init mdm_modem_probe(struct platform_device *pdev)
 	return mdm_common_create(pdev, &mdm_cb);
 }
 
-static int __devexit mdm_modem_remove(struct platform_device *pdev)
+static int mdm_modem_remove(struct platform_device *pdev)
 {
 	return mdm_common_modem_remove(pdev);
 }

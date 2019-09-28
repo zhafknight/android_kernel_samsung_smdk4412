@@ -3612,7 +3612,7 @@ static DEVICE_ATTR(isp_core, S_IRUGO, s5c73m3_camera_isp_core_show, NULL);
  * Fetching platform data is being done with s_config subdev call.
  * In probe routine, we just register subdev device
  */
-static int __devinit s5c73m3_probe(struct i2c_client *client,
+static int s5c73m3_probe(struct i2c_client *client,
 			 const struct i2c_device_id *id)
 {
 	struct s5c73m3_state *state;
@@ -3650,7 +3650,7 @@ static int __devinit s5c73m3_probe(struct i2c_client *client,
 	return 0;
 }
 
-static int __devexit s5c73m3_remove(struct i2c_client *client)
+static int s5c73m3_remove(struct i2c_client *client)
 {
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct s5c73m3_state *state = to_state(sd);
@@ -3684,7 +3684,7 @@ static struct i2c_driver s5c73m3_i2c_driver = {
 		.name	= S5C73M3_DRIVER_NAME,
 	},
 	.probe		= s5c73m3_probe,
-	.remove		= __devexit_p(s5c73m3_remove),
+	.remove		= s5c73m3_remove,
 	.id_table	= s5c73m3_id,
 };
 

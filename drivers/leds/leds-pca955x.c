@@ -245,7 +245,7 @@ static void pca955x_led_set(struct led_classdev *led_cdev, enum led_brightness v
 	spin_unlock(&pca955x->lock);
 }
 
-static int __devinit pca955x_probe(struct i2c_client *client,
+static int pca955x_probe(struct i2c_client *client,
 					const struct i2c_device_id *id)
 {
 	struct pca955x_led *pca955x;
@@ -346,7 +346,7 @@ exit:
 	return err;
 }
 
-static int __devexit pca955x_remove(struct i2c_client *client)
+static int pca955x_remove(struct i2c_client *client)
 {
 	struct pca955x_led *pca955x = i2c_get_clientdata(client);
 	int i;
@@ -367,7 +367,7 @@ static struct i2c_driver pca955x_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe	= pca955x_probe,
-	.remove	= __devexit_p(pca955x_remove),
+	.remove	= pca955x_remove,
 	.id_table = pca955x_id,
 };
 

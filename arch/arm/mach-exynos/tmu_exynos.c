@@ -289,7 +289,7 @@ static irqreturn_t tmu_irq(int irq, void *id)
 	return IRQ_HANDLED;
 }
 
-static int __devinit tmu_probe(struct platform_device *pdev)
+static int tmu_probe(struct platform_device *pdev)
 {
 	struct tmu_info *info;
 	struct resource *res;
@@ -371,7 +371,7 @@ err_nores:
 	return ret;
 }
 
-static int __devinit tmu_remove(struct platform_device *pdev)
+static int tmu_remove(struct platform_device *pdev)
 {
 	struct tmu_info *info = platform_get_drvdata(pdev);
 

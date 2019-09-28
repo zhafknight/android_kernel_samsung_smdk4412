@@ -238,7 +238,7 @@ ssize_t sec_chg_store_attrs(struct device *dev,
 	return ret;
 }
 
-static int __devinit sec_charger_probe(
+static int sec_charger_probe(
 						struct i2c_client *client,
 						const struct i2c_device_id *id)
 {
@@ -329,7 +329,7 @@ err_free:
 	return ret;
 }
 
-static int __devexit sec_charger_remove(
+static int sec_charger_remove(
 						struct i2c_client *client)
 {
 	return 0;
@@ -370,7 +370,7 @@ static struct i2c_driver sec_charger_driver = {
 		.name	= "sec-charger",
 	},
 	.probe	= sec_charger_probe,
-	.remove	= __devexit_p(sec_charger_remove),
+	.remove	= sec_charger_remove,
 	.suspend	= sec_charger_suspend,
 	.resume		= sec_charger_resume,
 	.shutdown	= sec_charger_shutdown,

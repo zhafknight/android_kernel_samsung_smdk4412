@@ -266,7 +266,7 @@ static struct miscdevice max63xx_wdt_miscdev = {
 	.fops	= &max63xx_wdt_fops,
 };
 
-static int __devinit max63xx_wdt_probe(struct platform_device *pdev)
+static int max63xx_wdt_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	int size;
@@ -329,7 +329,7 @@ out_request:
 	return ret;
 }
 
-static int __devexit max63xx_wdt_remove(struct platform_device *pdev)
+static int max63xx_wdt_remove(struct platform_device *pdev)
 {
 	misc_deregister(&max63xx_wdt_miscdev);
 	if (wdt_mem) {
@@ -356,7 +356,7 @@ MODULE_DEVICE_TABLE(platform, max63xx_id_table);
 
 static struct platform_driver max63xx_wdt_driver = {
 	.probe		= max63xx_wdt_probe,
-	.remove		= __devexit_p(max63xx_wdt_remove),
+	.remove		= max63xx_wdt_remove,
 	.id_table	= max63xx_id_table,
 	.driver		= {
 		.name	= "max63xx_wdt",

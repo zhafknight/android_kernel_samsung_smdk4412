@@ -137,7 +137,7 @@ static struct regmap_config tps65217_regmap_config = {
 	.val_bits = 8,
 };
 
-static int __devinit tps65217_probe(struct i2c_client *client,
+static int tps65217_probe(struct i2c_client *client,
 				const struct i2c_device_id *ids)
 {
 	struct tps65217 *tps;
@@ -197,7 +197,7 @@ err_regmap:
 	return ret;
 }
 
-static int __devexit tps65217_remove(struct i2c_client *client)
+static int tps65217_remove(struct i2c_client *client)
 {
 	struct tps65217 *tps = i2c_get_clientdata(client);
 	int i;
@@ -222,7 +222,7 @@ static struct i2c_driver tps65217_driver = {
 	},
 	.id_table	= tps65217_id_table,
 	.probe		= tps65217_probe,
-	.remove		= __devexit_p(tps65217_remove),
+	.remove		= tps65217_remove,
 };
 
 static int __init tps65217_init(void)

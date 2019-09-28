@@ -324,7 +324,7 @@ static struct platform_driver wm831x_status_driver = {
 	.remove = wm831x_status_remove,
 };
 
-static int __devinit wm831x_status_init(void)
+static int wm831x_status_init(void)
 {
 	return platform_driver_register(&wm831x_status_driver);
 }

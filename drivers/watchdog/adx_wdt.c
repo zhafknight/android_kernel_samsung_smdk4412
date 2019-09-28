@@ -221,7 +221,7 @@ static struct miscdevice adx_wdt_miscdev = {
 	.fops = &adx_wdt_fops,
 };
 
-static int __devinit adx_wdt_probe(struct platform_device *pdev)
+static int adx_wdt_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	struct adx_wdt *wdt;
@@ -275,7 +275,7 @@ static int __devinit adx_wdt_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit adx_wdt_remove(struct platform_device *pdev)
+static int adx_wdt_remove(struct platform_device *pdev)
 {
 	struct adx_wdt *wdt = platform_get_drvdata(pdev);
 
@@ -327,7 +327,7 @@ static const struct dev_pm_ops adx_wdt_pm_ops = {
 
 static struct platform_driver adx_wdt_driver = {
 	.probe = adx_wdt_probe,
-	.remove = __devexit_p(adx_wdt_remove),
+	.remove = adx_wdt_remove,
 	.shutdown = adx_wdt_shutdown,
 	.driver = {
 		.name = WATCHDOG_NAME,

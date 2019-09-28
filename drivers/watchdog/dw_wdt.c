@@ -292,7 +292,7 @@ static struct miscdevice dw_wdt_miscdev = {
 	.minor		= WATCHDOG_MINOR,
 };
 
-static int __devinit dw_wdt_drv_probe(struct platform_device *pdev)
+static int dw_wdt_drv_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct resource *mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -336,7 +336,7 @@ out_put_clk:
 	return ret;
 }
 
-static int __devexit dw_wdt_drv_remove(struct platform_device *pdev)
+static int dw_wdt_drv_remove(struct platform_device *pdev)
 {
 	misc_deregister(&dw_wdt_miscdev);
 
@@ -348,7 +348,7 @@ static int __devexit dw_wdt_drv_remove(struct platform_device *pdev)
 
 static struct platform_driver dw_wdt_driver = {
 	.probe		= dw_wdt_drv_probe,
-	.remove		= __devexit_p(dw_wdt_drv_remove),
+	.remove		= dw_wdt_drv_remove,
 	.driver		= {
 		.name	= "dw_wdt",
 		.owner	= THIS_MODULE,

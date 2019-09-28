@@ -16,7 +16,7 @@
 
 #include <linux/platform_device.h>
 
-static int __devinit ohci_ath79_start(struct usb_hcd *hcd)
+static int ohci_ath79_start(struct usb_hcd *hcd)
 {
 	struct ohci_hcd	*ohci = hcd_to_ohci(hcd);
 	int ret;

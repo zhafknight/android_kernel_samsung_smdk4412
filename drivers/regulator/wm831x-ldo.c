@@ -306,7 +306,7 @@ static struct regulator_ops wm831x_gp_ldo_ops = {
 	.disable = wm831x_ldo_disable,
 };
 
-static __devinit int wm831x_gp_ldo_probe(struct platform_device *pdev)
+static int wm831x_gp_ldo_probe(struct platform_device *pdev)
 {
 	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
 	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
@@ -374,7 +374,7 @@ err:
 	return ret;
 }
 
-static __devexit int wm831x_gp_ldo_remove(struct platform_device *pdev)
+static int wm831x_gp_ldo_remove(struct platform_device *pdev)
 {
 	struct wm831x_ldo *ldo = platform_get_drvdata(pdev);
 
@@ -389,7 +389,7 @@ static __devexit int wm831x_gp_ldo_remove(struct platform_device *pdev)
 
 static struct platform_driver wm831x_gp_ldo_driver = {
 	.probe = wm831x_gp_ldo_probe,
-	.remove = __devexit_p(wm831x_gp_ldo_remove),
+	.remove = wm831x_gp_ldo_remove,
 	.driver		= {
 		.name	= "wm831x-ldo",
 		.owner	= THIS_MODULE,
@@ -570,7 +570,7 @@ static struct regulator_ops wm831x_aldo_ops = {
 	.disable = wm831x_ldo_disable,
 };
 
-static __devinit int wm831x_aldo_probe(struct platform_device *pdev)
+static int wm831x_aldo_probe(struct platform_device *pdev)
 {
 	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
 	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
@@ -637,7 +637,7 @@ err:
 	return ret;
 }
 
-static __devexit int wm831x_aldo_remove(struct platform_device *pdev)
+static int wm831x_aldo_remove(struct platform_device *pdev)
 {
 	struct wm831x_ldo *ldo = platform_get_drvdata(pdev);
 
@@ -650,7 +650,7 @@ static __devexit int wm831x_aldo_remove(struct platform_device *pdev)
 
 static struct platform_driver wm831x_aldo_driver = {
 	.probe = wm831x_aldo_probe,
-	.remove = __devexit_p(wm831x_aldo_remove),
+	.remove = wm831x_aldo_remove,
 	.driver		= {
 		.name	= "wm831x-aldo",
 		.owner	= THIS_MODULE,
@@ -760,7 +760,7 @@ static struct regulator_ops wm831x_alive_ldo_ops = {
 	.disable = wm831x_ldo_disable,
 };
 
-static __devinit int wm831x_alive_ldo_probe(struct platform_device *pdev)
+static int wm831x_alive_ldo_probe(struct platform_device *pdev)
 {
 	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
 	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
@@ -816,7 +816,7 @@ err:
 	return ret;
 }
 
-static __devexit int wm831x_alive_ldo_remove(struct platform_device *pdev)
+static int wm831x_alive_ldo_remove(struct platform_device *pdev)
 {
 	struct wm831x_ldo *ldo = platform_get_drvdata(pdev);
 
@@ -828,7 +828,7 @@ static __devexit int wm831x_alive_ldo_remove(struct platform_device *pdev)
 
 static struct platform_driver wm831x_alive_ldo_driver = {
 	.probe = wm831x_alive_ldo_probe,
-	.remove = __devexit_p(wm831x_alive_ldo_remove),
+	.remove = wm831x_alive_ldo_remove,
 	.driver		= {
 		.name	= "wm831x-alive-ldo",
 		.owner	= THIS_MODULE,

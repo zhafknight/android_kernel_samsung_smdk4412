@@ -187,7 +187,7 @@ static char * snd_opti9xx_names[] = {
 };
 
 
-static long __devinit snd_legacy_find_free_ioport(long *port_table, long size)
+static long snd_legacy_find_free_ioport(long *port_table, long size)
 {
 	while (*port_table != -1) {
 		if (request_region(*port_table, size, "ALSA test")) {
@@ -199,7 +199,7 @@ static long __devinit snd_legacy_find_free_ioport(long *port_table, long size)
 	return -1;
 }
 
-static int __devinit snd_opti9xx_init(struct snd_opti9xx *chip,
+static int snd_opti9xx_init(struct snd_opti9xx *chip,
 				      unsigned short hardware)
 {
 	static int opti9xx_mc_size[] = {7, 7, 10, 10, 2, 2, 2};
@@ -351,7 +351,7 @@ static void snd_opti9xx_write(struct snd_opti9xx *chip, unsigned char reg,
 		(snd_opti9xx_read(chip, reg) & ~(mask)) | ((value) & (mask)))
 
 
-static int __devinit snd_opti9xx_configure(struct snd_opti9xx *chip,
+static int snd_opti9xx_configure(struct snd_opti9xx *chip,
 					   long port,
 					   int irq, int dma1, int dma2,
 					   long mpu_port, int mpu_irq)
@@ -606,7 +606,7 @@ WSS_DOUBLE_TLV("Aux Playback Volume", 0,
 		db_scale_4bit_12db_max),
 };
 
-static int __devinit snd_opti93x_mixer(struct snd_wss *chip)
+static int snd_opti93x_mixer(struct snd_wss *chip)
 {
 	struct snd_card *card;
 	unsigned int idx;
@@ -679,7 +679,7 @@ static irqreturn_t snd_opti93x_interrupt(int irq, void *dev_id)
 
 #endif /* OPTi93X */
 
-static int __devinit snd_opti9xx_read_check(struct snd_opti9xx *chip)
+static int snd_opti9xx_read_check(struct snd_opti9xx *chip)
 {
 	unsigned char value;
 #ifdef OPTi93X
@@ -721,7 +721,7 @@ static int __devinit snd_opti9xx_read_check(struct snd_opti9xx *chip)
 	return -ENODEV;
 }
 
-static int __devinit snd_card_opti9xx_detect(struct snd_card *card,
+static int snd_card_opti9xx_detect(struct snd_card *card,
 					     struct snd_opti9xx *chip)
 {
 	int i, err;
@@ -746,7 +746,7 @@ static int __devinit snd_card_opti9xx_detect(struct snd_card *card,
 }
 
 #ifdef CONFIG_PNP
-static int __devinit snd_card_opti9xx_pnp(struct snd_opti9xx *chip,
+static int snd_card_opti9xx_pnp(struct snd_opti9xx *chip,
 					  struct pnp_card_link *card,
 					  const struct pnp_card_device_id *pid)
 {
@@ -830,7 +830,7 @@ static void snd_card_opti9xx_free(struct snd_card *card)
 	}
 }
 
-static int __devinit snd_opti9xx_probe(struct snd_card *card)
+static int snd_opti9xx_probe(struct snd_card *card)
 {
 	static long possible_ports[] = {0x530, 0xe80, 0xf40, 0x604, -1};
 	int error;
@@ -967,7 +967,7 @@ static int snd_opti9xx_card_new(struct snd_card **cardp)
 	return 0;
 }
 
-static int __devinit snd_opti9xx_isa_match(struct device *devptr,
+static int snd_opti9xx_isa_match(struct device *devptr,
 					   unsigned int dev)
 {
 #ifdef CONFIG_PNP
@@ -979,7 +979,7 @@ static int __devinit snd_opti9xx_isa_match(struct device *devptr,
 	return 1;
 }
 
-static int __devinit snd_opti9xx_isa_probe(struct device *devptr,
+static int snd_opti9xx_isa_probe(struct device *devptr,
 					   unsigned int dev)
 {
 	struct snd_card *card;
@@ -1046,7 +1046,7 @@ static int __devinit snd_opti9xx_isa_probe(struct device *devptr,
 	return 0;
 }
 
-static int __devexit snd_opti9xx_isa_remove(struct device *devptr,
+static int snd_opti9xx_isa_remove(struct device *devptr,
 					    unsigned int dev)
 {
 	snd_card_free(dev_get_drvdata(devptr));
@@ -1057,7 +1057,7 @@ static int __devexit snd_opti9xx_isa_remove(struct device *devptr,
 static struct isa_driver snd_opti9xx_driver = {
 	.match		= snd_opti9xx_isa_match,
 	.probe		= snd_opti9xx_isa_probe,
-	.remove		= __devexit_p(snd_opti9xx_isa_remove),
+	.remove		= snd_opti9xx_isa_remove,
 	/* FIXME: suspend/resume */
 	.driver		= {
 		.name	= DEV_NAME
@@ -1065,7 +1065,7 @@ static struct isa_driver snd_opti9xx_driver = {
 };
 
 #ifdef CONFIG_PNP
-static int __devinit snd_opti9xx_pnp_probe(struct pnp_card_link *pcard,
+static int snd_opti9xx_pnp_probe(struct pnp_card_link *pcard,
 					   const struct pnp_card_device_id *pid)
 {
 	struct snd_card *card;
@@ -1117,7 +1117,7 @@ static int __devinit snd_opti9xx_pnp_probe(struct pnp_card_link *pcard,
 	return 0;
 }
 
-static void __devexit snd_opti9xx_pnp_remove(struct pnp_card_link * pcard)
+static void snd_opti9xx_pnp_remove(struct pnp_card_link * pcard)
 {
 	snd_card_free(pnp_get_card_drvdata(pcard));
 	pnp_set_card_drvdata(pcard, NULL);
@@ -1129,7 +1129,7 @@ static struct pnp_card_driver opti9xx_pnpc_driver = {
 	.name		= "opti9xx",
 	.id_table	= snd_opti9xx_pnpids,
 	.probe		= snd_opti9xx_pnp_probe,
-	.remove		= __devexit_p(snd_opti9xx_pnp_remove),
+	.remove		= snd_opti9xx_pnp_remove,
 };
 #endif
 

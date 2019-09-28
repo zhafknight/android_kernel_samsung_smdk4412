@@ -623,7 +623,7 @@ snd_ad1889_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int __devinit
+static int
 snd_ad1889_pcm_init(struct snd_ad1889 *chip, int device, struct snd_pcm **rpcm)
 {
 	int err;
@@ -746,7 +746,7 @@ snd_ad1889_proc_read(struct snd_info_entry *entry, struct snd_info_buffer *buffe
 	snd_iprintf(buffer, "Resampler samplerate: %u Hz\n", reg);
 }
 
-static void __devinit
+static void
 snd_ad1889_proc_init(struct snd_ad1889 *chip)
 {
 	struct snd_info_entry *entry;
@@ -766,7 +766,7 @@ static struct ac97_quirk ac97_quirks[] = {
 	{ } /* terminator */
 };
 
-static void __devinit
+static void
 snd_ad1889_ac97_xinit(struct snd_ad1889 *chip)
 {
 	u16 reg;
@@ -804,7 +804,7 @@ snd_ad1889_ac97_free(struct snd_ac97 *ac97)
 	chip->ac97 = NULL;
 }
 
-static int __devinit
+static int
 snd_ad1889_ac97_init(struct snd_ad1889 *chip, const char *quirk_override)
 {
 	int err;
@@ -877,7 +877,7 @@ snd_ad1889_dev_free(struct snd_device *device)
 	return snd_ad1889_free(chip);
 }
 
-static int __devinit
+static int
 snd_ad1889_init(struct snd_ad1889 *chip) 
 {
 	ad1889_writew(chip, AD_DS_CCS, AD_DS_CCS_CLKEN); /* turn on clock */
@@ -891,7 +891,7 @@ snd_ad1889_init(struct snd_ad1889 *chip)
 	return 0;
 }
 
-static int __devinit
+static int
 snd_ad1889_create(struct snd_card *card,
 		  struct pci_dev *pci,
 		  struct snd_ad1889 **rchip)
@@ -977,7 +977,7 @@ free_and_ret:
 	return err;
 }
 
-static int __devinit
+static int
 snd_ad1889_probe(struct pci_dev *pci,
 		 const struct pci_device_id *pci_id)
 {
@@ -1041,7 +1041,7 @@ free_and_ret:
 	return err;
 }
 
-static void __devexit
+static void
 snd_ad1889_remove(struct pci_dev *pci)
 {
 	snd_card_free(pci_get_drvdata(pci));
@@ -1058,7 +1058,7 @@ static struct pci_driver ad1889_pci_driver = {
 	.name = "AD1889 Audio",
 	.id_table = snd_ad1889_ids,
 	.probe = snd_ad1889_probe,
-	.remove = __devexit_p(snd_ad1889_remove),
+	.remove = snd_ad1889_remove,
 };
 
 static int __init

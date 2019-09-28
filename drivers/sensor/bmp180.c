@@ -580,7 +580,7 @@ static DEVICE_ATTR(sea_level_pressure, S_IRUGO | S_IWUSR | S_IWGRP,
 		NULL, sea_level_pressure_store);
 #endif
 
-static int __devinit bmp180_probe(struct i2c_client *client,
+static int bmp180_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	int err;
@@ -685,7 +685,7 @@ done:
 	return err;
 }
 
-static int __devexit bmp180_remove(struct i2c_client *client)
+static int bmp180_remove(struct i2c_client *client)
 {
 	/* TO DO: revisit ordering here once _probe order is finalized */
 	struct bmp180_data *barom = i2c_get_clientdata(client);
@@ -751,7 +751,7 @@ static struct i2c_driver bmp180_driver = {
 		.pm	= &bmp180_pm_ops,
 	},
 	.probe		= bmp180_probe,
-	.remove		= __devexit_p(bmp180_remove),
+	.remove		= bmp180_remove,
 	.id_table	= bmp180_id,
 };
 

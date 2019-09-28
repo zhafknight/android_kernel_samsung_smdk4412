@@ -2882,7 +2882,7 @@ static struct attribute_group maxtouch_attr_group = {
 /* Initialization of driver                                                   */
 /******************************************************************************/
 
-static int __devinit mxt_identify(struct i2c_client *client,
+static int mxt_identify(struct i2c_client *client,
 				  struct mxt_data *mxt)
 {
 	u8 buf[7];
@@ -2963,7 +2963,7 @@ retry_i2c:
  * Reads the object table from maXTouch chip to get object data like
  * address, size, report id.
  */
-static int __devinit mxt_read_object_table(struct i2c_client *client,
+static int mxt_read_object_table(struct i2c_client *client,
 					   struct mxt_data *mxt)
 {
 	u16	report_id_count;
@@ -3247,7 +3247,7 @@ static void mxt_late_resume(struct early_suspend *h)
 #endif
 
 
-static int __devinit mxt_probe(struct i2c_client *client,
+static int mxt_probe(struct i2c_client *client,
 			       const struct i2c_device_id *id)
 {
 	struct mxt_data          *mxt;
@@ -3492,7 +3492,7 @@ err_mxt_alloc:
 	return error;
 }
 
-static int __devexit mxt_remove(struct i2c_client *client)
+static int mxt_remove(struct i2c_client *client)
 {
 	struct mxt_data *mxt;
 
@@ -3576,7 +3576,7 @@ static struct i2c_driver mxt_driver = {
 
 	.id_table	= mxt_idtable,
 	.probe		= mxt_probe,
-	.remove		= __devexit_p(mxt_remove),
+	.remove		= mxt_remove,
 	.suspend	= mxt_suspend,
 	.resume		= mxt_resume,
 

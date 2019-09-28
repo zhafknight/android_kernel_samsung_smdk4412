@@ -3573,7 +3573,7 @@ static int dpram_resume(struct platform_device *dev)
 }
 
 
-static int __devinit dpram_probe(struct platform_device *dev)
+static int dpram_probe(struct platform_device *dev)
 {
     int retval;
 
@@ -3668,7 +3668,7 @@ static int __devinit dpram_probe(struct platform_device *dev)
     return 0;
 }
 
-static int __devexit dpram_remove(struct platform_device *dev)
+static int dpram_remove(struct platform_device *dev)
 {
     //PRINT_FUNC();
 
@@ -3718,7 +3718,7 @@ EXPORT_SYMBOL(dpram_get_phone_dump_stat);
 
 static struct platform_driver platform_dpram_driver = {
     .probe    = dpram_probe,
-    .remove   = __devexit_p(dpram_remove),
+    .remove   = dpram_remove,
     .suspend  = dpram_suspend,
     .resume   = dpram_resume,
     .shutdown = dpram_shutdown,

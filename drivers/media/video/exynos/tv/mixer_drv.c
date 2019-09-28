@@ -388,7 +388,7 @@ void mxr_power_put(struct mxr_device *mdev)
 
 /* --------- RESOURCE MANAGEMENT -------------*/
 
-static int __devinit mxr_acquire_plat_resources(struct mxr_device *mdev,
+static int mxr_acquire_plat_resources(struct mxr_device *mdev,
 	struct platform_device *pdev)
 {
 	struct resource *res;
@@ -523,7 +523,7 @@ fail:
 	return -ENODEV;
 }
 
-static int __devinit mxr_acquire_resources(struct mxr_device *mdev,
+static int mxr_acquire_resources(struct mxr_device *mdev,
 	struct platform_device *pdev)
 {
 	int ret;
@@ -564,7 +564,7 @@ static void mxr_release_layers(struct mxr_device *mdev)
 	}
 }
 
-static int __devinit mxr_acquire_layers(struct mxr_device *mdev,
+static int mxr_acquire_layers(struct mxr_device *mdev,
 	struct mxr_platform_data *pdata)
 {
 	struct sub_mxr_device *sub_mxr;
@@ -1345,7 +1345,7 @@ static int mxr_create_links(struct mxr_device *mdev)
 
 /* --------- DRIVER INITIALIZATION ---------- */
 
-static int __devinit mxr_probe(struct platform_device *pdev)
+static int mxr_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct mxr_platform_data *pdata = dev->platform_data;
@@ -1432,7 +1432,7 @@ fail:
 	return ret;
 }
 
-static int __devexit mxr_remove(struct platform_device *pdev)
+static int mxr_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct mxr_device *mdev = to_mdev(dev);
@@ -1451,7 +1451,7 @@ static int __devexit mxr_remove(struct platform_device *pdev)
 
 static struct platform_driver mxr_driver __refdata = {
 	.probe = mxr_probe,
-	.remove = __devexit_p(mxr_remove),
+	.remove = mxr_remove,
 	.driver = {
 		.name = MXR_DRIVER_NAME,
 		.owner = THIS_MODULE,

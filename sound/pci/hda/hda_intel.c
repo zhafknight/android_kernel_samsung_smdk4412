@@ -493,7 +493,7 @@ enum {
 #define AZX_DCAPS_PRESET_NVIDIA \
 	(AZX_DCAPS_NVIDIA_SNOOP | AZX_DCAPS_RIRB_DELAY | AZX_DCAPS_NO_MSI)
 
-static char *driver_short_names[] __devinitdata = {
+static char *driver_short_names[] = {
 	[AZX_DRIVER_ICH] = "HDA Intel",
 	[AZX_DRIVER_PCH] = "HDA Intel PCH",
 	[AZX_DRIVER_SCH] = "HDA Intel MID",
@@ -1420,12 +1420,12 @@ static void azx_bus_reset(struct hda_bus *bus)
  */
 
 /* number of codec slots for each chipset: 0 = default slots (i.e. 4) */
-static unsigned int azx_max_codecs[AZX_NUM_DRIVERS] __devinitdata = {
+static unsigned int azx_max_codecs[AZX_NUM_DRIVERS] = {
 	[AZX_DRIVER_NVIDIA] = 8,
 	[AZX_DRIVER_TERA] = 1,
 };
 
-static int __devinit azx_codec_create(struct azx *chip, const char *model)
+static int azx_codec_create(struct azx *chip, const char *model)
 {
 	struct hda_bus_template bus_temp;
 	int c, codecs, err;
@@ -1511,7 +1511,7 @@ static int __devinit azx_codec_create(struct azx *chip, const char *model)
 }
 
 /* configure each codec instance */
-static int __devinit azx_codec_configure(struct azx *chip)
+static int azx_codec_configure(struct azx *chip)
 {
 	struct hda_codec *codec;
 	list_for_each_entry(codec, &chip->bus->codec_list, list) {
@@ -2113,7 +2113,7 @@ azx_attach_pcm_stream(struct hda_bus *bus, struct hda_codec *codec,
 /*
  * mixer creation - all stuff is implemented in hda module
  */
-static int __devinit azx_mixer_create(struct azx *chip)
+static int azx_mixer_create(struct azx *chip)
 {
 	return snd_hda_build_controls(chip->bus);
 }
@@ -2122,7 +2122,7 @@ static int __devinit azx_mixer_create(struct azx *chip)
 /*
  * initialize SD streams
  */
-static int __devinit azx_init_stream(struct azx *chip)
+static int azx_init_stream(struct azx *chip)
 {
 	int i;
 
@@ -2346,7 +2346,7 @@ static int azx_dev_free(struct snd_device *device)
 /*
  * white/black-listing for position_fix
  */
-static struct snd_pci_quirk position_fix_list[] __devinitdata = {
+static struct snd_pci_quirk position_fix_list[] = {
 	SND_PCI_QUIRK(0x1025, 0x009f, "Acer Aspire 5110", POS_FIX_LPIB),
 	SND_PCI_QUIRK(0x1025, 0x026f, "Acer Aspire 5538", POS_FIX_LPIB),
 	SND_PCI_QUIRK(0x1028, 0x01cc, "Dell D820", POS_FIX_LPIB),
@@ -2372,7 +2372,7 @@ static struct snd_pci_quirk position_fix_list[] __devinitdata = {
 	{}
 };
 
-static int __devinit check_position_fix(struct azx *chip, int fix)
+static int check_position_fix(struct azx *chip, int fix)
 {
 	const struct snd_pci_quirk *q;
 
@@ -2407,7 +2407,7 @@ static int __devinit check_position_fix(struct azx *chip, int fix)
 /*
  * black-lists for probe_mask
  */
-static struct snd_pci_quirk probe_mask_list[] __devinitdata = {
+static struct snd_pci_quirk probe_mask_list[] = {
 	/* Thinkpad often breaks the controller communication when accessing
 	 * to the non-working (or non-existing) modem codec slot.
 	 */
@@ -2426,7 +2426,7 @@ static struct snd_pci_quirk probe_mask_list[] __devinitdata = {
 
 #define AZX_FORCE_CODEC_MASK	0x100
 
-static void __devinit check_probe_mask(struct azx *chip, int dev)
+static void check_probe_mask(struct azx *chip, int dev)
 {
 	const struct snd_pci_quirk *q;
 
@@ -2454,7 +2454,7 @@ static void __devinit check_probe_mask(struct azx *chip, int dev)
 /*
  * white/black-list for enable_msi
  */
-static struct snd_pci_quirk msi_black_list[] __devinitdata = {
+static struct snd_pci_quirk msi_black_list[] = {
 	SND_PCI_QUIRK(0x1043, 0x81f2, "ASUS", 0), /* Athlon64 X2 + nvidia */
 	SND_PCI_QUIRK(0x1043, 0x81f6, "ASUS", 0), /* nvidia */
 	SND_PCI_QUIRK(0x1043, 0x822d, "ASUS", 0), /* Athlon64 X2 + nvidia MCP55 */
@@ -2463,7 +2463,7 @@ static struct snd_pci_quirk msi_black_list[] __devinitdata = {
 	{}
 };
 
-static void __devinit check_msi(struct azx *chip)
+static void check_msi(struct azx *chip)
 {
 	const struct snd_pci_quirk *q;
 
@@ -2492,7 +2492,7 @@ static void __devinit check_msi(struct azx *chip)
 /*
  * constructor
  */
-static int __devinit azx_create(struct snd_card *card, struct pci_dev *pci,
+static int azx_create(struct snd_card *card, struct pci_dev *pci,
 				int dev, unsigned int driver_caps,
 				struct azx **rchip)
 {
@@ -2717,7 +2717,7 @@ static void power_down_all_codecs(struct azx *chip)
 #endif
 }
 
-static int __devinit azx_probe(struct pci_dev *pci,
+static int azx_probe(struct pci_dev *pci,
 			       const struct pci_device_id *pci_id)
 {
 	static int dev;
@@ -2795,7 +2795,7 @@ out_free:
 	return err;
 }
 
-static void __devexit azx_remove(struct pci_dev *pci)
+static void azx_remove(struct pci_dev *pci)
 {
 	snd_card_free(pci_get_drvdata(pci));
 	pci_set_drvdata(pci, NULL);
@@ -2911,7 +2911,7 @@ static struct pci_driver driver = {
 	.name = "HDA Intel",
 	.id_table = azx_ids,
 	.probe = azx_probe,
-	.remove = __devexit_p(azx_remove),
+	.remove = azx_remove,
 #ifdef CONFIG_PM
 	.suspend = azx_suspend,
 	.resume = azx_resume,

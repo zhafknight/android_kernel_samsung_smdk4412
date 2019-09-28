@@ -1073,7 +1073,7 @@ static struct platform_driver dm644x_ccdc_driver = {
 		.owner = THIS_MODULE,
 		.pm = &dm644x_ccdc_pm_ops,
 	},
-	.remove = __devexit_p(dm644x_ccdc_remove),
+	.remove = dm644x_ccdc_remove,
 	.probe = dm644x_ccdc_probe,
 };
 

@@ -2161,7 +2161,7 @@ static void exynos_ss_udc_free_all_trb(struct exynos_ss_udc *udc)
  * creation) to give to the gadget driver. Setup the endpoint name, any
  * direction information and other state that may be required.
  */
-static int __devinit exynos_ss_udc_initep(struct exynos_ss_udc *udc,
+static int exynos_ss_udc_initep(struct exynos_ss_udc *udc,
 					  struct exynos_ss_udc_ep *udc_ep,
 					  int epnum)
 {
@@ -2780,7 +2780,7 @@ int usb_gadget_unregister_driver(struct usb_gadget_driver *driver)
 }
 EXPORT_SYMBOL(usb_gadget_unregister_driver);
 
-static int __devinit exynos_ss_udc_probe(struct platform_device *pdev)
+static int exynos_ss_udc_probe(struct platform_device *pdev)
 {
 	struct exynos_ss_udc_plat *plat = pdev->dev.platform_data;
 	struct device *dev = &pdev->dev;
@@ -2943,7 +2943,7 @@ err_mem:
 	return ret;
 }
 
-static int __devexit exynos_ss_udc_remove(struct platform_device *pdev)
+static int exynos_ss_udc_remove(struct platform_device *pdev)
 {
 	struct exynos_ss_udc *udc = platform_get_drvdata(pdev);
 	struct resource *res;
@@ -3017,7 +3017,7 @@ static struct platform_driver exynos_ss_udc_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= exynos_ss_udc_probe,
-	.remove		= __devexit_p(exynos_ss_udc_remove),
+	.remove		= exynos_ss_udc_remove,
 	.suspend	= exynos_ss_udc_suspend,
 	.resume		= exynos_ss_udc_resume,
 };

@@ -951,7 +951,7 @@ static void pc87427_release_regions(struct platform_device *pdev, int count)
 	}
 }
 
-static int __devinit pc87427_request_regions(struct platform_device *pdev,
+static int pc87427_request_regions(struct platform_device *pdev,
 					     int count)
 {
 	struct resource *res;
@@ -980,7 +980,7 @@ static int __devinit pc87427_request_regions(struct platform_device *pdev,
 	return err;
 }
 
-static void __devinit pc87427_init_device(struct device *dev)
+static void pc87427_init_device(struct device *dev)
 {
 	struct pc87427_sio_data *sio_data = dev->platform_data;
 	struct pc87427_data *data = dev_get_drvdata(dev);
@@ -1070,7 +1070,7 @@ static void pc87427_remove_files(struct device *dev)
 	}
 }
 
-static int __devinit pc87427_probe(struct platform_device *pdev)
+static int pc87427_probe(struct platform_device *pdev)
 {
 	struct pc87427_sio_data *sio_data = pdev->dev.platform_data;
 	struct pc87427_data *data;
@@ -1145,7 +1145,7 @@ exit:
 	return err;
 }
 
-static int __devexit pc87427_remove(struct platform_device *pdev)
+static int pc87427_remove(struct platform_device *pdev)
 {
 	struct pc87427_data *data = platform_get_drvdata(pdev);
 	int res_count;
@@ -1169,7 +1169,7 @@ static struct platform_driver pc87427_driver = {
 		.name	= DRVNAME,
 	},
 	.probe		= pc87427_probe,
-	.remove		= __devexit_p(pc87427_remove),
+	.remove		= pc87427_remove,
 };
 
 static int __init pc87427_device_add(const struct pc87427_sio_data *sio_data)

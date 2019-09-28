@@ -557,7 +557,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit hx8369b_remove(struct device *dev)
+static int hx8369b_remove(struct device *dev)
 {
 	struct lcd_info *lcd = dev_get_drvdata(dev);
 
@@ -582,7 +582,7 @@ static void hx8369b_shutdown(struct device *dev)
 static struct mipi_lcd_driver hx8369b_mipi_driver = {
 	.name = "hx8369b",
 	.probe			= hx8369b_probe,
-	.remove			= __devexit_p(hx8369b_remove),
+	.remove			= hx8369b_remove,
 	.shutdown		= hx8369b_shutdown,
 };
 

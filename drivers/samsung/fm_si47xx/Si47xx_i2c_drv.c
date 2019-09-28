@@ -621,7 +621,7 @@ chip-id,power configuration, system configuration2 registers */
 	return ret;
 }
 
-static int __devinit Si47xx_i2c_probe(struct i2c_client *client,
+static int Si47xx_i2c_probe(struct i2c_client *client,
 			    const struct i2c_device_id *id)
 {
 	struct Si47xx_device_t *Si47xx_dev;
@@ -662,7 +662,7 @@ MISC_IRQ_DREG:
 
 }
 
-static int __devexit Si47xx_i2c_remove(struct i2c_client *client)
+static int Si47xx_i2c_remove(struct i2c_client *client)
 {
 	struct Si47xx_device_t *Si47xx_dev = i2c_get_clientdata(client);
 	int ret = 0;
@@ -682,7 +682,7 @@ static struct i2c_driver Si47xx_i2c_driver = {
 		   },
 	.id_table = Si47xx_id,
 	.probe = Si47xx_i2c_probe,
-	.remove = __devexit_p(Si47xx_i2c_remove),
+	.remove = Si47xx_i2c_remove,
 	.suspend = Si47xx_suspend,
 	.resume = Si47xx_resume,
 };

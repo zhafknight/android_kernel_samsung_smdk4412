@@ -704,7 +704,7 @@ static void s5m_set_buchg(struct work_struct *work)
 	pr_info("%s set S5M8767_REG_BUCHG = 0x%02x\n", __func__, val);
 }
 
-static __devinit int s5m8767_pmic_probe(struct platform_device *pdev)
+static int s5m8767_pmic_probe(struct platform_device *pdev)
 {
 	struct s5m87xx_dev *iodev = dev_get_drvdata(pdev->dev.parent);
 	struct s5m_platform_data *pdata = dev_get_platdata(iodev->dev);
@@ -1018,7 +1018,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit s5m8767_pmic_remove(struct platform_device *pdev)
+static int s5m8767_pmic_remove(struct platform_device *pdev)
 {
 	struct s5m8767_info *s5m8767 = platform_get_drvdata(pdev);
 	struct regulator_dev **rdev = s5m8767->rdev;
@@ -1046,7 +1046,7 @@ static struct platform_driver s5m8767_pmic_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = s5m8767_pmic_probe,
-	.remove = __devexit_p(s5m8767_pmic_remove),
+	.remove = s5m8767_pmic_remove,
 	.id_table = s5m8767_pmic_id,
 };
 

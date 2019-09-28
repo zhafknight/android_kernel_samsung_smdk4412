@@ -668,7 +668,7 @@ struct ab3100_init_setting {
 	u8 setting;
 };
 
-static const struct ab3100_init_setting __devinitconst
+static const struct ab3100_init_settingconst
 ab3100_init_settings[] = {
 	{
 		.abreg = AB3100_MCA,
@@ -715,7 +715,7 @@ ab3100_init_settings[] = {
 	},
 };
 
-static int __devinit ab3100_setup(struct ab3100 *ab3100)
+static int ab3100_setup(struct ab3100 *ab3100)
 {
 	int err = 0;
 	int i;
@@ -810,7 +810,7 @@ struct ab_family_id {
 	char	*name;
 };
 
-static const struct ab_family_id ids[] __devinitconst = {
+static const struct ab_family_id ids[]const = {
 	/* AB3100 */
 	{
 		.id = 0xc0,
@@ -864,7 +864,7 @@ static const struct ab_family_id ids[] __devinitconst = {
 	},
 };
 
-static int __devinit ab3100_probe(struct i2c_client *client,
+static int ab3100_probe(struct i2c_client *client,
 				  const struct i2c_device_id *id)
 {
 	struct ab3100 *ab3100;
@@ -972,7 +972,7 @@ static int __devinit ab3100_probe(struct i2c_client *client,
 	return err;
 }
 
-static int __devexit ab3100_remove(struct i2c_client *client)
+static int ab3100_remove(struct i2c_client *client)
 {
 	struct ab3100 *ab3100 = i2c_get_clientdata(client);
 
@@ -1004,7 +1004,7 @@ static struct i2c_driver ab3100_driver = {
 	},
 	.id_table	= ab3100_id,
 	.probe		= ab3100_probe,
-	.remove		= __devexit_p(ab3100_remove),
+	.remove		= ab3100_remove,
 };
 
 static int __init ab3100_i2c_init(void)

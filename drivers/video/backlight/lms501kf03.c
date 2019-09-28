@@ -500,7 +500,7 @@ out_free_lcd:
 	return ret;
 }
 
-static int __devexit lms501kf03_remove(struct spi_device *spi)
+static int lms501kf03_remove(struct spi_device *spi)
 {
 	struct lms501kf03 *lcd = dev_get_drvdata(&spi->dev);
 
@@ -572,7 +572,7 @@ static struct spi_driver lms501kf03_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= lms501kf03_probe,
-	.remove		= __devexit_p(lms501kf03_remove),
+	.remove		= lms501kf03_remove,
 	.shutdown	= lms501kf03_shutdown,
 #ifndef CONFIG_HAS_EARLYSUSPEND
 	.suspend	= lms501kf03_suspend,

@@ -91,7 +91,7 @@ static void da903x_led_set(struct led_classdev *led_cdev,
 	schedule_work(&led->work);
 }
 
-static int __devinit da903x_led_probe(struct platform_device *pdev)
+static int da903x_led_probe(struct platform_device *pdev)
 {
 	struct led_info *pdata = pdev->dev.platform_data;
 	struct da903x_led *led;
@@ -140,7 +140,7 @@ err:
 	return ret;
 }
 
-static int __devexit da903x_led_remove(struct platform_device *pdev)
+static int da903x_led_remove(struct platform_device *pdev)
 {
 	struct da903x_led *led = platform_get_drvdata(pdev);
 
@@ -155,7 +155,7 @@ static struct platform_driver da903x_led_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= da903x_led_probe,
-	.remove		= __devexit_p(da903x_led_remove),
+	.remove		= da903x_led_remove,
 };
 
 static int __init da903x_led_init(void)

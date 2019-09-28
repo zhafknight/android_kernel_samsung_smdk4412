@@ -80,7 +80,7 @@ void tpiu_disable(void)
 	tpiu.enabled = false;
 }
 
-static int __devinit tpiu_probe(struct platform_device *pdev)
+static int tpiu_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct resource *res;

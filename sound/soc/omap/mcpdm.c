@@ -402,7 +402,7 @@ int omap_mcpdm_set_offset(int offset1, int offset2)
 	return 0;
 }
 
-int __devinit omap_mcpdm_probe(struct platform_device *pdev)
+int omap_mcpdm_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	int ret = 0;
@@ -449,7 +449,7 @@ exit:
 	return ret;
 }
 
-int __devexit omap_mcpdm_remove(struct platform_device *pdev)
+int omap_mcpdm_remove(struct platform_device *pdev)
 {
 	struct omap_mcpdm *mcpdm_ptr = platform_get_drvdata(pdev);
 

@@ -89,7 +89,7 @@ static int sh_mobile_sdhi_write16_hook(struct tmio_mmc_host *host, int addr)
 	return 0;
 }
 
-static int __devinit sh_mobile_sdhi_probe(struct platform_device *pdev)
+static int sh_mobile_sdhi_probe(struct platform_device *pdev)
 {
 	struct sh_mobile_sdhi *priv;
 	struct tmio_mmc_data *mmc_data;
@@ -230,7 +230,7 @@ static struct platform_driver sh_mobile_sdhi_driver = {
 		.pm	= &tmio_mmc_dev_pm_ops,
 	},
 	.probe		= sh_mobile_sdhi_probe,
-	.remove		= __devexit_p(sh_mobile_sdhi_remove),
+	.remove		= sh_mobile_sdhi_remove,
 };
 
 static int __init sh_mobile_sdhi_init(void)

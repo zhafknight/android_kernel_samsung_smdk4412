@@ -233,7 +233,7 @@ static struct snd_soc_dai_driver pxa_ac97_dai[] = {
 
 EXPORT_SYMBOL_GPL(soc_ac97_ops);
 
-static __devinit int pxa2xx_ac97_dev_probe(struct platform_device *pdev)
+static int pxa2xx_ac97_dev_probe(struct platform_device *pdev)
 {
 	if (pdev->id != -1) {
 		dev_err(&pdev->dev, "PXA2xx has only one AC97 port.\n");
@@ -248,7 +248,7 @@ static __devinit int pxa2xx_ac97_dev_probe(struct platform_device *pdev)
 			ARRAY_SIZE(pxa_ac97_dai));
 }
 
-static int __devexit pxa2xx_ac97_dev_remove(struct platform_device *pdev)
+static int pxa2xx_ac97_dev_remove(struct platform_device *pdev)
 {
 	snd_soc_unregister_dais(&pdev->dev, ARRAY_SIZE(pxa_ac97_dai));
 	return 0;
@@ -256,7 +256,7 @@ static int __devexit pxa2xx_ac97_dev_remove(struct platform_device *pdev)
 
 static struct platform_driver pxa2xx_ac97_driver = {
 	.probe		= pxa2xx_ac97_dev_probe,
-	.remove		= __devexit_p(pxa2xx_ac97_dev_remove),
+	.remove		= pxa2xx_ac97_dev_remove,
 	.driver		= {
 		.name	= "pxa2xx-ac97",
 		.owner	= THIS_MODULE,

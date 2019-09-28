@@ -754,7 +754,7 @@ bfin_sport_spi_destroy_queue(struct bfin_sport_spi_master_data *drv_data)
 	return 0;
 }
 
-static int __devinit
+static int
 bfin_sport_spi_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -862,7 +862,7 @@ bfin_sport_spi_probe(struct platform_device *pdev)
 }
 
 /* stop hardware and remove the driver */
-static int __devexit
+static int
 bfin_sport_spi_remove(struct platform_device *pdev)
 {
 	struct bfin_sport_spi_master_data *drv_data = platform_get_drvdata(pdev);
@@ -934,7 +934,7 @@ static struct platform_driver bfin_sport_spi_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe   = bfin_sport_spi_probe,
-	.remove  = __devexit_p(bfin_sport_spi_remove),
+	.remove  = bfin_sport_spi_remove,
 	.suspend = bfin_sport_spi_suspend,
 	.resume  = bfin_sport_spi_resume,
 };

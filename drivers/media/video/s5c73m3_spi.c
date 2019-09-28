@@ -127,7 +127,7 @@ exit_err:
 }
 
 static
-int __devinit s5c73m3_spi_probe(struct spi_device *spi)
+int s5c73m3_spi_probe(struct spi_device *spi)
 {
 	int ret;
 
@@ -149,7 +149,7 @@ err_setup:
 }
 
 static
-int __devexit s5c73m3_spi_remove(struct spi_device *spi)
+int s5c73m3_spi_remove(struct spi_device *spi)
 {
 	return 0;
 }
@@ -162,7 +162,7 @@ struct spi_driver s5c73m3_spi_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = s5c73m3_spi_probe,
-	.remove = __devexit_p(s5c73m3_spi_remove),
+	.remove = s5c73m3_spi_remove,
 };
 
 static

@@ -537,7 +537,7 @@ static struct regulator_desc regulators[] = {
 	},
 };
 
-static int __devinit setup_regulators(struct lp3972 *lp3972,
+static int setup_regulators(struct lp3972 *lp3972,
 	struct lp3972_platform_data *pdata)
 {
 	int i, err;
@@ -574,7 +574,7 @@ err_nomem:
 	return err;
 }
 
-static int __devinit lp3972_i2c_probe(struct i2c_client *i2c,
+static int lp3972_i2c_probe(struct i2c_client *i2c,
 			    const struct i2c_device_id *id)
 {
 	struct lp3972 *lp3972;
@@ -620,7 +620,7 @@ err_detect:
 	return ret;
 }
 
-static int __devexit lp3972_i2c_remove(struct i2c_client *i2c)
+static int lp3972_i2c_remove(struct i2c_client *i2c)
 {
 	struct lp3972 *lp3972 = i2c_get_clientdata(i2c);
 	int i;
@@ -645,7 +645,7 @@ static struct i2c_driver lp3972_i2c_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe    = lp3972_i2c_probe,
-	.remove   = __devexit_p(lp3972_i2c_remove),
+	.remove   = lp3972_i2c_remove,
 	.id_table = lp3972_i2c_id,
 };
 

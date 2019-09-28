@@ -104,7 +104,7 @@ static struct io_device *create_io_device(struct modem_io_t *io_t,
 	pr_info("MIF: %s : create_io_device DONE\n", io_t->name);
 	return iod;
 }
-static int __devinit modem_probe(struct platform_device *pdev)
+static int modem_probe(struct platform_device *pdev)
 {
 	int i;
 	struct modem_data *pdata;

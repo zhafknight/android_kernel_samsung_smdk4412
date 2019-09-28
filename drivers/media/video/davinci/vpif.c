@@ -443,7 +443,7 @@ fail:
 	return status;
 }
 
-static int __devexit vpif_remove(struct platform_device *pdev)
+static int vpif_remove(struct platform_device *pdev)
 {
 	iounmap(vpif_base);
 	release_mem_region(res->start, res_len);
@@ -455,7 +455,7 @@ static struct platform_driver vpif_driver = {
 		.name	= "vpif",
 		.owner = THIS_MODULE,
 	},
-	.remove = __devexit_p(vpif_remove),
+	.remove = vpif_remove,
 	.probe = vpif_probe,
 };
 

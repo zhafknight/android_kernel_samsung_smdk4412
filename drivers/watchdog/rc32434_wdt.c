@@ -262,10 +262,10 @@ static struct miscdevice rc32434_wdt_miscdev = {
 	.fops	= &rc32434_wdt_fops,
 };
 
-static char banner[] __devinitdata = KERN_INFO PFX
+static char banner[] = KERN_INFO PFX
 		"Watchdog Timer version " VERSION ", timer margin: %d sec\n";
 
-static int __devinit rc32434_wdt_probe(struct platform_device *pdev)
+static int rc32434_wdt_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct resource *r;
@@ -311,7 +311,7 @@ unmap:
 	return ret;
 }
 
-static int __devexit rc32434_wdt_remove(struct platform_device *pdev)
+static int rc32434_wdt_remove(struct platform_device *pdev)
 {
 	misc_deregister(&rc32434_wdt_miscdev);
 	iounmap(wdt_reg);
@@ -325,7 +325,7 @@ static void rc32434_wdt_shutdown(struct platform_device *pdev)
 
 static struct platform_driver rc32434_wdt_driver = {
 	.probe		= rc32434_wdt_probe,
-	.remove		= __devexit_p(rc32434_wdt_remove),
+	.remove		= rc32434_wdt_remove,
 	.shutdown	= rc32434_wdt_shutdown,
 	.driver		= {
 			.name = "rc32434_wdt",

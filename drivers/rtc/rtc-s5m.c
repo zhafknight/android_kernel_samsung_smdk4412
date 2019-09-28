@@ -786,7 +786,7 @@ static int s5m8767_rtc_init_reg(struct s5m_rtc_info *info)
 	return ret;
 }
 
-static int __devinit s5m_rtc_probe(struct platform_device *pdev)
+static int s5m_rtc_probe(struct platform_device *pdev)
 {
 	struct s5m87xx_dev *s5m87xx = dev_get_drvdata(pdev->dev.parent);
 	struct s5m_platform_data *pdata = dev_get_platdata(s5m87xx->dev);
@@ -869,7 +869,7 @@ out_rtc:
 	return ret;
 }
 
-static int __devexit s5m_rtc_remove(struct platform_device *pdev)
+static int s5m_rtc_remove(struct platform_device *pdev)
 {
 	struct s5m_rtc_info *info = platform_get_drvdata(pdev);
 
@@ -948,7 +948,7 @@ static struct platform_driver s5m_rtc_driver = {
 #endif
 	},
 	.probe		= s5m_rtc_probe,
-	.remove		= __devexit_p(s5m_rtc_remove),
+	.remove		= s5m_rtc_remove,
 	.shutdown	= s5m_rtc_shutdown,
 	.id_table	= s5m_rtc_id,
 };

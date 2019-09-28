@@ -237,13 +237,13 @@ static struct platform_driver pm860x_led_driver = {
 	.remove	= pm860x_led_remove,
 };
 
-static int __devinit pm860x_led_init(void)
+static int pm860x_led_init(void)
 {
 	return platform_driver_register(&pm860x_led_driver);
 }
 module_init(pm860x_led_init);
 
-static void __devexit pm860x_led_exit(void)
+static void pm860x_led_exit(void)
 {
 	platform_driver_unregister(&pm860x_led_driver);
 }

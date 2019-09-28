@@ -231,7 +231,7 @@ static struct spi_driver fc8100_spi_driver = {
 		.owner	=	THIS_MODULE,
 	},
 	.probe		=	fc8100_spi_probe,
-	.remove		=	__devexit_p(fc8100_spi_remove),
+	.remove		=	fc8100_spi_remove,
 };
 
 static int fc8100_spi_driver_init(void)

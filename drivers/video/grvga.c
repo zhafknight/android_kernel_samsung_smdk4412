@@ -329,7 +329,7 @@ static int __init grvga_parse_custom(char *options,
 	return 0;
 }
 
-static int __devinit grvga_probe(struct platform_device *dev)
+static int grvga_probe(struct platform_device *dev)
 {
 	struct fb_info *info;
 	int retval = -ENOMEM;
@@ -513,7 +513,7 @@ err:
 	return retval;
 }
 
-static int __devexit grvga_remove(struct platform_device *device)
+static int grvga_remove(struct platform_device *device)
 {
 	struct fb_info *info = dev_get_drvdata(&device->dev);
 	struct grvga_par *par = info->par;
@@ -557,7 +557,7 @@ static struct platform_driver grvga_driver = {
 		.of_match_table = svgactrl_of_match,
 	},
 	.probe		= grvga_probe,
-	.remove		= __devexit_p(grvga_remove),
+	.remove		= grvga_remove,
 };
 
 

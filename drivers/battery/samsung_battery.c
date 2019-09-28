@@ -2112,7 +2112,7 @@ static irqreturn_t battery_isr(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-static __devinit int samsung_battery_probe(struct platform_device *pdev)
+static int samsung_battery_probe(struct platform_device *pdev)
 {
 	struct battery_info *info;
 	struct samsung_battery_platform_data *pdata = pdev->dev.platform_data;
@@ -2398,7 +2398,7 @@ err_psy_get:
 	return ret;
 }
 
-static int __devexit samsung_battery_remove(struct platform_device *pdev)
+static int samsung_battery_remove(struct platform_device *pdev)
 {
 	struct battery_info *info = platform_get_drvdata(pdev);
 
@@ -2505,7 +2505,7 @@ static struct platform_driver samsung_battery_driver = {
 #endif
 	},
 	.probe = samsung_battery_probe,
-	.remove = __devexit_p(samsung_battery_remove),
+	.remove = samsung_battery_remove,
 };
 
 static int __init samsung_battery_init(void)

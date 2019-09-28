@@ -163,7 +163,7 @@ static int spfcw043_led_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit spfcw043_led_remove(struct platform_device *pdev)
+static int spfcw043_led_remove(struct platform_device *pdev)
 {
 	led_pdata->freeGpio();
 	misc_deregister(&spfcw043_miscdev);
@@ -177,7 +177,7 @@ static int __devexit spfcw043_led_remove(struct platform_device *pdev)
 
 static struct platform_driver spfcw043_led_driver = {
 	.probe		= spfcw043_led_probe,
-	.remove		= __devexit_p(spfcw043_led_remove),
+	.remove		= spfcw043_led_remove,
 	.driver		= {
 		.name	= "spfcw043-led",
 		.owner	= THIS_MODULE,

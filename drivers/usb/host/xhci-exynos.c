@@ -514,7 +514,7 @@ void usb_hcd_exynos_remove(struct platform_device *pdev)
 	clk_put(exynos_xhci->clk);
 }
 
-static int __devinit exynos_xhci_probe(struct platform_device *pdev)
+static int exynos_xhci_probe(struct platform_device *pdev)
 {
 	struct exynos_xhci_hcd *exynos_xhci;
 	struct usb_hcd *hcd;
@@ -566,7 +566,7 @@ dealloc_usb2_hcd:
 	return err;
 }
 
-static int __devexit exynos_xhci_remove(struct platform_device *pdev)
+static int exynos_xhci_remove(struct platform_device *pdev)
 {
 	struct exynos_xhci_hcd *exynos_xhci = platform_get_drvdata(pdev);
 	struct usb_hcd *hcd = exynos_xhci->hcd;
@@ -603,7 +603,7 @@ static const struct dev_pm_ops exynos_xhci_pm_ops = {
 
 static struct platform_driver exynos_xhci_driver = {
 	.probe		= exynos_xhci_probe,
-	.remove		= __devexit_p(exynos_xhci_remove),
+	.remove		= exynos_xhci_remove,
 	.shutdown	= exynos_xhci_shutdown,
 	.driver = {
 		.name	= "exynos-xhci",

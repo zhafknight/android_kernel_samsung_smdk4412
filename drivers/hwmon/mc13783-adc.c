@@ -202,7 +202,7 @@ out_err_create1:
 	return ret;
 }
 
-static int __devexit mc13783_adc_remove(struct platform_device *pdev)
+static int mc13783_adc_remove(struct platform_device *pdev)
 {
 	struct mc13783_adc_priv *priv = platform_get_drvdata(pdev);
 
@@ -220,7 +220,7 @@ static int __devexit mc13783_adc_remove(struct platform_device *pdev)
 }
 
 static struct platform_driver mc13783_adc_driver = {
-	.remove 	= __devexit_p(mc13783_adc_remove),
+	.remove 	= mc13783_adc_remove,
 	.driver		= {
 		.owner	= THIS_MODULE,
 		.name	= MC13783_ADC_NAME,

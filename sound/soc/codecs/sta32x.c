@@ -903,7 +903,7 @@ static const struct snd_soc_codec_driver sta32x_codec = {
 	.num_dapm_routes =	ARRAY_SIZE(sta32x_dapm_routes),
 };
 
-static __devinit int sta32x_i2c_probe(struct i2c_client *i2c,
+static int sta32x_i2c_probe(struct i2c_client *i2c,
 				      const struct i2c_device_id *id)
 {
 	struct sta32x_priv *sta32x;
@@ -925,7 +925,7 @@ static __devinit int sta32x_i2c_probe(struct i2c_client *i2c,
 	return 0;
 }
 
-static __devexit int sta32x_i2c_remove(struct i2c_client *client)
+static int sta32x_i2c_remove(struct i2c_client *client)
 {
 	struct sta32x_priv *sta32x = i2c_get_clientdata(client);
 
@@ -948,7 +948,7 @@ static struct i2c_driver sta32x_i2c_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe =    sta32x_i2c_probe,
-	.remove =   __devexit_p(sta32x_i2c_remove),
+	.remove =   sta32x_i2c_remove,
 	.id_table = sta32x_i2c_id,
 };
 

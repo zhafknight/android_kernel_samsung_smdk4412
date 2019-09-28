@@ -294,7 +294,7 @@ static struct platform_driver wm8350_led_driver = {
 	.shutdown = wm8350_led_shutdown,
 };
 
-static int __devinit wm8350_led_init(void)
+static int wm8350_led_init(void)
 {
 	return platform_driver_register(&wm8350_led_driver);
 }

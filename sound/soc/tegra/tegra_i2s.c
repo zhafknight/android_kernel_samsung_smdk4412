@@ -351,7 +351,7 @@ struct snd_soc_dai_driver tegra_i2s_dai[] = {
 	},
 };
 
-static __devinit int tegra_i2s_platform_probe(struct platform_device *pdev)
+static int tegra_i2s_platform_probe(struct platform_device *pdev)
 {
 	struct tegra_i2s * i2s;
 	char clk_name[12]; /* tegra-i2s.0 */
@@ -461,7 +461,7 @@ exit:
 	return ret;
 }
 
-static int __devexit tegra_i2s_platform_remove(struct platform_device *pdev)
+static int tegra_i2s_platform_remove(struct platform_device *pdev)
 {
 	struct tegra_i2s *i2s = dev_get_drvdata(&pdev->dev);
 	struct resource *res;
@@ -488,7 +488,7 @@ static struct platform_driver tegra_i2s_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = tegra_i2s_platform_probe,
-	.remove = __devexit_p(tegra_i2s_platform_remove),
+	.remove = tegra_i2s_platform_remove,
 };
 
 static int __init snd_tegra_i2s_init(void)

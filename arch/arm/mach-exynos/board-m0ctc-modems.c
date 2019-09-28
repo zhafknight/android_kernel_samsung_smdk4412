@@ -1830,7 +1830,7 @@ static int pld_spi_remove(struct spi_device *spi)
 
 static struct spi_driver pld_spi_driver = {
 	.probe = pld_spi_probe,
-	.remove = __devexit_p(pld_spi_remove),
+	.remove = pld_spi_remove,
 	.driver = {
 		.name = "modem_if_spi",
 		.bus = &spi_bus_type,

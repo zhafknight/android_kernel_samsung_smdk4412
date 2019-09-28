@@ -168,7 +168,7 @@ static void dwc3_free_event_buffers(struct dwc3 *dwc)
  * Returns 0 on success otherwise negative errno. In error the case, dwc
  * may contain some buffers allocated but not all which were requested.
  */
-static int __devinit dwc3_alloc_event_buffers(struct dwc3 *dwc, unsigned num,
+static int dwc3_alloc_event_buffers(struct dwc3 *dwc, unsigned num,
 		unsigned length)
 {
 	int			i;
@@ -193,7 +193,7 @@ static int __devinit dwc3_alloc_event_buffers(struct dwc3 *dwc, unsigned num,
  *
  * Returns 0 on success otherwise negative errno.
  */
-static int __devinit dwc3_event_buffers_setup(struct dwc3 *dwc)
+static int dwc3_event_buffers_setup(struct dwc3 *dwc)
 {
 	struct dwc3_event_buffer	*evt;
 	int				n;
@@ -230,7 +230,7 @@ static void dwc3_event_buffers_cleanup(struct dwc3 *dwc)
 	}
 }
 
-static void __devinit dwc3_cache_hwparams(struct dwc3 *dwc)
+static void dwc3_cache_hwparams(struct dwc3 *dwc)
 {
 	struct dwc3_hwparams	*parms = &dwc->hwparams;
 
@@ -251,7 +251,7 @@ static void __devinit dwc3_cache_hwparams(struct dwc3 *dwc)
  *
  * Returns 0 on success otherwise negative errno.
  */
-static int __devinit dwc3_core_init(struct dwc3 *dwc)
+static int dwc3_core_init(struct dwc3 *dwc)
 {
 	unsigned long		timeout;
 	u32			reg;
@@ -318,7 +318,7 @@ static void dwc3_core_exit(struct dwc3 *dwc)
 
 #define DWC3_ALIGN_MASK		(16 - 1)
 
-static int __devinit dwc3_probe(struct platform_device *pdev)
+static int dwc3_probe(struct platform_device *pdev)
 {
 	const struct platform_device_id *id = platform_get_device_id(pdev);
 	struct resource		*res;
@@ -418,7 +418,7 @@ err0:
 	return ret;
 }
 
-static int __devexit dwc3_remove(struct platform_device *pdev)
+static int dwc3_remove(struct platform_device *pdev)
 {
 	const struct platform_device_id *id = platform_get_device_id(pdev);
 	struct dwc3	*dwc = platform_get_drvdata(pdev);
@@ -443,7 +443,7 @@ static int __devexit dwc3_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static const struct platform_device_id dwc3_id_table[] __devinitconst = {
+static const struct platform_device_id dwc3_id_table[]const = {
 	{
 		.name	= "dwc3-omap",
 		.driver_data = (DWC3_HAS_PERIPHERAL
@@ -460,7 +460,7 @@ MODULE_DEVICE_TABLE(platform, dwc3_id_table);
 
 static struct platform_driver dwc3_driver = {
 	.probe		= dwc3_probe,
-	.remove		= __devexit_p(dwc3_remove),
+	.remove		= dwc3_remove,
 	.driver		= {
 		.name	= "dwc3",
 	},
@@ -471,7 +471,7 @@ MODULE_AUTHOR("Felipe Balbi <balbi@ti.com>");
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("DesignWare USB3 DRD Controller Driver");
 
-static int __devinit dwc3_init(void)
+static int dwc3_init(void)
 {
 	return platform_driver_register(&dwc3_driver);
 }

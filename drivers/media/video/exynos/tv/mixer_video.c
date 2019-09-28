@@ -27,7 +27,7 @@
 #include <media/videobuf2-ion.h>
 #endif
 
-int __devinit mxr_acquire_video(struct mxr_device *mdev,
+int mxr_acquire_video(struct mxr_device *mdev,
 	struct mxr_output_conf *output_conf, int output_count)
 {
 	int i;
@@ -95,7 +95,7 @@ fail:
 	return ret;
 }
 
-void __devexit mxr_release_video(struct mxr_device *mdev)
+void mxr_release_video(struct mxr_device *mdev)
 {
 	int i;
 

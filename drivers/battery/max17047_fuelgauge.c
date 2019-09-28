@@ -819,7 +819,7 @@ static const struct file_operations max17047_debugfs_fops2 = {
 #endif
 #endif
 
-static int __devinit max17047_fuelgauge_i2c_probe(struct i2c_client *client,
+static int max17047_fuelgauge_i2c_probe(struct i2c_client *client,
 						  const struct i2c_device_id *id)
 {
 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
@@ -962,7 +962,7 @@ err_psy_reg_fg:
 	return ret;
 }
 
-static int __devexit max17047_fuelgauge_remove(struct i2c_client *client)
+static int max17047_fuelgauge_remove(struct i2c_client *client)
 {
 	struct max17047_fuelgauge_data *fg_data = i2c_get_clientdata(client);
 
@@ -1151,7 +1151,7 @@ static struct i2c_driver max17047_i2c_driver = {
 
 	},
 	.probe		= max17047_fuelgauge_i2c_probe,
-	.remove		= __devexit_p(max17047_fuelgauge_remove),
+	.remove		= max17047_fuelgauge_remove,
 	.id_table	= max17047_fuelgauge_id,
 };
 

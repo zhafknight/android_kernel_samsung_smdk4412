@@ -507,7 +507,7 @@ out:
 	mutex_unlock(&busfreq_lock);
 }
 
-static __devinit int exynos_busfreq_probe(struct platform_device *pdev)
+static int exynos_busfreq_probe(struct platform_device *pdev)
 {
 	struct busfreq_data *data;
 	unsigned int val = 0;
@@ -613,7 +613,7 @@ err_busfreq:
 	return -ENODEV;
 }
 
-static __devexit int exynos_busfreq_remove(struct platform_device *pdev)
+static int exynos_busfreq_remove(struct platform_device *pdev)
 {
 	struct busfreq_data *data = platform_get_drvdata(pdev);
 
@@ -656,7 +656,7 @@ static const struct dev_pm_ops exynos_busfreq_pm = {
 
 static struct platform_driver exynos_busfreq_driver = {
 	.probe  = exynos_busfreq_probe,
-	.remove = __devexit_p(exynos_busfreq_remove),
+	.remove = exynos_busfreq_remove,
 	.driver = {
 		.name   = "exynos-busfreq",
 		.owner  = THIS_MODULE,

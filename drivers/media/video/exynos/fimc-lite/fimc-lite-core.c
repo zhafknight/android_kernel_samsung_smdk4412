@@ -2179,7 +2179,7 @@ static const struct dev_pm_ops flite_pm_ops = {
 
 static struct platform_driver flite_driver = {
 	.probe		= flite_probe,
-	.remove	= __devexit_p(flite_remove),
+	.remove	= flite_remove,
 	.driver = {
 		.name	= MODULE_NAME,
 		.owner	= THIS_MODULE,

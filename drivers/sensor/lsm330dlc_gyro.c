@@ -1740,7 +1740,7 @@ MODULE_DEVICE_TABLE(i2c, lsm330dlc_gyro_id);
 
 static struct i2c_driver lsm330dlc_gyro_driver = {
 	.probe = lsm330dlc_gyro_probe,
-	.remove = __devexit_p(lsm330dlc_gyro_remove),
+	.remove = lsm330dlc_gyro_remove,
 	.id_table = lsm330dlc_gyro_id,
 	.driver = {
 		.pm = &lsm330dlc_gyro_pm_ops,

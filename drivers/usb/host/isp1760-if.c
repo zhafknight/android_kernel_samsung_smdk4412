@@ -130,7 +130,7 @@ static struct platform_driver isp1760_of_driver = {
 #endif
 
 #ifdef CONFIG_PCI
-static int __devinit isp1761_pci_probe(struct pci_dev *dev,
+static int isp1761_pci_probe(struct pci_dev *dev,
 		const struct pci_device_id *id)
 {
 	u8 latency, limit;
@@ -304,7 +304,7 @@ static struct pci_driver isp1761_pci_driver = {
 };
 #endif
 
-static int __devinit isp1760_plat_probe(struct platform_device *pdev)
+static int isp1760_plat_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	struct usb_hcd *hcd;
@@ -367,7 +367,7 @@ out:
 	return ret;
 }
 
-static int __devexit isp1760_plat_remove(struct platform_device *pdev)
+static int isp1760_plat_remove(struct platform_device *pdev)
 {
 	struct resource *mem_res;
 	resource_size_t mem_size;
@@ -381,7 +381,7 @@ static int __devexit isp1760_plat_remove(struct platform_device *pdev)
 
 static struct platform_driver isp1760_plat_driver = {
 	.probe	= isp1760_plat_probe,
-	.remove	= __devexit_p(isp1760_plat_remove),
+	.remove	= isp1760_plat_remove,
 	.driver	= {
 		.name	= "isp1760",
 	},

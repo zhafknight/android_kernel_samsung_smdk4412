@@ -166,13 +166,13 @@ EXPORT_SYMBOL(hal_reset);
  * implemented for firmware loading */
 static struct platform_device *westbridge_pd;
 
-static int __devinit wb_probe(struct platform_device *devptr)
+static int wb_probe(struct platform_device *devptr)
 {
 	cy_as_hal_print_message("%s called\n", __func__);
 	return 0;
 }
 
-static int __devexit wb_remove(struct platform_device *devptr)
+static int wb_remove(struct platform_device *devptr)
 {
 	cy_as_hal_print_message("%s called\n", __func__);
 	return 0;
@@ -180,7 +180,7 @@ static int __devexit wb_remove(struct platform_device *devptr)
 
 static struct platform_driver west_bridge_driver = {
 	.probe = wb_probe,
-	.remove = __devexit_p(wb_remove),
+	.remove = wb_remove,
 	.driver = {
 		   .name = "west_bridge_dev"},
 };

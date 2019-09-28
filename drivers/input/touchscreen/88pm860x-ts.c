@@ -113,7 +113,7 @@ static void pm860x_touch_close(struct input_dev *dev)
 	pm860x_set_bits(touch->i2c, MEAS_EN3, data, 0);
 }
 
-static int __devinit pm860x_touch_probe(struct platform_device *pdev)
+static int pm860x_touch_probe(struct platform_device *pdev)
 {
 	struct pm860x_chip *chip = dev_get_drvdata(pdev->dev.parent);
 	struct pm860x_platform_data *pm860x_pdata =		\
@@ -198,7 +198,7 @@ out:
 	return ret;
 }
 
-static int __devexit pm860x_touch_remove(struct platform_device *pdev)
+static int pm860x_touch_remove(struct platform_device *pdev)
 {
 	struct pm860x_touch *touch = platform_get_drvdata(pdev);
 
@@ -215,7 +215,7 @@ static struct platform_driver pm860x_touch_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe	= pm860x_touch_probe,
-	.remove	= __devexit_p(pm860x_touch_remove),
+	.remove	= pm860x_touch_remove,
 };
 
 static int __init pm860x_touch_init(void)

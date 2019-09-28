@@ -228,7 +228,7 @@ struct pc87360_data {
  */
 
 static int pc87360_probe(struct platform_device *pdev);
-static int __devexit pc87360_remove(struct platform_device *pdev);
+static int pc87360_remove(struct platform_device *pdev);
 
 static int pc87360_read_value(struct pc87360_data *data, u8 ldi, u8 bank,
 			      u8 reg);
@@ -248,7 +248,7 @@ static struct platform_driver pc87360_driver = {
 		.name	= "pc87360",
 	},
 	.probe		= pc87360_probe,
-	.remove		= __devexit_p(pc87360_remove),
+	.remove		= pc87360_remove,
 };
 
 /*
@@ -1085,7 +1085,7 @@ static int __init pc87360_find(int sioaddr, u8 *devid, unsigned short *addresses
 	return 0;
 }
 
-static int __devinit pc87360_probe(struct platform_device *pdev)
+static int pc87360_probe(struct platform_device *pdev)
 {
 	int i;
 	struct pc87360_data *data;
@@ -1264,7 +1264,7 @@ ERROR1:
 	return err;
 }
 
-static int __devexit pc87360_remove(struct platform_device *pdev)
+static int pc87360_remove(struct platform_device *pdev)
 {
 	struct pc87360_data *data = platform_get_drvdata(pdev);
 	int i;

@@ -72,7 +72,7 @@ static struct lcd_ops platform_lcd_ops = {
 	.check_fb	= platform_lcd_match,
 };
 
-static int __devinit platform_lcd_probe(struct platform_device *pdev)
+static int platform_lcd_probe(struct platform_device *pdev)
 {
 	struct plat_lcd_data *pdata;
 	struct platform_lcd *plcd;
@@ -111,7 +111,7 @@ static int __devinit platform_lcd_probe(struct platform_device *pdev)
 	return err;
 }
 
-static int __devexit platform_lcd_remove(struct platform_device *pdev)
+static int platform_lcd_remove(struct platform_device *pdev)
 {
 	struct platform_lcd *plcd = platform_get_drvdata(pdev);
 
@@ -152,7 +152,7 @@ static struct platform_driver platform_lcd_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= platform_lcd_probe,
-	.remove		= __devexit_p(platform_lcd_remove),
+	.remove		= platform_lcd_remove,
 	.suspend        = platform_lcd_suspend,
 	.resume         = platform_lcd_resume,
 };

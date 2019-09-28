@@ -394,7 +394,7 @@ static struct pm8607_regulator_info pm8607_regulator_info[] = {
 	PM8607_LDO(14,        LDO14, 0, 4, SUPPLIES_EN12, 6),
 };
 
-static int __devinit pm8607_regulator_probe(struct platform_device *pdev)
+static int pm8607_regulator_probe(struct platform_device *pdev)
 {
 	struct pm860x_chip *chip = dev_get_drvdata(pdev->dev.parent);
 	struct pm8607_regulator_info *info = NULL;
@@ -437,7 +437,7 @@ static int __devinit pm8607_regulator_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit pm8607_regulator_remove(struct platform_device *pdev)
+static int pm8607_regulator_remove(struct platform_device *pdev)
 {
 	struct pm8607_regulator_info *info = platform_get_drvdata(pdev);
 
@@ -452,7 +452,7 @@ static struct platform_driver pm8607_regulator_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= pm8607_regulator_probe,
-	.remove		= __devexit_p(pm8607_regulator_remove),
+	.remove		= pm8607_regulator_remove,
 };
 
 static int __init pm8607_regulator_init(void)

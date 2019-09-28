@@ -131,7 +131,7 @@ static struct sdhci_pltfm_data sdhci_tegra_pdata = {
 	.ops  = &tegra_sdhci_ops,
 };
 
-static int __devinit sdhci_tegra_probe(struct platform_device *pdev)
+static int sdhci_tegra_probe(struct platform_device *pdev)
 {
 	struct sdhci_pltfm_host *pltfm_host;
 	struct tegra_sdhci_platform_data *plat;
@@ -243,7 +243,7 @@ err_no_plat:
 	return rc;
 }
 
-static int __devexit sdhci_tegra_remove(struct platform_device *pdev)
+static int sdhci_tegra_remove(struct platform_device *pdev)
 {
 	struct sdhci_host *host = platform_get_drvdata(pdev);
 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
@@ -284,7 +284,7 @@ static struct platform_driver sdhci_tegra_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= sdhci_tegra_probe,
-	.remove		= __devexit_p(sdhci_tegra_remove),
+	.remove		= sdhci_tegra_remove,
 #ifdef CONFIG_PM
 	.suspend	= sdhci_pltfm_suspend,
 	.resume		= sdhci_pltfm_resume,

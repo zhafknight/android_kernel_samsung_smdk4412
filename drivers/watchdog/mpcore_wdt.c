@@ -324,7 +324,7 @@ static struct miscdevice mpcore_wdt_miscdev = {
 	.fops		= &mpcore_wdt_fops,
 };
 
-static int __devinit mpcore_wdt_probe(struct platform_device *dev)
+static int mpcore_wdt_probe(struct platform_device *dev)
 {
 	struct mpcore_wdt *wdt;
 	struct resource *res;
@@ -391,7 +391,7 @@ err_out:
 	return ret;
 }
 
-static int __devexit mpcore_wdt_remove(struct platform_device *dev)
+static int mpcore_wdt_remove(struct platform_device *dev)
 {
 	struct mpcore_wdt *wdt = platform_get_drvdata(dev);
 
@@ -433,7 +433,7 @@ MODULE_ALIAS("platform:mpcore_wdt");
 
 static struct platform_driver mpcore_wdt_driver = {
 	.probe		= mpcore_wdt_probe,
-	.remove		= __devexit_p(mpcore_wdt_remove),
+	.remove		= mpcore_wdt_remove,
 	.suspend	= mpcore_wdt_suspend,
 	.resume		= mpcore_wdt_resume,
 	.shutdown	= mpcore_wdt_shutdown,

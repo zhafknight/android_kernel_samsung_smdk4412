@@ -163,7 +163,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit s6c1372_remove(struct platform_device *pdev)
+static int s6c1372_remove(struct platform_device *pdev)
 {
 	struct s6c1372_lcd *lcd = dev_get_drvdata(&pdev->dev);
 

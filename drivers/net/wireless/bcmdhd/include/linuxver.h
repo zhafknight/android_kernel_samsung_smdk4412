@@ -183,22 +183,22 @@ typedef irqreturn_t(*FN_ISR) (int irq, void *dev_id, struct pt_regs *ptregs);
 #ifndef __exit
 #define __exit
 #endif
-#ifndef __devexit
-#define __devexit
+#ifndef
+#define
 #endif
-#ifndef __devinit
+#ifndef
 #  if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0))
-#    define __devinit	__init
+#    define	__init
 #  else
 /* All devices are hotpluggable since linux 3.8.0 */
-#    define __devinit
+#    define
 #  endif
 #endif /* !__devinit */
-#ifndef __devinitdata
-#define __devinitdata
+#ifndef
+#define
 #endif
-#ifndef __devexit_p
-#define __devexit_p(x)	x
+#ifndef_p
+#define x	x
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 0))

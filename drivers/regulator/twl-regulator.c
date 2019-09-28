@@ -1007,7 +1007,7 @@ static u8 twl_get_smps_mult(void)
 	return value;
 }
 
-static int __devinit twlreg_probe(struct platform_device *pdev)
+static int twlreg_probe(struct platform_device *pdev)
 {
 	int				i;
 	struct twlreg_info		*info;
@@ -1097,7 +1097,7 @@ static int __devinit twlreg_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit twlreg_remove(struct platform_device *pdev)
+static int twlreg_remove(struct platform_device *pdev)
 {
 	regulator_unregister(platform_get_drvdata(pdev));
 	return 0;
@@ -1107,7 +1107,7 @@ MODULE_ALIAS("platform:twl_reg");
 
 static struct platform_driver twlreg_driver = {
 	.probe		= twlreg_probe,
-	.remove		= __devexit_p(twlreg_remove),
+	.remove		= twlreg_remove,
 	/* NOTE: short name, to work around driver model truncation of
 	 * "twl_regulator.12" (and friends) to "twl_regulator.1".
 	 */

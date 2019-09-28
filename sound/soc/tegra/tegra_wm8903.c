@@ -364,7 +364,7 @@ static struct snd_soc_card snd_soc_tegra_wm8903 = {
 	.num_dapm_widgets = ARRAY_SIZE(tegra_wm8903_dapm_widgets),
 };
 
-static __devinit int tegra_wm8903_driver_probe(struct platform_device *pdev)
+static int tegra_wm8903_driver_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = &snd_soc_tegra_wm8903;
 	struct tegra_wm8903 *machine;
@@ -423,7 +423,7 @@ err_free_machine:
 	return ret;
 }
 
-static int __devexit tegra_wm8903_driver_remove(struct platform_device *pdev)
+static int tegra_wm8903_driver_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 	struct tegra_wm8903 *machine = snd_soc_card_get_drvdata(card);
@@ -454,7 +454,7 @@ static struct platform_driver tegra_wm8903_driver = {
 		.pm = &snd_soc_pm_ops,
 	},
 	.probe = tegra_wm8903_driver_probe,
-	.remove = __devexit_p(tegra_wm8903_driver_remove),
+	.remove = tegra_wm8903_driver_remove,
 };
 
 static int __init tegra_wm8903_modinit(void)

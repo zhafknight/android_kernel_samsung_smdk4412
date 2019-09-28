@@ -147,7 +147,7 @@ static int jack_device_init(struct jack_data *jack)
 	return 0;
 }
 
-static int __devinit jack_probe(struct platform_device *pdev)
+static int jack_probe(struct platform_device *pdev)
 {
 	struct jack_platform_data *pdata = pdev->dev.platform_data;
 	struct jack_data *jack;
@@ -167,7 +167,7 @@ static int __devinit jack_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit jack_remove(struct platform_device *pdev)
+static int jack_remove(struct platform_device *pdev)
 {
 	struct jack_platform_data *pdata = pdev->dev.platform_data;
 
@@ -196,7 +196,7 @@ static int __devexit jack_remove(struct platform_device *pdev)
 
 static struct platform_driver jack_driver = {
 	.probe		= jack_probe,
-	.remove		= __devexit_p(jack_remove),
+	.remove		= jack_remove,
 	.driver		= {
 		.name	= "jack",
 		.owner	= THIS_MODULE,

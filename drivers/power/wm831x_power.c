@@ -486,7 +486,7 @@ static irqreturn_t wm831x_pwr_src_irq(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-static __devinit int wm831x_power_probe(struct platform_device *pdev)
+static int wm831x_power_probe(struct platform_device *pdev)
 {
 	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
 	struct wm831x_pdata *wm831x_pdata = wm831x->dev->platform_data;
@@ -612,7 +612,7 @@ err_kmalloc:
 	return ret;
 }
 
-static __devexit int wm831x_power_remove(struct platform_device *pdev)
+static int wm831x_power_remove(struct platform_device *pdev)
 {
 	struct wm831x_power *wm831x_power = platform_get_drvdata(pdev);
 	int irq, i;
@@ -637,7 +637,7 @@ static __devexit int wm831x_power_remove(struct platform_device *pdev)
 
 static struct platform_driver wm831x_power_driver = {
 	.probe = wm831x_power_probe,
-	.remove = __devexit_p(wm831x_power_remove),
+	.remove = wm831x_power_remove,
 	.driver = {
 		.name = "wm831x-power",
 	},

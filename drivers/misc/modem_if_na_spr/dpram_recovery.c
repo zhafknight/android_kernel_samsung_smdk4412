@@ -1517,7 +1517,7 @@ err1:	gpio_free(IRQ_QSC_INT);
 err:	return rv;
 }
 
-static int __devinit dpram_recovery_probe(struct platform_device *pdev)
+static int dpram_recovery_probe(struct platform_device *pdev)
 {
 	int err = 0;
 	g_TotFrame = 0;

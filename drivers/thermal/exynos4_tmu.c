@@ -522,7 +522,7 @@ static struct thermal_sensor_conf exynos4_sensor_conf = {
 #endif
 /*CONFIG_SAMSUNG_THERMAL_INTERFACE*/
 
-static int __devinit exynos4_tmu_probe(struct platform_device *pdev)
+static int exynos4_tmu_probe(struct platform_device *pdev)
 {
 	struct exynos4_tmu_data *data;
 	struct exynos4_tmu_platform_data *pdata = pdev->dev.platform_data;
@@ -645,7 +645,7 @@ err_free:
 	return ret;
 }
 
-static int __devexit exynos4_tmu_remove(struct platform_device *pdev)
+static int exynos4_tmu_remove(struct platform_device *pdev)
 {
 	struct exynos4_tmu_data *data = platform_get_drvdata(pdev);
 
@@ -703,7 +703,7 @@ static struct platform_driver exynos4_tmu_driver = {
 		.owner  = THIS_MODULE,
 	},
 	.probe = exynos4_tmu_probe,
-	.remove	= __devexit_p(exynos4_tmu_remove),
+	.remove	= exynos4_tmu_remove,
 	.suspend = exynos4_tmu_suspend,
 	.resume = exynos4_tmu_resume,
 	.id_table = exynos4_tmu_id,

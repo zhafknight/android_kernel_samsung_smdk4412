@@ -468,7 +468,7 @@ static struct resource twl6040_codec_rsrc[] = {
 	},
 };
 
-static int __devinit twl6040_probe(struct platform_device *pdev)
+static int twl6040_probe(struct platform_device *pdev)
 {
 	struct twl4030_audio_data *pdata = pdev->dev.platform_data;
 	struct twl6040 *twl6040;
@@ -590,7 +590,7 @@ gpio1_err:
 	return ret;
 }
 
-static int __devexit twl6040_remove(struct platform_device *pdev)
+static int twl6040_remove(struct platform_device *pdev)
 {
 	struct twl6040 *twl6040 = platform_get_drvdata(pdev);
 
@@ -612,20 +612,20 @@ static int __devexit twl6040_remove(struct platform_device *pdev)
 
 static struct platform_driver twl6040_driver = {
 	.probe		= twl6040_probe,
-	.remove		= __devexit_p(twl6040_remove),
+	.remove		= twl6040_remove,
 	.driver		= {
 		.owner	= THIS_MODULE,
 		.name	= "twl6040",
 	},
 };
 
-static int __devinit twl6040_init(void)
+static int twl6040_init(void)
 {
 	return platform_driver_register(&twl6040_driver);
 }
 module_init(twl6040_init);
 
-static void __devexit twl6040_exit(void)
+static void twl6040_exit(void)
 {
 	platform_driver_unregister(&twl6040_driver);
 }

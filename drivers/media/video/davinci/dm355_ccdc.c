@@ -1064,7 +1064,7 @@ static struct platform_driver dm355_ccdc_driver = {
 		.name	= "dm355_ccdc",
 		.owner = THIS_MODULE,
 	},
-	.remove = __devexit_p(dm355_ccdc_remove),
+	.remove = dm355_ccdc_remove,
 	.probe = dm355_ccdc_probe,
 };
 

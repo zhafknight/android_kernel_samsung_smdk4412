@@ -463,7 +463,7 @@ static struct regulator_ops tps65023_ldo_ops = {
 	.list_voltage = tps65023_ldo_list_voltage,
 };
 
-static int __devinit tps_65023_probe(struct i2c_client *client,
+static int tps_65023_probe(struct i2c_client *client,
 				     const struct i2c_device_id *id)
 {
 	const struct tps_info *info = (void *)id->driver_data;
@@ -537,7 +537,7 @@ static int __devinit tps_65023_probe(struct i2c_client *client,
  *
  * Unregister TPS driver as an i2c client device driver
  */
-static int __devexit tps_65023_remove(struct i2c_client *client)
+static int tps_65023_remove(struct i2c_client *client)
 {
 	struct tps_pmic *tps = i2c_get_clientdata(client);
 	int i;
@@ -602,7 +602,7 @@ static struct i2c_driver tps_65023_i2c_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = tps_65023_probe,
-	.remove = __devexit_p(tps_65023_remove),
+	.remove = tps_65023_remove,
 	.id_table = tps_65023_id,
 };
 

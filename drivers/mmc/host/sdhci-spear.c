@@ -66,7 +66,7 @@ static irqreturn_t sdhci_gpio_irq(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int __devinit sdhci_probe(struct platform_device *pdev)
+static int sdhci_probe(struct platform_device *pdev)
 {
 	struct sdhci_host *host;
 	struct resource *iomem;
@@ -236,7 +236,7 @@ err:
 	return ret;
 }
 
-static int __devexit sdhci_remove(struct platform_device *pdev)
+static int sdhci_remove(struct platform_device *pdev)
 {
 	struct sdhci_host *host = platform_get_drvdata(pdev);
 	struct resource *iomem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -278,7 +278,7 @@ static struct platform_driver sdhci_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= sdhci_probe,
-	.remove		= __devexit_p(sdhci_remove),
+	.remove		= sdhci_remove,
 };
 
 static int __init sdhci_init(void)

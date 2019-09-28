@@ -3106,7 +3106,7 @@ static struct attribute_group sec_touch_factory_attr_group = {
 };
 #endif /* SEC_TSP_FACTORY_TEST */
 
-static int __devinit mms_ts_probe(struct i2c_client *client,
+static int mms_ts_probe(struct i2c_client *client,
 				  const struct i2c_device_id *id)
 {
 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
@@ -3279,7 +3279,7 @@ err_alloc:
 
 }
 
-static int __devexit mms_ts_remove(struct i2c_client *client)
+static int mms_ts_remove(struct i2c_client *client)
 {
 	struct mms_ts_info *info = i2c_get_clientdata(client);
 
@@ -3384,7 +3384,7 @@ MODULE_DEVICE_TABLE(i2c, mms_ts_id);
 
 static struct i2c_driver mms_ts_driver = {
 	.probe = mms_ts_probe,
-	.remove = __devexit_p(mms_ts_remove),
+	.remove = mms_ts_remove,
 	.driver = {
 		   .name = MELFAS_TS_NAME,
 #if defined(CONFIG_PM)

@@ -347,7 +347,7 @@ static int tosa_bat_resume(struct platform_device *dev)
 #define tosa_bat_resume NULL
 #endif
 
-static int __devinit tosa_bat_probe(struct platform_device *dev)
+static int tosa_bat_probe(struct platform_device *dev)
 {
 	int ret;
 	int i;
@@ -432,7 +432,7 @@ err_gpio:
 	return ret;
 }
 
-static int __devexit tosa_bat_remove(struct platform_device *dev)
+static int tosa_bat_remove(struct platform_device *dev)
 {
 	int i;
 
@@ -461,7 +461,7 @@ static struct platform_driver tosa_bat_driver = {
 	.driver.name	= "wm97xx-battery",
 	.driver.owner	= THIS_MODULE,
 	.probe		= tosa_bat_probe,
-	.remove		= __devexit_p(tosa_bat_remove),
+	.remove		= tosa_bat_remove,
 	.suspend	= tosa_bat_suspend,
 	.resume		= tosa_bat_resume,
 };

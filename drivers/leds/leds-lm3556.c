@@ -196,7 +196,7 @@ static struct indicator indicator_pattern[INDIC_PATTERN_SIZE] = {
 };
 
 /* chip initialize */
-static int __devinit lm3556_chip_init(struct lm3556_chip_data *chip)
+static int lm3556_chip_init(struct lm3556_chip_data *chip)
 {
 	unsigned int reg_val;
 	int ret;
@@ -390,7 +390,7 @@ static const struct regmap_config lm3556_regmap = {
 };
 
 /* module initialize */
-static int __devinit lm3556_probe(struct i2c_client *client,
+static int lm3556_probe(struct i2c_client *client,
 				  const struct i2c_device_id *id)
 {
 	struct lm3556_platform_data *pdata = client->dev.platform_data;
@@ -474,7 +474,7 @@ err_out:
 	return err;
 }
 
-static int __devexit lm3556_remove(struct i2c_client *client)
+static int lm3556_remove(struct i2c_client *client)
 {
 	struct lm3556_chip_data *chip = i2c_get_clientdata(client);
 
@@ -500,7 +500,7 @@ static struct i2c_driver lm3556_i2c_driver = {
 		   .pm = NULL,
 		   },
 	.probe = lm3556_probe,
-	.remove = __devexit_p(lm3556_remove),
+	.remove = lm3556_remove,
 	.id_table = lm3556_id,
 };
 

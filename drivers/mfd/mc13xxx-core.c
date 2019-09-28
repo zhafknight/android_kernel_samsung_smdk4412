@@ -775,7 +775,7 @@ err_revision:
 	return 0;
 }
 
-static int __devexit mc13xxx_remove(struct spi_device *spi)
+static int mc13xxx_remove(struct spi_device *spi)
 {
 	struct mc13xxx *mc13xxx = dev_get_drvdata(&spi->dev);
 
@@ -809,7 +809,7 @@ static struct spi_driver mc13xxx_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = mc13xxx_probe,
-	.remove = __devexit_p(mc13xxx_remove),
+	.remove = mc13xxx_remove,
 };
 
 static int __init mc13xxx_init(void)

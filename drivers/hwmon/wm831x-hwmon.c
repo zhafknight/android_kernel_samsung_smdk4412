@@ -155,7 +155,7 @@ static const struct attribute_group wm831x_attr_group = {
 	.attrs	= wm831x_attributes,
 };
 
-static int __devinit wm831x_hwmon_probe(struct platform_device *pdev)
+static int wm831x_hwmon_probe(struct platform_device *pdev)
 {
 	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
 	struct wm831x_hwmon *hwmon;
@@ -188,7 +188,7 @@ err:
 	return ret;
 }
 
-static int __devexit wm831x_hwmon_remove(struct platform_device *pdev)
+static int wm831x_hwmon_remove(struct platform_device *pdev)
 {
 	struct wm831x_hwmon *hwmon = platform_get_drvdata(pdev);
 
@@ -202,7 +202,7 @@ static int __devexit wm831x_hwmon_remove(struct platform_device *pdev)
 
 static struct platform_driver wm831x_hwmon_driver = {
 	.probe = wm831x_hwmon_probe,
-	.remove = __devexit_p(wm831x_hwmon_remove),
+	.remove = wm831x_hwmon_remove,
 	.driver = {
 		.name = "wm831x-hwmon",
 		.owner = THIS_MODULE,

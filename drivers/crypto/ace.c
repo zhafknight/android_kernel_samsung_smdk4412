@@ -2281,7 +2281,7 @@ int ace_s5p_release_sync_lock(void)
 	return 0;
 }
 
-static int __devinit s5p_ace_probe(struct platform_device *pdev)
+static int s5p_ace_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	struct s5p_ace_device *s5p_adt = &s5p_ace_dev;

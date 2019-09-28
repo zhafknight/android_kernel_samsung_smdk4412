@@ -1535,7 +1535,7 @@ static struct snd_soc_codec_driver soc_codec_dev_wm8993 = {
 };
 
 #if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
-static __devinit int wm8993_i2c_probe(struct i2c_client *i2c,
+static int wm8993_i2c_probe(struct i2c_client *i2c,
 				      const struct i2c_device_id *id)
 {
 	struct wm8993_priv *wm8993;
@@ -1554,7 +1554,7 @@ static __devinit int wm8993_i2c_probe(struct i2c_client *i2c,
 	return ret;
 }
 
-static __devexit int wm8993_i2c_remove(struct i2c_client *client)
+static int wm8993_i2c_remove(struct i2c_client *client)
 {
 	snd_soc_unregister_codec(&client->dev);
 	kfree(i2c_get_clientdata(client));
@@ -1573,7 +1573,7 @@ static struct i2c_driver wm8993_i2c_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe =    wm8993_i2c_probe,
-	.remove =   __devexit_p(wm8993_i2c_remove),
+	.remove =   wm8993_i2c_remove,
 	.id_table = wm8993_i2c_id,
 };
 #endif

@@ -538,7 +538,7 @@ out_free_lcd:
 	return ret;
 }
 
-static int __devexit ams369fg06_remove(struct spi_device *spi)
+static int ams369fg06_remove(struct spi_device *spi)
 {
 	struct ams369fg06 *lcd = dev_get_drvdata(&spi->dev);
 
@@ -610,7 +610,7 @@ static struct spi_driver ams369fg06_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= ams369fg06_probe,
-	.remove		= __devexit_p(ams369fg06_remove),
+	.remove		= ams369fg06_remove,
 	.shutdown	= ams369fg06_shutdown,
 #ifndef CONFIG_HAS_EARLYSUSPEND
 	.suspend	= ams369fg06_suspend,

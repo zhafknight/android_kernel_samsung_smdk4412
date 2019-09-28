@@ -1681,7 +1681,7 @@ err_exit_check_functionality_failed:
 	return err;
 }
 
-static int __devexit lps331ap_prs_remove(struct i2c_client *client)
+static int lps331ap_prs_remove(struct i2c_client *client)
 {
 	struct lps331ap_prs_data *prs = i2c_get_clientdata(client);
 
@@ -1750,7 +1750,7 @@ static struct i2c_driver lps331ap_prs_driver = {
 			.owner = THIS_MODULE,
 	},
 	.probe = lps331ap_prs_probe,
-	.remove = __devexit_p(lps331ap_prs_remove),
+	.remove = lps331ap_prs_remove,
 	.id_table = lps331ap_prs_id,
 	.resume = lps331ap_prs_resume,
 	.suspend = lps331ap_prs_suspend,

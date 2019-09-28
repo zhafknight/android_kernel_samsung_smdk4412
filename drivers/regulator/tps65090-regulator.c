@@ -81,7 +81,7 @@ static inline struct tps65090_regulator *find_regulator_info(int id)
 	return NULL;
 }
 
-static int __devinit tps65090_regulator_probe(struct platform_device *pdev)
+static int tps65090_regulator_probe(struct platform_device *pdev)
 {
 	struct tps65090 *tps65090_mfd = dev_get_drvdata(pdev->dev.parent);
 	struct tps65090_regulator *ri = NULL;
@@ -116,7 +116,7 @@ static int __devinit tps65090_regulator_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit tps65090_regulator_remove(struct platform_device *pdev)
+static int tps65090_regulator_remove(struct platform_device *pdev)
 {
 	struct regulator_dev *rdev = platform_get_drvdata(pdev);
 
@@ -130,7 +130,7 @@ static struct platform_driver tps65090_regulator_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= tps65090_regulator_probe,
-	.remove		= __devexit_p(tps65090_regulator_remove),
+	.remove		= tps65090_regulator_remove,
 };
 
 static int __init tps65090_regulator_init(void)

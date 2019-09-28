@@ -772,7 +772,7 @@ static int max77686_rtc_init_reg(struct max77686_rtc_info *info)
 	return ret;
 }
 
-static int __devinit max77686_rtc_probe(struct platform_device *pdev)
+static int max77686_rtc_probe(struct platform_device *pdev)
 {
 	struct max77686_dev *max77686 = dev_get_drvdata(pdev->dev.parent);
 	struct max77686_rtc_info *info;
@@ -856,7 +856,7 @@ out:
 	return ret;
 }
 
-static int __devexit max77686_rtc_remove(struct platform_device *pdev)
+static int max77686_rtc_remove(struct platform_device *pdev)
 {
 	struct max77686_rtc_info *info = platform_get_drvdata(pdev);
 
@@ -909,7 +909,7 @@ static struct platform_driver max77686_rtc_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= max77686_rtc_probe,
-	.remove		= __devexit_p(max77686_rtc_remove),
+	.remove		= max77686_rtc_remove,
 	.shutdown	= max77686_rtc_shutdown,
 	.id_table	= rtc_id,
 };

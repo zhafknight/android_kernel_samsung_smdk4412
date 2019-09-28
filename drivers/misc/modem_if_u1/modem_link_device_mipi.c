@@ -219,7 +219,7 @@ static void mipi_hsi_tx_work(struct work_struct *work)
 	}
 }
 
-static int __devinit if_hsi_probe(struct hsi_device *dev);
+static int if_hsi_probe(struct hsi_device *dev);
 static struct hsi_device_driver if_hsi_driver = {
 	.ctrl_mask = ANY_HSI_CONTROLLER,
 	.probe = if_hsi_probe,
@@ -1258,7 +1258,7 @@ static void if_hsi_port_event(struct hsi_device *dev, unsigned int event,
 	}
 }
 
-static int __devinit if_hsi_probe(struct hsi_device *dev)
+static int if_hsi_probe(struct hsi_device *dev)
 {
 	int port = 0;
 	unsigned long *address;

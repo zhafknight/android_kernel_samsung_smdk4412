@@ -124,7 +124,7 @@ err_ce:
 	return ret;
 }
 
-static int __devexit bq24022_remove(struct platform_device *pdev)
+static int bq24022_remove(struct platform_device *pdev)
 {
 	struct bq24022_mach_info *pdata = pdev->dev.platform_data;
 	struct regulator_dev *bq24022 = platform_get_drvdata(pdev);
@@ -140,7 +140,7 @@ static struct platform_driver bq24022_driver = {
 	.driver = {
 		.name = "bq24022",
 	},
-	.remove = __devexit_p(bq24022_remove),
+	.remove = bq24022_remove,
 };
 
 static int __init bq24022_init(void)

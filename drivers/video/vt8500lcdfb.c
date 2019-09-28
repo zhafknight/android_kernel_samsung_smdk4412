@@ -266,7 +266,7 @@ static irqreturn_t vt8500lcd_handle_irq(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int __devinit vt8500lcd_probe(struct platform_device *pdev)
+static int vt8500lcd_probe(struct platform_device *pdev)
 {
 	struct vt8500lcd_info *fbi;
 	struct resource *res;
@@ -419,7 +419,7 @@ failed:
 	return ret;
 }
 
-static int __devexit vt8500lcd_remove(struct platform_device *pdev)
+static int vt8500lcd_remove(struct platform_device *pdev)
 {
 	struct vt8500lcd_info *fbi = platform_get_drvdata(pdev);
 	struct resource *res;
@@ -450,7 +450,7 @@ static int __devexit vt8500lcd_remove(struct platform_device *pdev)
 
 static struct platform_driver vt8500lcd_driver = {
 	.probe		= vt8500lcd_probe,
-	.remove		= __devexit_p(vt8500lcd_remove),
+	.remove		= vt8500lcd_remove,
 	.driver		= {
 		.owner	= THIS_MODULE,
 		.name	= "vt8500-lcd",

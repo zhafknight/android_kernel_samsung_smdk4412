@@ -377,7 +377,7 @@ static int mms114_setup_regs(struct mms114_data *data)
 	return 0;
 }
 
-static int __devinit mms114_probe(struct i2c_client *client,
+static int mms114_probe(struct i2c_client *client,
 				  const struct i2c_device_id *id)
 {
 	struct mms114_data *data;
@@ -478,7 +478,7 @@ err_free_mem:
 	return ret;
 }
 
-static int __devexit mms114_remove(struct i2c_client *client)
+static int mms114_remove(struct i2c_client *client)
 {
 	struct mms114_data *data = i2c_get_clientdata(client);
 
@@ -565,7 +565,7 @@ static struct i2c_driver mms114_driver = {
 #endif
 	},
 	.probe		= mms114_probe,
-	.remove		= __devexit_p(mms114_remove),
+	.remove		= mms114_remove,
 	.id_table	= mms114_id,
 };
 

@@ -180,7 +180,7 @@ static int SII9234_i2c_probe(struct i2c_client *client,
 
 
 
-static int __devexit SII9234_remove(struct i2c_client *client)
+static int SII9234_remove(struct i2c_client *client)
 {
 	struct SII9234_state *state = i2c_get_clientdata(client);
 	kfree(state);
@@ -216,7 +216,7 @@ static int SII9234A_i2c_probe(struct i2c_client *client,
 
 
 
-static int __devexit SII9234A_remove(struct i2c_client *client)
+static int SII9234A_remove(struct i2c_client *client)
 {
 	struct SII9234_state *state = i2c_get_clientdata(client);
 	kfree(state);
@@ -250,7 +250,7 @@ static int SII9234B_i2c_probe(struct i2c_client *client,
 
 
 
-static int __devexit SII9234B_remove(struct i2c_client *client)
+static int SII9234B_remove(struct i2c_client *client)
 {
 	struct SII9234_state *state = i2c_get_clientdata(client);
 	kfree(state);
@@ -284,7 +284,7 @@ static int SII9234C_i2c_probe(struct i2c_client *client,
 
 
 
-static int __devexit SII9234C_remove(struct i2c_client *client)
+static int SII9234C_remove(struct i2c_client *client)
 {
 	struct SII9234_state *state = i2c_get_clientdata(client);
 	kfree(state);
@@ -299,7 +299,7 @@ struct i2c_driver SII9234_i2c_driver = {
 	},
 	.id_table	= SII9234_id,
 	.probe	= SII9234_i2c_probe,
-	.remove	= __devexit_p(SII9234_remove),
+	.remove	= SII9234_remove,
 	.command = NULL,
 };
 
@@ -310,7 +310,7 @@ struct i2c_driver SII9234A_i2c_driver = {
 	},
 	.id_table	= SII9234A_id,
 	.probe	= SII9234A_i2c_probe,
-	.remove	= __devexit_p(SII9234A_remove),
+	.remove	= SII9234A_remove,
 	.command = NULL,
 };
 
@@ -321,7 +321,7 @@ struct i2c_driver SII9234B_i2c_driver = {
 	},
 	.id_table	= SII9234B_id,
 	.probe	= SII9234B_i2c_probe,
-	.remove	= __devexit_p(SII9234B_remove),
+	.remove	= SII9234B_remove,
 	.command = NULL,
 };
 
@@ -332,7 +332,7 @@ struct i2c_driver SII9234C_i2c_driver = {
 	},
 	.id_table	= SII9234C_id,
 	.probe	= SII9234C_i2c_probe,
-	.remove	= __devexit_p(SII9234C_remove),
+	.remove	= SII9234C_remove,
 	.command = NULL,
 };
 

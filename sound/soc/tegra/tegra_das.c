@@ -164,7 +164,7 @@ static inline void tegra_das_debug_remove(struct tegra_das *das)
 }
 #endif
 
-static int __devinit tegra_das_probe(struct platform_device *pdev)
+static int tegra_das_probe(struct platform_device *pdev)
 {
 	struct resource *res, *region;
 	int ret = 0;
@@ -217,7 +217,7 @@ exit:
 	return ret;
 }
 
-static int __devexit tegra_das_remove(struct platform_device *pdev)
+static int tegra_das_remove(struct platform_device *pdev)
 {
 	struct resource *res;
 
@@ -241,7 +241,7 @@ static int __devexit tegra_das_remove(struct platform_device *pdev)
 
 static struct platform_driver tegra_das_driver = {
 	.probe = tegra_das_probe,
-	.remove = __devexit_p(tegra_das_remove),
+	.remove = tegra_das_remove,
 	.driver = {
 		.name = DRV_NAME,
 	},

@@ -29,7 +29,7 @@
 	pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
 #define stampit() stamp("here i am")
 #define pr_devinit(fmt, args...) \
-	({ static const __devinitconst char __fmt[] = fmt; \
+	({ static constconst char __fmt[] = fmt; \
 	printk(__fmt, ## args); })
 #define pr_init(fmt, args...) \
 	({ static const __initconst char __fmt[] = fmt; \
@@ -362,7 +362,7 @@ static const struct watchdog_info bfin_wdt_info = {
  *	Registers the misc device.  Actual device
  *	initialization is handled by bfin_wdt_open().
  */
-static int __devinit bfin_wdt_probe(struct platform_device *pdev)
+static int bfin_wdt_probe(struct platform_device *pdev)
 {
 	int ret;
 
@@ -386,7 +386,7 @@ static int __devinit bfin_wdt_probe(struct platform_device *pdev)
  *	Unregisters the misc device.  Actual device
  *	deinitialization is handled by bfin_wdt_close().
  */
-static int __devexit bfin_wdt_remove(struct platform_device *pdev)
+static int bfin_wdt_remove(struct platform_device *pdev)
 {
 	misc_deregister(&bfin_wdt_miscdev);
 	return 0;
@@ -408,7 +408,7 @@ static struct platform_device *bfin_wdt_device;
 
 static struct platform_driver bfin_wdt_driver = {
 	.probe     = bfin_wdt_probe,
-	.remove    = __devexit_p(bfin_wdt_remove),
+	.remove    = bfin_wdt_remove,
 	.shutdown  = bfin_wdt_shutdown,
 	.suspend   = bfin_wdt_suspend,
 	.resume    = bfin_wdt_resume,

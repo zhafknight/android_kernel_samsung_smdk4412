@@ -549,7 +549,7 @@ static struct regulator_ops tps6507x_pmic_ldo_ops = {
 	.list_voltage = tps6507x_pmic_ldo_list_voltage,
 };
 
-static __devinit
+static
 int tps6507x_pmic_probe(struct platform_device *pdev)
 {
 	struct tps6507x_dev *tps6507x_dev = dev_get_drvdata(pdev->dev.parent);
@@ -631,7 +631,7 @@ fail:
 	return error;
 }
 
-static int __devexit tps6507x_pmic_remove(struct platform_device *pdev)
+static int tps6507x_pmic_remove(struct platform_device *pdev)
 {
 	struct tps6507x_dev *tps6507x_dev = platform_get_drvdata(pdev);
 	struct tps6507x_pmic *tps = tps6507x_dev->pmic;
@@ -651,7 +651,7 @@ static struct platform_driver tps6507x_pmic_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = tps6507x_pmic_probe,
-	.remove = __devexit_p(tps6507x_pmic_remove),
+	.remove = tps6507x_pmic_remove,
 };
 
 /**

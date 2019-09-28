@@ -1080,7 +1080,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit lms501xx_remove(struct device *dev)
+static int lms501xx_remove(struct device *dev)
 {
 	struct lcd_info *lcd = dev_get_drvdata(dev);
 
@@ -1105,7 +1105,7 @@ static void lms501xx_shutdown(struct device *dev)
 static struct mipi_lcd_driver lms501xx_mipi_driver = {
 	.name = "lms501xx",
 	.probe			= lms501xx_probe,
-	.remove			= __devexit_p(lms501xx_remove),
+	.remove			= lms501xx_remove,
 	.shutdown		= lms501xx_shutdown,
 };
 

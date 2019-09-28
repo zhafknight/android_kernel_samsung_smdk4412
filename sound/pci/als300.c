@@ -271,7 +271,7 @@ static irqreturn_t snd_als300plus_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static void __devexit snd_als300_remove(struct pci_dev *pci)
+static void snd_als300_remove(struct pci_dev *pci)
 {
 	snd_als300_dbgcallenter();
 	snd_card_free(pci_get_drvdata(pci));
@@ -611,7 +611,7 @@ static struct snd_pcm_ops snd_als300_capture_ops = {
 	.pointer =	snd_als300_pointer,
 };
 
-static int __devinit snd_als300_new_pcm(struct snd_als300 *chip)
+static int snd_als300_new_pcm(struct snd_als300 *chip)
 {
 	struct snd_pcm *pcm;
 	int err;
@@ -672,7 +672,7 @@ static void snd_als300_init(struct snd_als300 *chip)
 	snd_als300_dbgcallleave();
 }
 
-static int __devinit snd_als300_create(struct snd_card *card,
+static int snd_als300_create(struct snd_card *card,
 				       struct pci_dev *pci, int chip_type,
 				       struct snd_als300 **rchip)
 {
@@ -797,7 +797,7 @@ static int snd_als300_resume(struct pci_dev *pci)
 }
 #endif
 
-static int __devinit snd_als300_probe(struct pci_dev *pci,
+static int snd_als300_probe(struct pci_dev *pci,
                              const struct pci_device_id *pci_id)
 {
 	static int dev;
@@ -849,7 +849,7 @@ static struct pci_driver driver = {
 	.name = "ALS300",
 	.id_table = snd_als300_ids,
 	.probe = snd_als300_probe,
-	.remove = __devexit_p(snd_als300_remove),
+	.remove = snd_als300_remove,
 #ifdef CONFIG_PM
 	.suspend = snd_als300_suspend,
 	.resume = snd_als300_resume,

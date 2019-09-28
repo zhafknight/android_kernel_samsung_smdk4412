@@ -2001,7 +2001,7 @@ void cdc_acm_intr_complete(struct urb *urb)
 	}
 }
 
-static int __devinit if_usb_probe(struct usb_interface *intf,
+static int if_usb_probe(struct usb_interface *intf,
 					const struct usb_device_id *id)
 {
 	int ret;

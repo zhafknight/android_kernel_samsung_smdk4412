@@ -1002,7 +1002,7 @@ err_pdata:
 	return ret;
 }
 
-static int __devexit smb328_remove(struct i2c_client *client)
+static int smb328_remove(struct i2c_client *client)
 {
 	struct smb328_chip *chip = i2c_get_clientdata(client);
 
@@ -1023,7 +1023,7 @@ static struct i2c_driver smb328_i2c_driver = {
 		.name	= "smb328-charger",
 	},
 	.probe	= smb328_probe,
-	.remove	= __devexit_p(smb328_remove),
+	.remove	= smb328_remove,
 	.command = NULL,
 	.id_table	= smb328_id,
 };

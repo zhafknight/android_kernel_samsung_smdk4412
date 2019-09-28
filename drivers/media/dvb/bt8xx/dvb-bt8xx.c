@@ -116,7 +116,7 @@ static int is_pci_slot_eq(struct pci_dev* adev, struct pci_dev* bdev)
 	return 0;
 }
 
-static struct bt878 __devinit *dvb_bt8xx_878_match(unsigned int bttv_nr, struct pci_dev* bttv_pci_dev)
+static struct bt878 *dvb_bt8xx_878_match(unsigned int bttv_nr, struct pci_dev* bttv_pci_dev)
 {
 	unsigned int card_nr;
 
@@ -715,7 +715,7 @@ static void frontend_init(struct dvb_bt8xx_card *card, u32 type)
 		}
 }
 
-static int __devinit dvb_bt8xx_load_card(struct dvb_bt8xx_card *card, u32 type)
+static int dvb_bt8xx_load_card(struct dvb_bt8xx_card *card, u32 type)
 {
 	int result;
 
@@ -803,7 +803,7 @@ static int __devinit dvb_bt8xx_load_card(struct dvb_bt8xx_card *card, u32 type)
 	return 0;
 }
 
-static int __devinit dvb_bt8xx_probe(struct bttv_sub_device *sub)
+static int dvb_bt8xx_probe(struct bttv_sub_device *sub)
 {
 	struct dvb_bt8xx_card *card;
 	struct pci_dev* bttv_pci_dev;

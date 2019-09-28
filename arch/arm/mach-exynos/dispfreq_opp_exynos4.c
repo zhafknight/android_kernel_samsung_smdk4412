@@ -445,7 +445,7 @@ static void exynos4_dispfreq_set_lowfreq(struct work_struct *work)
 	exynos4_dispfreq_send_event_to_display(EXYNOS4_DISPLAY_LV_LF, NULL);
 }
 
-static __devinit int exynos4_dispfreq_probe(struct platform_device *pdev)
+static int exynos4_dispfreq_probe(struct platform_device *pdev)
 {
 	struct exynos4_dispfreq_data *data;
 	struct device *dev = &pdev->dev;
@@ -551,7 +551,7 @@ err_alloc_mem:
 	return ret;
 }
 
-static __devexit int exynos4_dispfreq_remove(struct platform_device *pdev)
+static int exynos4_dispfreq_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct exynos4_dispfreq_data *data = pdev->dev.platform_data;
@@ -588,7 +588,7 @@ static const struct dev_pm_ops exynos4_dispfreq_pm = {
 
 static struct platform_driver exynos4_dispfreq_driver = {
 	.probe  = exynos4_dispfreq_probe,
-	.remove = __devexit_p(exynos4_dispfreq_remove),
+	.remove = exynos4_dispfreq_remove,
 	.driver = {
 		.name   = "exynos4-dispfreq",
 		.owner  = THIS_MODULE,

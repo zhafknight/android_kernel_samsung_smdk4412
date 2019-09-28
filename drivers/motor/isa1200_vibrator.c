@@ -310,7 +310,7 @@ ssize_t pwm_value_store(struct device *dev,
 static DEVICE_ATTR(pwm_value, S_IRUGO | S_IWUSR,
     pwm_value_show, pwm_value_store);
 
-static int __devinit isa1200_vibrator_i2c_probe(struct i2c_client *client,
+static int isa1200_vibrator_i2c_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	struct isa1200_vibrator_platform_data *pdata =

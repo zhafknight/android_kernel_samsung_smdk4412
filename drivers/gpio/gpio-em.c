@@ -240,7 +240,7 @@ static struct irq_domain_ops em_gio_irq_domain_ops = {
 	.map	= em_gio_irq_domain_map,
 };
 
-static int __devinit em_gio_irq_domain_init(struct em_gio_priv *p)
+static int em_gio_irq_domain_init(struct em_gio_priv *p)
 {
 	struct platform_device *pdev = p->pdev;
 	struct gpio_em_config *pdata = pdev->dev.platform_data;
@@ -266,7 +266,7 @@ static int __devinit em_gio_irq_domain_init(struct em_gio_priv *p)
 	return 0;
 }
 
-static void __devexit em_gio_irq_domain_cleanup(struct em_gio_priv *p)
+static void em_gio_irq_domain_cleanup(struct em_gio_priv *p)
 {
 	struct gpio_em_config *pdata = p->pdev->dev.platform_data;
 
@@ -274,7 +274,7 @@ static void __devexit em_gio_irq_domain_cleanup(struct em_gio_priv *p)
 	/* FIXME: irq domain wants to be freed! */
 }
 
-static int __devinit em_gio_probe(struct platform_device *pdev)
+static int em_gio_probe(struct platform_device *pdev)
 {
 	struct gpio_em_config *pdata = pdev->dev.platform_data;
 	struct em_gio_priv *p;
@@ -381,7 +381,7 @@ err0:
 	return ret;
 }
 
-static int __devexit em_gio_remove(struct platform_device *pdev)
+static int em_gio_remove(struct platform_device *pdev)
 {
 	struct em_gio_priv *p = platform_get_drvdata(pdev);
 	struct resource *irq[2];
@@ -405,7 +405,7 @@ static int __devexit em_gio_remove(struct platform_device *pdev)
 
 static struct platform_driver em_gio_device_driver = {
 	.probe		= em_gio_probe,
-	.remove		= __devexit_p(em_gio_remove),
+	.remove		= em_gio_remove,
 	.driver		= {
 		.name	= "em_gio",
 	}

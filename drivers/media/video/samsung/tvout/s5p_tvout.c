@@ -109,7 +109,7 @@ static DEVICE_ATTR(hdmi_audio_set_ext, 0660,
 	hdmi_set_audio_read, hdmi_set_audio_store);
 #endif
 
-static int __devinit s5p_tvout_clk_get(struct platform_device *pdev,
+static int s5p_tvout_clk_get(struct platform_device *pdev,
 				       struct s5p_tvout_status *ctrl)
 {
 	struct clk *ext_xtal_clk, *mout_vpll_src, *fout_vpll, *mout_vpll;
@@ -282,7 +282,7 @@ static CLASS_ATTR(dbg_msg, S_IRUGO | S_IWUSR,
 		sysfs_dbg_msg_show, sysfs_dbg_msg_store);
 #endif
 
-static int __devinit s5p_tvout_probe(struct platform_device *pdev)
+static int s5p_tvout_probe(struct platform_device *pdev)
 {
 #if defined(CONFIG_S5P_MEM_CMA)
 	struct cma_info mem_info;

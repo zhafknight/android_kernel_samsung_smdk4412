@@ -784,7 +784,7 @@ end:
 /*
  * si4705_i2c_probe - probe for the device
  */
-static int __devinit si4705_i2c_probe(struct i2c_client *client,
+static int si4705_i2c_probe(struct i2c_client *client,
 		const struct i2c_device_id *id)
 {
 	struct si4705_device *radio;
@@ -898,7 +898,7 @@ err_initial:
 /*
  * si4705_i2c_remove - remove the device
  */
-static __devexit int si4705_i2c_remove(struct i2c_client *client)
+static int si4705_i2c_remove(struct i2c_client *client)
 {
 	struct si4705_device *radio = i2c_get_clientdata(client);
 
@@ -962,7 +962,7 @@ static struct i2c_driver si4705_i2c_driver = {
 #endif
 	},
 	.probe			= si4705_i2c_probe,
-	.remove			= __devexit_p(si4705_i2c_remove),
+	.remove			= si4705_i2c_remove,
 	.id_table		= si4705_i2c_id,
 };
 

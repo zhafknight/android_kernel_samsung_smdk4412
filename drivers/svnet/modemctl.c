@@ -653,7 +653,7 @@ static void _free_all(struct modemctl *mc)
 	}
 }
 
-static int __devinit modemctl_probe(struct platform_device *pdev)
+static int modemctl_probe(struct platform_device *pdev)
 {
 	struct modemctl_platform_data *pdata = pdev->dev.platform_data;
 	struct device *dev = &pdev->dev;
@@ -758,7 +758,7 @@ fail:
 	return error;
 }
 
-static int __devexit modemctl_remove(struct platform_device *pdev)
+static int modemctl_remove(struct platform_device *pdev)
 {
 	struct modemctl *mc = platform_get_drvdata(pdev);
 
@@ -807,7 +807,7 @@ static const struct dev_pm_ops modemctl_pm_ops = {
 
 static struct platform_driver modemctl_driver = {
 	.probe		= modemctl_probe,
-	.remove		= __devexit_p(modemctl_remove),
+	.remove		= modemctl_remove,
 	.driver		= {
 		.name	= "modemctl",
 		.owner	= THIS_MODULE,

@@ -1893,7 +1893,7 @@ static irqreturn_t sec_bat_irq_thread(int irq, void *irq_data)
 	return IRQ_HANDLED;
 }
 
-static int __devinit sec_battery_probe(struct platform_device *pdev)
+static int sec_battery_probe(struct platform_device *pdev)
 {
 	sec_battery_platform_data_t *pdata = dev_get_platdata(&pdev->dev);
 	struct sec_battery_info *battery;
@@ -2084,7 +2084,7 @@ err_wake_lock:
 	return ret;
 }
 
-static int __devexit sec_battery_remove(struct platform_device *pdev)
+static int sec_battery_remove(struct platform_device *pdev)
 {
 	struct sec_battery_info *battery = platform_get_drvdata(pdev);
 	int i;
@@ -2178,7 +2178,7 @@ static struct platform_driver sec_battery_driver = {
 		   .shutdown = sec_battery_shutdown,
 		   },
 	.probe = sec_battery_probe,
-	.remove = __devexit_p(sec_battery_remove),
+	.remove = sec_battery_remove,
 };
 
 static int __init sec_battery_init(void)

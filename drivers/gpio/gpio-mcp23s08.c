@@ -474,7 +474,7 @@ fail:
 
 #ifdef CONFIG_I2C
 
-static int __devinit mcp230xx_probe(struct i2c_client *client,
+static int mcp230xx_probe(struct i2c_client *client,
 				    const struct i2c_device_id *id)
 {
 	struct mcp23s08_platform_data *pdata;
@@ -507,7 +507,7 @@ fail:
 	return status;
 }
 
-static int __devexit mcp230xx_remove(struct i2c_client *client)
+static int mcp230xx_remove(struct i2c_client *client)
 {
 	struct mcp23s08 *mcp = i2c_get_clientdata(client);
 	int status;
@@ -532,7 +532,7 @@ static struct i2c_driver mcp230xx_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= mcp230xx_probe,
-	.remove		= __devexit_p(mcp230xx_remove),
+	.remove		= mcp230xx_remove,
 	.id_table	= mcp230xx_id,
 };
 

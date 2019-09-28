@@ -326,7 +326,7 @@ static irqreturn_t cd_irq(int irq, void *data)
 };
 
 #ifdef CONFIG_OF
-static int __devinit
+static int
 sdhci_esdhc_imx_probe_dt(struct platform_device *pdev,
 			 struct esdhc_platform_data *boarddata)
 {
@@ -363,7 +363,7 @@ sdhci_esdhc_imx_probe_dt(struct platform_device *pdev,
 }
 #endif
 
-static int __devinit sdhci_esdhc_imx_probe(struct platform_device *pdev)
+static int sdhci_esdhc_imx_probe(struct platform_device *pdev)
 {
 	const struct of_device_id *of_id =
 			of_match_device(imx_esdhc_dt_ids, &pdev->dev);
@@ -493,7 +493,7 @@ err_imx_data:
 	return err;
 }
 
-static int __devexit sdhci_esdhc_imx_remove(struct platform_device *pdev)
+static int sdhci_esdhc_imx_remove(struct platform_device *pdev)
 {
 	struct sdhci_host *host = platform_get_drvdata(pdev);
 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
@@ -528,7 +528,7 @@ static struct platform_driver sdhci_esdhc_imx_driver = {
 	},
 	.id_table	= imx_esdhc_devtype,
 	.probe		= sdhci_esdhc_imx_probe,
-	.remove		= __devexit_p(sdhci_esdhc_imx_remove),
+	.remove		= sdhci_esdhc_imx_remove,
 #ifdef CONFIG_PM
 	.suspend	= sdhci_pltfm_suspend,
 	.resume		= sdhci_pltfm_resume,

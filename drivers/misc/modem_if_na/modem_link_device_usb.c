@@ -648,7 +648,7 @@ static void if_usb_disconnect(struct usb_interface *intf)
 	}
 }
 
-static int __devinit if_usb_probe(struct usb_interface *intf,
+static int if_usb_probe(struct usb_interface *intf,
 					const struct usb_device_id *id)
 {
 	struct usb_host_interface *data_desc;

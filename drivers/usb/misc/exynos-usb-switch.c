@@ -460,7 +460,7 @@ static int exynos_usbswitch_resume(struct device *dev)
 #define exynos_usbswitch_resume		NULL
 #endif
 
-static int __devinit exynos_usbswitch_probe(struct platform_device *pdev)
+static int exynos_usbswitch_probe(struct platform_device *pdev)
 {
 	struct s5p_usbswitch_platdata *pdata = dev_get_platdata(&pdev->dev);
 	struct device *dev = &pdev->dev;
@@ -582,7 +582,7 @@ fail:
 	return ret;
 }
 
-static int __devexit exynos_usbswitch_remove(struct platform_device *pdev)
+static int exynos_usbswitch_remove(struct platform_device *pdev)
 {
 	struct exynos_usb_switch *usb_switch = platform_get_drvdata(pdev);
 
@@ -607,7 +607,7 @@ static const struct dev_pm_ops exynos_usbswitch_pm_ops = {
 
 static struct platform_driver exynos_usbswitch_driver = {
 	.probe		= exynos_usbswitch_probe,
-	.remove		= __devexit_p(exynos_usbswitch_remove),
+	.remove		= exynos_usbswitch_remove,
 	.driver		= {
 		.name	= "exynos-usb-switch",
 		.owner	= THIS_MODULE,

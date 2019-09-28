@@ -364,7 +364,7 @@ static const struct v4l2_ioctl_ops maxiradio_ioctl_ops = {
 	.vidioc_s_ctrl      = vidioc_s_ctrl,
 };
 
-static int __devinit maxiradio_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+static int maxiradio_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
 	struct maxiradio *dev;
 	struct v4l2_device *v4l2_dev;
@@ -427,7 +427,7 @@ errfr:
 	return -ENODEV;
 }
 
-static void __devexit maxiradio_remove_one(struct pci_dev *pdev)
+static void maxiradio_remove_one(struct pci_dev *pdev)
 {
 	struct v4l2_device *v4l2_dev = dev_get_drvdata(&pdev->dev);
 	struct maxiradio *dev = to_maxiradio(v4l2_dev);
@@ -449,7 +449,7 @@ static struct pci_driver maxiradio_driver = {
 	.name		= "radio-maxiradio",
 	.id_table	= maxiradio_pci_tbl,
 	.probe		= maxiradio_init_one,
-	.remove		= __devexit_p(maxiradio_remove_one),
+	.remove		= maxiradio_remove_one,
 };
 
 static int __init maxiradio_radio_init(void)

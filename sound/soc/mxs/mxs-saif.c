@@ -752,7 +752,7 @@ failed_clk:
 	return ret;
 }
 
-static int __devexit mxs_saif_remove(struct platform_device *pdev)
+static int mxs_saif_remove(struct platform_device *pdev)
 {
 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	struct mxs_saif *saif = platform_get_drvdata(pdev);
@@ -773,7 +773,7 @@ static int __devexit mxs_saif_remove(struct platform_device *pdev)
 
 static struct platform_driver mxs_saif_driver = {
 	.probe = mxs_saif_probe,
-	.remove = __devexit_p(mxs_saif_remove),
+	.remove = mxs_saif_remove,
 
 	.driver = {
 		.name = "mxs-saif",

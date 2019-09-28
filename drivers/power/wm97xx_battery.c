@@ -163,7 +163,7 @@ static const struct dev_pm_ops wm97xx_bat_pm_ops = {
 };
 #endif
 
-static int __devinit wm97xx_bat_probe(struct platform_device *dev)
+static int wm97xx_bat_probe(struct platform_device *dev)
 {
 	int ret = 0;
 	int props = 1;	/* POWER_SUPPLY_PROP_PRESENT */
@@ -264,7 +264,7 @@ err:
 	return ret;
 }
 
-static int __devexit wm97xx_bat_remove(struct platform_device *dev)
+static int wm97xx_bat_remove(struct platform_device *dev)
 {
 	struct wm97xx_pdata *wmdata = dev->dev.platform_data;
 	struct wm97xx_batt_pdata *pdata = wmdata->batt_pdata;
@@ -288,7 +288,7 @@ static struct platform_driver wm97xx_bat_driver = {
 #endif
 	},
 	.probe		= wm97xx_bat_probe,
-	.remove		= __devexit_p(wm97xx_bat_remove),
+	.remove		= wm97xx_bat_remove,
 };
 
 static int __init wm97xx_bat_init(void)

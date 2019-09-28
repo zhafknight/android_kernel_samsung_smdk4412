@@ -226,7 +226,7 @@ static struct lcd_ops ltv_ops = {
 	.set_power	= ltv350qv_set_power,
 };
 
-static int __devinit ltv350qv_probe(struct spi_device *spi)
+static int ltv350qv_probe(struct spi_device *spi)
 {
 	struct ltv350qv *lcd;
 	struct lcd_device *ld;
@@ -268,7 +268,7 @@ out_free_lcd:
 	return ret;
 }
 
-static int __devexit ltv350qv_remove(struct spi_device *spi)
+static int ltv350qv_remove(struct spi_device *spi)
 {
 	struct ltv350qv *lcd = dev_get_drvdata(&spi->dev);
 
@@ -315,7 +315,7 @@ static struct spi_driver ltv350qv_driver = {
 	},
 
 	.probe		= ltv350qv_probe,
-	.remove		= __devexit_p(ltv350qv_remove),
+	.remove		= ltv350qv_remove,
 	.shutdown	= ltv350qv_shutdown,
 	.suspend	= ltv350qv_suspend,
 	.resume		= ltv350qv_resume,

@@ -88,7 +88,7 @@ static void dwc3_pci_put_device_id(struct dwc3_pci *glue, int id)
 	clear_bit(id, dwc3_pci_devs);
 }
 
-static int __devinit dwc3_pci_probe(struct pci_dev *pci,
+static int dwc3_pci_probe(struct pci_dev *pci,
 		const struct pci_device_id *id)
 {
 	struct resource		res[2];
@@ -175,7 +175,7 @@ err0:
 	return ret;
 }
 
-static void __devexit dwc3_pci_remove(struct pci_dev *pci)
+static void dwc3_pci_remove(struct pci_dev *pci)
 {
 	struct dwc3_pci	*glue = pci_get_drvdata(pci);
 
@@ -199,14 +199,14 @@ static struct pci_driver dwc3_pci_driver = {
 	.name		= "pci-dwc3",
 	.id_table	= dwc3_pci_id_table,
 	.probe		= dwc3_pci_probe,
-	.remove		= __devexit_p(dwc3_pci_remove),
+	.remove		= dwc3_pci_remove,
 };
 
 MODULE_AUTHOR("Felipe Balbi <balbi@ti.com>");
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("DesignWare USB3 PCI Glue Layer");
 
-static int __devinit dwc3_pci_init(void)
+static int dwc3_pci_init(void)
 {
 	return pci_register_driver(&dwc3_pci_driver);
 }

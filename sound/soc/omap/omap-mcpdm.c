@@ -225,7 +225,7 @@ static struct snd_soc_dai_driver omap_mcpdm_dai = {
 	.ops = &omap_mcpdm_dai_ops,
 };
 
-static __devinit int asoc_mcpdm_probe(struct platform_device *pdev)
+static int asoc_mcpdm_probe(struct platform_device *pdev)
 {
 	int ret;
 
@@ -238,7 +238,7 @@ static __devinit int asoc_mcpdm_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int __devexit asoc_mcpdm_remove(struct platform_device *pdev)
+static int asoc_mcpdm_remove(struct platform_device *pdev)
 {
 	snd_soc_unregister_dai(&pdev->dev);
 	omap_mcpdm_remove(pdev);
@@ -252,7 +252,7 @@ static struct platform_driver asoc_mcpdm_driver = {
 	},
 
 	.probe = asoc_mcpdm_probe,
-	.remove = __devexit_p(asoc_mcpdm_remove),
+	.remove = asoc_mcpdm_remove,
 };
 
 static int __init snd_omap_mcpdm_init(void)

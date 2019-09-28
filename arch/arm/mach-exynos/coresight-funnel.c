@@ -160,7 +160,7 @@ static void funnel_sysfs_exit(void)
 	kobject_put(funnel.kobj);
 }
 
-static int __devinit funnel_probe(struct platform_device *pdev)
+static int funnel_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct resource *res;

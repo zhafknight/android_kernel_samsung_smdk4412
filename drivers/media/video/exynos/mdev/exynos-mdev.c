@@ -26,7 +26,7 @@
 #include <media/media-device.h>
 #include <media/exynos_mc.h>
 
-static int __devinit mdev_probe(struct platform_device *pdev)
+static int mdev_probe(struct platform_device *pdev)
 {
 	struct v4l2_device *v4l2_dev;
 	struct exynos_md *mdev;
@@ -73,7 +73,7 @@ err_v4l2_reg:
 	return ret;
 }
 
-static int __devexit mdev_remove(struct platform_device *pdev)
+static int mdev_remove(struct platform_device *pdev)
 {
 	struct exynos_md *mdev = platform_get_drvdata(pdev);
 
@@ -87,7 +87,7 @@ static int __devexit mdev_remove(struct platform_device *pdev)
 
 static struct platform_driver mdev_driver = {
 	.probe		= mdev_probe,
-	.remove		= __devexit_p(mdev_remove),
+	.remove		= mdev_remove,
 	.driver = {
 		.name	= MDEV_MODULE_NAME,
 		.owner	= THIS_MODULE,

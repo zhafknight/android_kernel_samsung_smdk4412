@@ -1626,7 +1626,7 @@ void ngene_shutdown(struct pci_dev *pdev)
 /* device probe/remove calls ************************************************/
 /****************************************************************************/
 
-void __devexit ngene_remove(struct pci_dev *pdev)
+void ngene_remove(struct pci_dev *pdev)
 {
 	struct ngene *dev = pci_get_drvdata(pdev);
 	int i;
@@ -1642,7 +1642,7 @@ void __devexit ngene_remove(struct pci_dev *pdev)
 	pci_disable_device(pdev);
 }
 
-int __devinit ngene_probe(struct pci_dev *pci_dev,
+int ngene_probe(struct pci_dev *pci_dev,
 			  const struct pci_device_id *id)
 {
 	struct ngene *dev;

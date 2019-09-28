@@ -396,7 +396,7 @@ static inline int isp1704_test_ulpi(struct isp1704_charger *isp)
 	return -ENODEV;
 }
 
-static int __devinit isp1704_charger_probe(struct platform_device *pdev)
+static int isp1704_charger_probe(struct platform_device *pdev)
 {
 	struct isp1704_charger	*isp;
 	int			ret = -ENODEV;
@@ -473,7 +473,7 @@ fail0:
 	return ret;
 }
 
-static int __devexit isp1704_charger_remove(struct platform_device *pdev)
+static int isp1704_charger_remove(struct platform_device *pdev)
 {
 	struct isp1704_charger *isp = platform_get_drvdata(pdev);
 
@@ -491,7 +491,7 @@ static struct platform_driver isp1704_charger_driver = {
 		.name = "isp1704_charger",
 	},
 	.probe = isp1704_charger_probe,
-	.remove = __devexit_p(isp1704_charger_remove),
+	.remove = isp1704_charger_remove,
 };
 
 static int __init isp1704_charger_init(void)

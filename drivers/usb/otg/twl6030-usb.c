@@ -401,7 +401,7 @@ static int twl6030_set_host(struct otg_transceiver *x, struct usb_bus *host)
 	return 0;
 }
 
-static int __devinit twl6030_usb_probe(struct platform_device *pdev)
+static int twl6030_usb_probe(struct platform_device *pdev)
 {
 	struct twl6030_usb	*twl;
 	int			status, err;

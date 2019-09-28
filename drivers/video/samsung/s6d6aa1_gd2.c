@@ -773,7 +773,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit s6d6aa1_remove(struct device *dev)
+static int s6d6aa1_remove(struct device *dev)
 {
 	struct lcd_info *lcd = dev_get_drvdata(dev);
 
@@ -798,7 +798,7 @@ static void s6d6aa1_shutdown(struct device *dev)
 static struct mipi_lcd_driver s6d6aa1_mipi_driver = {
 	.name = "s6d6aa1",
 	.probe			= s6d6aa1_probe,
-	.remove			= __devexit_p(s6d6aa1_remove),
+	.remove			= s6d6aa1_remove,
 	.shutdown		= s6d6aa1_shutdown,
 };
 

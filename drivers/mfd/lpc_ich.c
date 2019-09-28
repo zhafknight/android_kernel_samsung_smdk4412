@@ -194,7 +194,7 @@ enum lpc_chipsets {
 	LPC_LPT,	/* Lynx Point */
 };
 
-struct lpc_ich_info lpc_chipset_info[] __devinitdata = {
+struct lpc_ich_info lpc_chipset_info[] = {
 	[LPC_ICH] = {
 		.name = "ICH",
 		.iTCO_version = 1,
@@ -658,7 +658,7 @@ static void lpc_ich_restore_config_space(struct pci_dev *dev)
 	}
 }
 
-static void __devinit lpc_ich_enable_acpi_space(struct pci_dev *dev)
+static void lpc_ich_enable_acpi_space(struct pci_dev *dev)
 {
 	u8 reg_save;
 
@@ -667,7 +667,7 @@ static void __devinit lpc_ich_enable_acpi_space(struct pci_dev *dev)
 	lpc_ich_acpi_save = reg_save;
 }
 
-static void __devinit lpc_ich_enable_gpio_space(struct pci_dev *dev)
+static void lpc_ich_enable_gpio_space(struct pci_dev *dev)
 {
 	u8 reg_save;
 
@@ -676,14 +676,14 @@ static void __devinit lpc_ich_enable_gpio_space(struct pci_dev *dev)
 	lpc_ich_gpio_save = reg_save;
 }
 
-static void __devinit lpc_ich_finalize_cell(struct mfd_cell *cell,
+static void lpc_ich_finalize_cell(struct mfd_cell *cell,
 					const struct pci_device_id *id)
 {
 	cell->platform_data = &lpc_chipset_info[id->driver_data];
 	cell->pdata_size = sizeof(struct lpc_ich_info);
 }
 
-static int __devinit lpc_ich_init_gpio(struct pci_dev *dev,
+static int lpc_ich_init_gpio(struct pci_dev *dev,
 				const struct pci_device_id *id)
 {
 	u32 base_addr_cfg;
@@ -759,7 +759,7 @@ gpio_done:
 	return ret;
 }
 
-static int __devinit lpc_ich_init_wdt(struct pci_dev *dev,
+static int lpc_ich_init_wdt(struct pci_dev *dev,
 				const struct pci_device_id *id)
 {
 	u32 base_addr_cfg;
@@ -831,7 +831,7 @@ wdt_done:
 	return ret;
 }
 
-static int __devinit lpc_ich_probe(struct pci_dev *dev,
+static int lpc_ich_probe(struct pci_dev *dev,
 				const struct pci_device_id *id)
 {
 	int ret;
@@ -857,7 +857,7 @@ static int __devinit lpc_ich_probe(struct pci_dev *dev,
 	return 0;
 }
 
-static void __devexit lpc_ich_remove(struct pci_dev *dev)
+static void lpc_ich_remove(struct pci_dev *dev)
 {
 	mfd_remove_devices(&dev->dev);
 	lpc_ich_restore_config_space(dev);
@@ -867,7 +867,7 @@ static struct pci_driver lpc_ich_driver = {
 	.name		= "lpc_ich",
 	.id_table	= lpc_ich_ids,
 	.probe		= lpc_ich_probe,
-	.remove		= __devexit_p(lpc_ich_remove),
+	.remove		= lpc_ich_remove,
 };
 
 static int __init lpc_ich_init(void)

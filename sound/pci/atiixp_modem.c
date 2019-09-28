@@ -988,7 +988,7 @@ static struct atiixp_dma_ops snd_atiixp_capture_dma_ops = {
 	.flush_dma = atiixp_in_flush_dma,
 };
 
-static int __devinit snd_atiixp_pcm_new(struct atiixp_modem *chip)
+static int snd_atiixp_pcm_new(struct atiixp_modem *chip)
 {
 	struct snd_pcm *pcm;
 	int err;
@@ -1061,7 +1061,7 @@ static irqreturn_t snd_atiixp_interrupt(int irq, void *dev_id)
  * ac97 mixer section
  */
 
-static int __devinit snd_atiixp_mixer_new(struct atiixp_modem *chip, int clock)
+static int snd_atiixp_mixer_new(struct atiixp_modem *chip, int clock)
 {
 	struct snd_ac97_bus *pbus;
 	struct snd_ac97_template ac97;
@@ -1180,7 +1180,7 @@ static void snd_atiixp_proc_read(struct snd_info_entry *entry,
 		snd_iprintf(buffer, "%02x: %08x\n", i, readl(chip->remap_addr + i));
 }
 
-static void __devinit snd_atiixp_proc_init(struct atiixp_modem *chip)
+static void snd_atiixp_proc_init(struct atiixp_modem *chip)
 {
 	struct snd_info_entry *entry;
 
@@ -1222,7 +1222,7 @@ static int snd_atiixp_dev_free(struct snd_device *device)
 /*
  * constructor for chip instance
  */
-static int __devinit snd_atiixp_create(struct snd_card *card,
+static int snd_atiixp_create(struct snd_card *card,
 				       struct pci_dev *pci,
 				       struct atiixp_modem **r_chip)
 {
@@ -1281,7 +1281,7 @@ static int __devinit snd_atiixp_create(struct snd_card *card,
 }
 
 
-static int __devinit snd_atiixp_probe(struct pci_dev *pci,
+static int snd_atiixp_probe(struct pci_dev *pci,
 				      const struct pci_device_id *pci_id)
 {
 	struct snd_card *card;
@@ -1325,7 +1325,7 @@ static int __devinit snd_atiixp_probe(struct pci_dev *pci,
 	return err;
 }
 
-static void __devexit snd_atiixp_remove(struct pci_dev *pci)
+static void snd_atiixp_remove(struct pci_dev *pci)
 {
 	snd_card_free(pci_get_drvdata(pci));
 	pci_set_drvdata(pci, NULL);
@@ -1335,7 +1335,7 @@ static struct pci_driver driver = {
 	.name = "ATI IXP MC97 controller",
 	.id_table = snd_atiixp_ids,
 	.probe = snd_atiixp_probe,
-	.remove = __devexit_p(snd_atiixp_remove),
+	.remove = snd_atiixp_remove,
 #ifdef CONFIG_PM
 	.suspend = snd_atiixp_suspend,
 	.resume = snd_atiixp_resume,

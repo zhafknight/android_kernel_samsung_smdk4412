@@ -51,7 +51,7 @@ static struct platform_device *device;
 /*
  */
 
-static int __devinit snd_pmac_probe(struct platform_device *devptr)
+static int snd_pmac_probe(struct platform_device *devptr)
 {
 	struct snd_card *card;
 	struct snd_pmac *chip;
@@ -136,7 +136,7 @@ __error:
 }
 
 
-static int __devexit snd_pmac_remove(struct platform_device *devptr)
+static int snd_pmac_remove(struct platform_device *devptr)
 {
 	snd_card_free(platform_get_drvdata(devptr));
 	platform_set_drvdata(devptr, NULL);
@@ -163,7 +163,7 @@ static int snd_pmac_driver_resume(struct platform_device *devptr)
 
 static struct platform_driver snd_pmac_driver = {
 	.probe		= snd_pmac_probe,
-	.remove		= __devexit_p(snd_pmac_remove),
+	.remove		= snd_pmac_remove,
 #ifdef CONFIG_PM
 	.suspend	= snd_pmac_driver_suspend,
 	.resume		= snd_pmac_driver_resume,

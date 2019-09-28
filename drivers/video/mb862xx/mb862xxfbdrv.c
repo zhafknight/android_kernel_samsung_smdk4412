@@ -667,7 +667,7 @@ static int mb862xx_gdc_init(struct mb862xxfb_par *par)
 	return 0;
 }
 
-static int __devinit of_platform_mb862xx_probe(struct platform_device *ofdev)
+static int of_platform_mb862xx_probe(struct platform_device *ofdev)
 {
 	struct device_node *np = ofdev->dev.of_node;
 	struct device *dev = &ofdev->dev;
@@ -785,7 +785,7 @@ fbrel:
 	return ret;
 }
 
-static int __devexit of_platform_mb862xx_remove(struct platform_device *ofdev)
+static int of_platform_mb862xx_remove(struct platform_device *ofdev)
 {
 	struct fb_info *fbi = dev_get_drvdata(&ofdev->dev);
 	struct mb862xxfb_par *par = fbi->par;
@@ -822,7 +822,7 @@ static int __devexit of_platform_mb862xx_remove(struct platform_device *ofdev)
 /*
  * common types
  */
-static struct of_device_id __devinitdata of_platform_mb862xx_tbl[] = {
+static struct of_device_id of_platform_mb862xx_tbl[] = {
 	{ .compatible = "fujitsu,MB86276", },
 	{ .compatible = "fujitsu,lime", },
 	{ .compatible = "fujitsu,MB86277", },
@@ -840,7 +840,7 @@ static struct platform_driver of_platform_mb862xxfb_driver = {
 		.of_match_table = of_platform_mb862xx_tbl,
 	},
 	.probe		= of_platform_mb862xx_probe,
-	.remove		= __devexit_p(of_platform_mb862xx_remove),
+	.remove		= of_platform_mb862xx_remove,
 };
 #endif
 
@@ -983,7 +983,7 @@ static inline int mb862xx_pci_gdc_init(struct mb862xxfb_par *par)
 #define CHIP_ID(id)	\
 	{ PCI_DEVICE(PCI_VENDOR_ID_FUJITSU_LIMITED, id) }
 
-static struct pci_device_id mb862xx_pci_tbl[] __devinitdata = {
+static struct pci_device_id mb862xx_pci_tbl[] = {
 	/* MB86295/MB86296 */
 	CHIP_ID(PCI_DEVICE_ID_FUJITSU_CORALP),
 	CHIP_ID(PCI_DEVICE_ID_FUJITSU_CORALPA),
@@ -994,7 +994,7 @@ static struct pci_device_id mb862xx_pci_tbl[] __devinitdata = {
 
 MODULE_DEVICE_TABLE(pci, mb862xx_pci_tbl);
 
-static int __devinit mb862xx_pci_probe(struct pci_dev *pdev,
+static int mb862xx_pci_probe(struct pci_dev *pdev,
 				       const struct pci_device_id *ent)
 {
 	struct mb862xxfb_par *par;
@@ -1128,7 +1128,7 @@ out:
 	return ret;
 }
 
-static void __devexit mb862xx_pci_remove(struct pci_dev *pdev)
+static void mb862xx_pci_remove(struct pci_dev *pdev)
 {
 	struct fb_info *fbi = pci_get_drvdata(pdev);
 	struct mb862xxfb_par *par = fbi->par;
@@ -1169,11 +1169,11 @@ static struct pci_driver mb862xxfb_pci_driver = {
 	.name		= DRV_NAME,
 	.id_table	= mb862xx_pci_tbl,
 	.probe		= mb862xx_pci_probe,
-	.remove		= __devexit_p(mb862xx_pci_remove),
+	.remove		= mb862xx_pci_remove,
 };
 #endif
 
-static int __devinit mb862xxfb_init(void)
+static int mb862xxfb_init(void)
 {
 	int ret = -ENODEV;
 

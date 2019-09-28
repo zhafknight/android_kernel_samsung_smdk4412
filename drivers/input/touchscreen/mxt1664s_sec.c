@@ -1396,7 +1396,7 @@ static struct attribute_group libmaxtouch_attr_group = {
 	.attrs = libmaxtouch_attributes,
 };
 
-int  __devinit mxt_sysfs_init(struct i2c_client *client)
+int  mxt_sysfs_init(struct i2c_client *client)
 {
 	struct mxt_data *data = i2c_get_clientdata(client);
 	int i;

@@ -596,7 +596,7 @@ static int palmas_ldo_init(struct palmas *palmas, int id,
 	return 0;
 }
 
-static __devinit int palmas_probe(struct platform_device *pdev)
+static int palmas_probe(struct platform_device *pdev)
 {
 	struct palmas *palmas = dev_get_drvdata(pdev->dev.parent);
 	struct palmas_pmic_platform_data *pdata = pdev->dev.platform_data;
@@ -781,7 +781,7 @@ err_unregister_regulator:
 	return ret;
 }
 
-static int __devexit palmas_remove(struct platform_device *pdev)
+static int palmas_remove(struct platform_device *pdev)
 {
 	struct palmas_pmic *pmic = platform_get_drvdata(pdev);
 	int id;
@@ -801,7 +801,7 @@ static struct platform_driver palmas_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = palmas_probe,
-	.remove = __devexit_p(palmas_remove),
+	.remove = palmas_remove,
 };
 
 static int __init palmas_init(void)

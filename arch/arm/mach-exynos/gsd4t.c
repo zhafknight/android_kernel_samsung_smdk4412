@@ -93,7 +93,7 @@ static const struct rfkill_ops gsd4t_rfkill_ops = {
 	.set_block = gsd4t_set_block,
 };
 
-static int __devinit gsd4t_probe(struct platform_device *dev)
+static int gsd4t_probe(struct platform_device *dev)
 {
 	struct gsd4t_platform_data *pdata;
 	struct gsd4t_data *bd;
@@ -223,7 +223,7 @@ err_invalid_pin1:
 	return ret;
 }
 
-static int __devexit gsd4t_remove(struct platform_device *dev)
+static int gsd4t_remove(struct platform_device *dev)
 {
 	struct gsd4t_data *bd = platform_get_drvdata(dev);
 	struct gsd4t_platform_data *pdata = bd->pdata;
@@ -273,7 +273,7 @@ static int gsd4t_resume(struct platform_device *dev)
 
 static struct platform_driver gsd4t_driver = {
 	.probe		= gsd4t_probe,
-	.remove		= __devexit_p(gsd4t_remove),
+	.remove		= gsd4t_remove,
 	.suspend	= gsd4t_suspend,
 	.resume		= gsd4t_resume,
 	.driver	= {

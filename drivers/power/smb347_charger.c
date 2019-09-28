@@ -450,7 +450,7 @@ err_pdata:
 	return ret;
 }
 
-static int __devexit smb347_remove(struct i2c_client *client)
+static int smb347_remove(struct i2c_client *client)
 {
 	struct smb347_chg_data *chg = i2c_get_clientdata(client);
 

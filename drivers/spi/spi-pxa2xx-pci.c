@@ -50,7 +50,7 @@ void pxa_ssp_free(struct ssp_device *ssp)
 }
 EXPORT_SYMBOL_GPL(pxa_ssp_free);
 
-static int __devinit ce4100_spi_probe(struct pci_dev *dev,
+static int ce4100_spi_probe(struct pci_dev *dev,
 		const struct pci_device_id *ent)
 {
 	int ret;
@@ -128,7 +128,7 @@ err_nomem:
 	return ret;
 }
 
-static void __devexit ce4100_spi_remove(struct pci_dev *dev)
+static void ce4100_spi_remove(struct pci_dev *dev)
 {
 	struct ce4100_info *spi_info;
 	struct ssp_device *ssp;
@@ -150,7 +150,7 @@ static void __devexit ce4100_spi_remove(struct pci_dev *dev)
 	kfree(spi_info);
 }
 
-static struct pci_device_id ce4100_spi_devices[] __devinitdata = {
+static struct pci_device_id ce4100_spi_devices[] = {
 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2e6a) },
 	{ },
 };
@@ -160,7 +160,7 @@ static struct pci_driver ce4100_spi_driver = {
 	.name           = "ce4100_spi",
 	.id_table       = ce4100_spi_devices,
 	.probe          = ce4100_spi_probe,
-	.remove         = __devexit_p(ce4100_spi_remove),
+	.remove         = ce4100_spi_remove,
 };
 
 static int __init ce4100_spi_init(void)

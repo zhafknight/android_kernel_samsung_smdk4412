@@ -613,7 +613,7 @@ static void bq20z75_delayed_work(struct work_struct *work)
 	}
 }
 
-static int __devinit bq20z75_probe(struct i2c_client *client,
+static int bq20z75_probe(struct i2c_client *client,
 	const struct i2c_device_id *id)
 {
 	struct bq20z75_info *bq20z75_device;
@@ -717,7 +717,7 @@ exit_psupply:
 	return rc;
 }
 
-static int __devexit bq20z75_remove(struct i2c_client *client)
+static int bq20z75_remove(struct i2c_client *client)
 {
 	struct bq20z75_info *bq20z75_device = i2c_get_clientdata(client);
 
@@ -769,7 +769,7 @@ MODULE_DEVICE_TABLE(i2c, bq20z75_id);
 
 static struct i2c_driver bq20z75_battery_driver = {
 	.probe		= bq20z75_probe,
-	.remove		= __devexit_p(bq20z75_remove),
+	.remove		= bq20z75_remove,
 	.suspend	= bq20z75_suspend,
 	.resume		= bq20z75_resume,
 	.id_table	= bq20z75_id,

@@ -247,7 +247,7 @@ static struct input_handler input_bridge_handler = {
 	.name = "sec-input-bridge",
 };
 
-static int __devinit sec_input_bridge_probe(struct platform_device *dev)
+static int sec_input_bridge_probe(struct platform_device *dev)
 {
 	struct sec_input_bridge_platform_data *pdata;
 	struct sec_input_bridge *bridge;
@@ -329,7 +329,7 @@ static int __devinit sec_input_bridge_probe(struct platform_device *dev)
 
 }
 
-static int __devexit sec_input_bridge_remove(struct platform_device *dev)
+static int sec_input_bridge_remove(struct platform_device *dev)
 {
 	struct sec_input_bridge *bridge = platform_get_drvdata(dev);
 
@@ -362,7 +362,7 @@ static int sec_input_bridge_resume(struct platform_device *dev)
 
 static struct platform_driver sec_input_bridge_driver = {
 	.probe = sec_input_bridge_probe,
-	.remove = __devexit_p(sec_input_bridge_remove),
+	.remove = sec_input_bridge_remove,
 	.suspend = sec_input_bridge_suspend,
 	.resume = sec_input_bridge_resume,
 	.driver = {

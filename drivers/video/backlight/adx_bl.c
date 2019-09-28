@@ -69,7 +69,7 @@ static const struct backlight_ops adx_backlight_ops = {
 	.check_fb = adx_backlight_check_fb,
 };
 
-static int __devinit adx_backlight_probe(struct platform_device *pdev)
+static int adx_backlight_probe(struct platform_device *pdev)
 {
 	struct backlight_properties props;
 	struct backlight_device *bldev;
@@ -122,7 +122,7 @@ out:
 	return ret;
 }
 
-static int __devexit adx_backlight_remove(struct platform_device *pdev)
+static int adx_backlight_remove(struct platform_device *pdev)
 {
 	struct backlight_device *bldev;
 	int ret = 0;
@@ -155,7 +155,7 @@ static int adx_backlight_resume(struct platform_device *pdev)
 
 static struct platform_driver adx_backlight_driver = {
 	.probe = adx_backlight_probe,
-	.remove = __devexit_p(adx_backlight_remove),
+	.remove = adx_backlight_remove,
 	.suspend = adx_backlight_suspend,
 	.resume = adx_backlight_resume,
 	.driver = {

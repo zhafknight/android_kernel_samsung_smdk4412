@@ -385,7 +385,7 @@ out:
 	return ret;
 }
 
-static void __devinit mxt_make_reportid_table(struct mxt_data *data)
+static void mxt_make_reportid_table(struct mxt_data *data)
 {
 	struct mxt_object *objects = data->objects;
 	int i, j;
@@ -1789,7 +1789,7 @@ out:
 	release_firmware(fw);
 }
 
-static int __devinit mxt_touch_init(struct mxt_data *data, bool nowait)
+static int mxt_touch_init(struct mxt_data *data, bool nowait)
 {
 	struct i2c_client *client = data->client;
 	const char *firmware_name = data->pdata->firmware_name ?: MXT_FW_NAME;
@@ -1938,7 +1938,7 @@ static int mxt_resume(struct device *dev)
  */
 #include "mxt540s_sec.c"
 
-static int __devinit mxt_probe(struct i2c_client *client,
+static int mxt_probe(struct i2c_client *client,
 		const struct i2c_device_id *id)
 {
 	const struct mxt_platform_data *pdata = client->dev.platform_data;
@@ -2070,7 +2070,7 @@ err_alloc_dev:
 	return ret;
 }
 
-static int __devexit mxt_remove(struct i2c_client *client)
+static int mxt_remove(struct i2c_client *client)
 {
 	struct mxt_data *data = i2c_get_clientdata(client);
 
@@ -2104,7 +2104,7 @@ static const struct dev_pm_ops mxt_pm_ops = {
 static struct i2c_driver mxt_i2c_driver = {
 	.id_table = mxt_idtable,
 	.probe = mxt_probe,
-	.remove = __devexit_p(mxt_remove),
+	.remove = mxt_remove,
 	.driver = {
 		.owner	= THIS_MODULE,
 		.name	= MXT_DEV_NAME,

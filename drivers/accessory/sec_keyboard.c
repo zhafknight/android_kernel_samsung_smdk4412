@@ -352,7 +352,7 @@ static void keyboard_late_resume(struct early_suspend *early_sus)
 
 }
 #endif
-static int __devinit sec_keyboard_probe(struct platform_device *pdev)
+static int sec_keyboard_probe(struct platform_device *pdev)
 {
 	struct sec_keyboard_platform_data *pdata = pdev->dev.platform_data;
 	struct sec_keyboard_drvdata *ddata;
@@ -487,7 +487,7 @@ err_free_mem:
 
 }
 
-static int __devexit sec_keyboard_remove(struct platform_device *pdev)
+static int sec_keyboard_remove(struct platform_device *pdev)
 {
 	struct sec_keyboard_drvdata *data = platform_get_drvdata(pdev);
 	input_unregister_device(data->input_dev);
@@ -522,7 +522,7 @@ static int sec_keyboard_resume(struct platform_device *pdev)
 
 static struct platform_driver sec_keyboard_driver = {
 	.probe = sec_keyboard_probe,
-	.remove = __devexit_p(sec_keyboard_remove),
+	.remove = sec_keyboard_remove,
 #ifndef CONFIG_HAS_EARLYSUSPEND
 	.suspend = sec_keyboard_suspend,
 	.resume	= sec_keyboard_resume,

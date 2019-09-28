@@ -210,7 +210,7 @@ asm(".text                          \n\t"
  *	0        :  SUCCESS
  *	<0       :  FAILURE
  */
-static int __devinit cru_detect(unsigned long map_entry,
+static int cru_detect(unsigned long map_entry,
 	unsigned long map_offset)
 {
 	void *bios32_map;
@@ -267,7 +267,7 @@ static int __devinit cru_detect(unsigned long map_entry,
 /*
  *	bios_checksum
  */
-static int __devinit bios_checksum(const char __iomem *ptr, int len)
+static int bios_checksum(const char __iomem *ptr, int len)
 {
 	char sum = 0;
 	int i;
@@ -292,7 +292,7 @@ static int __devinit bios_checksum(const char __iomem *ptr, int len)
  *	0        :  SUCCESS
  *	<0       :  FAILURE
  */
-static int __devinit bios32_present(const char __iomem *p)
+static int bios32_present(const char __iomem *p)
 {
 	struct bios32_service_dir *bios_32_ptr;
 	int length;
@@ -322,7 +322,7 @@ static int __devinit bios32_present(const char __iomem *p)
 	return -ENODEV;
 }
 
-static int __devinit detect_cru_service(void)
+static int detect_cru_service(void)
 {
 	char __iomem *p, *q;
 	int rc = -1;
@@ -394,7 +394,7 @@ asm(".text                      \n\t"
  *	This function checks whether or not a SMBIOS/DMI record is
  *	the 64bit CRU info or not
  */
-static void __devinit dmi_find_cru(const struct dmi_header *dm, void *dummy)
+static void dmi_find_cru(const struct dmi_header *dm, void *dummy)
 {
 	struct smbios_cru64_info *smbios_cru64_ptr;
 	unsigned long cru_physical_address;
@@ -413,7 +413,7 @@ static void __devinit dmi_find_cru(const struct dmi_header *dm, void *dummy)
 	}
 }
 
-static int __devinit detect_cru_service(void)
+static int detect_cru_service(void)
 {
 	cru_rom_addr = NULL;
 
@@ -661,7 +661,7 @@ static struct notifier_block die_notifier = {
 
 #ifdef CONFIG_HPWDT_NMI_DECODING
 #ifdef CONFIG_X86_LOCAL_APIC
-static void __devinit hpwdt_check_nmi_decoding(struct pci_dev *dev)
+static void hpwdt_check_nmi_decoding(struct pci_dev *dev)
 {
 	/*
 	 * If nmi_watchdog is turned off then we can turn on
@@ -670,7 +670,7 @@ static void __devinit hpwdt_check_nmi_decoding(struct pci_dev *dev)
 	hpwdt_nmi_decoding = 1;
 }
 #else
-static void __devinit hpwdt_check_nmi_decoding(struct pci_dev *dev)
+static void hpwdt_check_nmi_decoding(struct pci_dev *dev)
 {
 	dev_warn(&dev->dev, "NMI decoding is disabled. "
 		"Your kernel does not support a NMI Watchdog.\n");
@@ -685,7 +685,7 @@ static void __devinit hpwdt_check_nmi_decoding(struct pci_dev *dev)
  *	This check is independent of architecture and needs to be made for
  *	any ProLiant system.
  */
-static void __devinit dmi_find_icru(const struct dmi_header *dm, void *dummy)
+static void dmi_find_icru(const struct dmi_header *dm, void *dummy)
 {
 	struct smbios_proliant_info *smbios_proliant_ptr;
 
@@ -696,7 +696,7 @@ static void __devinit dmi_find_icru(const struct dmi_header *dm, void *dummy)
 	}
 }
 
-static int __devinit hpwdt_init_nmi_decoding(struct pci_dev *dev)
+static int hpwdt_init_nmi_decoding(struct pci_dev *dev)
 {
 	int retval;
 
@@ -768,11 +768,11 @@ static void hpwdt_exit_nmi_decoding(void)
 		iounmap(cru_rom_addr);
 }
 #else /* !CONFIG_HPWDT_NMI_DECODING */
-static void __devinit hpwdt_check_nmi_decoding(struct pci_dev *dev)
+static void hpwdt_check_nmi_decoding(struct pci_dev *dev)
 {
 }
 
-static int __devinit hpwdt_init_nmi_decoding(struct pci_dev *dev)
+static int hpwdt_init_nmi_decoding(struct pci_dev *dev)
 {
 	return 0;
 }
@@ -782,7 +782,7 @@ static void hpwdt_exit_nmi_decoding(void)
 }
 #endif /* CONFIG_HPWDT_NMI_DECODING */
 
-static int __devinit hpwdt_init_one(struct pci_dev *dev,
+static int hpwdt_init_one(struct pci_dev *dev,
 					const struct pci_device_id *ent)
 {
 	int retval;
@@ -851,7 +851,7 @@ error_pci_iomap:
 	return retval;
 }
 
-static void __devexit hpwdt_exit(struct pci_dev *dev)
+static void hpwdt_exit(struct pci_dev *dev)
 {
 	if (!nowayout)
 		hpwdt_stop();
@@ -866,7 +866,7 @@ static struct pci_driver hpwdt_driver = {
 	.name = "hpwdt",
 	.id_table = hpwdt_devices,
 	.probe = hpwdt_init_one,
-	.remove = __devexit_p(hpwdt_exit),
+	.remove = hpwdt_exit,
 };
 
 MODULE_AUTHOR("Tom Mingarelli");

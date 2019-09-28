@@ -511,7 +511,7 @@ err_exit:
 	return err;
 }
 
-static int __devinit bh1721fvc_probe(struct i2c_client *client,
+static int bh1721fvc_probe(struct i2c_client *client,
 					const struct i2c_device_id *id)
 {
 	int err = 0;

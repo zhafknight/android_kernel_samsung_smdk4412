@@ -116,7 +116,7 @@ static struct fb_ops dn_fb_ops = {
 	.fb_imageblit	= cfb_imageblit,
 };
 
-struct fb_var_screeninfo dnfb_var __devinitdata = {
+struct fb_var_screeninfo dnfb_var = {
 	.xres		= 1280,
 	.yres		= 1024,
 	.xres_virtual	= 2048,
@@ -127,7 +127,7 @@ struct fb_var_screeninfo dnfb_var __devinitdata = {
 	.vmode		= FB_VMODE_NONINTERLACED,
 };
 
-static struct fb_fix_screeninfo dnfb_fix __devinitdata = {
+static struct fb_fix_screeninfo dnfb_fix = {
 	.id		= "Apollo Mono",
 	.smem_start	= (FRAME_BUFFER_START + IO_BASE),
 	.smem_len	= FRAME_BUFFER_LEN,
@@ -225,7 +225,7 @@ void dnfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
  * Initialization
  */
 
-static int __devinit dnfb_probe(struct platform_device *dev)
+static int dnfb_probe(struct platform_device *dev)
 {
 	struct fb_info *info;
 	int err = 0;

@@ -1739,7 +1739,7 @@ static int rt5631_i2c_probe(struct i2c_client *i2c,
 	return ret;
 }
 
-static __devexit int rt5631_i2c_remove(struct i2c_client *client)
+static int rt5631_i2c_remove(struct i2c_client *client)
 {
 	snd_soc_unregister_codec(&client->dev);
 	kfree(i2c_get_clientdata(client));
@@ -1752,7 +1752,7 @@ static struct i2c_driver rt5631_i2c_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = rt5631_i2c_probe,
-	.remove   = __devexit_p(rt5631_i2c_remove),
+	.remove   = rt5631_i2c_remove,
 	.id_table = rt5631_i2c_id,
 };
 

@@ -71,7 +71,7 @@ static void gpio_ext_set_value(struct netxbig_gpio_ext *gpio_ext,
 	spin_unlock_irqrestore(&gpio_ext_lock, flags);
 }
 
-static int __devinit gpio_ext_init(struct netxbig_gpio_ext *gpio_ext)
+static int gpio_ext_init(struct netxbig_gpio_ext *gpio_ext)
 {
 	int err;
 	int i;
@@ -124,7 +124,7 @@ err_free_addr:
 	return err;
 }
 
-static void __devexit gpio_ext_free(struct netxbig_gpio_ext *gpio_ext)
+static void gpio_ext_free(struct netxbig_gpio_ext *gpio_ext)
 {
 	int i;
 
@@ -306,14 +306,14 @@ static ssize_t netxbig_led_sata_show(struct device *dev,
 
 static DEVICE_ATTR(sata, 0644, netxbig_led_sata_show, netxbig_led_sata_store);
 
-static void __devexit delete_netxbig_led(struct netxbig_led_data *led_dat)
+static void delete_netxbig_led(struct netxbig_led_data *led_dat)
 {
 	if (led_dat->mode_val[NETXBIG_LED_SATA] != NETXBIG_LED_INVALID_MODE)
 		device_remove_file(led_dat->cdev.dev, &dev_attr_sata);
 	led_classdev_unregister(&led_dat->cdev);
 }
 
-static int __devinit
+static int
 create_netxbig_led(struct platform_device *pdev,
 		   struct netxbig_led_data *led_dat,
 		   const struct netxbig_led *template)
@@ -364,7 +364,7 @@ create_netxbig_led(struct platform_device *pdev,
 	return ret;
 }
 
-static int __devinit netxbig_led_probe(struct platform_device *pdev)
+static int netxbig_led_probe(struct platform_device *pdev)
 {
 	struct netxbig_led_platform_data *pdata = pdev->dev.platform_data;
 	struct netxbig_led_data *leds_data;
@@ -404,7 +404,7 @@ err_free_data:
 	return ret;
 }
 
-static int __devexit netxbig_led_remove(struct platform_device *pdev)
+static int netxbig_led_remove(struct platform_device *pdev)
 {
 	struct netxbig_led_platform_data *pdata = pdev->dev.platform_data;
 	struct netxbig_led_data *leds_data;
@@ -423,7 +423,7 @@ static int __devexit netxbig_led_remove(struct platform_device *pdev)
 
 static struct platform_driver netxbig_led_driver = {
 	.probe		= netxbig_led_probe,
-	.remove		= __devexit_p(netxbig_led_remove),
+	.remove		= netxbig_led_remove,
 	.driver		= {
 		.name	= "leds-netxbig",
 		.owner	= THIS_MODULE,

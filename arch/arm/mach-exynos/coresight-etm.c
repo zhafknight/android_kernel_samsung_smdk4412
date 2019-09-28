@@ -1183,7 +1183,7 @@ static int __init etm_arch_init(void)
 	return 0;
 }
 
-static int __devinit etm_probe(struct platform_device *pdev)
+static int etm_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct resource *res;

@@ -293,7 +293,7 @@ static ssize_t check_ir_show(struct device *dev, struct device_attribute *attr,
 
 static DEVICE_ATTR(check_ir, 0664, check_ir_show, NULL);
 
-static int __devinit ir_remocon_probe(struct platform_device *pdev)
+static int ir_remocon_probe(struct platform_device *pdev)
 {
 	struct ir_remocon_data *data = pdev->dev.platform_data;
 	struct ir_remocon_data *data1 = pdev->dev.platform_data;
@@ -364,7 +364,7 @@ static int __devinit ir_remocon_probe(struct platform_device *pdev)
 
 }
 
-static int __devexit ir_remocon_remove(struct platform_device *pdev)
+static int ir_remocon_remove(struct platform_device *pdev)
 {
 	return 0;
 }
@@ -383,7 +383,7 @@ static int ir_remocon_resume(struct platform_device *pdev)
 
 static struct platform_driver ir_remocon_device_driver = {
 	.probe = ir_remocon_probe,
-	.remove = __devexit_p(ir_remocon_remove),
+	.remove = ir_remocon_remove,
 #ifdef CONFIG_PM
 	.suspend = ir_remocon_suspend,
 	.resume = ir_remocon_resume,

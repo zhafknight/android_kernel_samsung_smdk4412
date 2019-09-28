@@ -128,7 +128,7 @@
 /*          - Add Extended DCDB Commands for Tape Support in 5I              */
 /* 5.10.12  - use pci_dma interfaces, update for 2.5 kernel changes          */
 /* 5.10.15  - remove unused code (sem, macros, etc.)                         */
-/* 5.30.00  - use __devexit_p()                                              */
+/* 5.30.00  - use                                               */
 /* 6.00.00  - Add 6x Adapters and Battery Flash                              */
 /* 6.10.00  - Remove 1G Addressing Limitations                               */
 /* 6.11.xx  - Get VersionInfo buffer off the stack !              DDTS 60401 */

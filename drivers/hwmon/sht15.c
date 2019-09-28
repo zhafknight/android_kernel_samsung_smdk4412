@@ -881,7 +881,7 @@ static int sht15_invalidate_voltage(struct notifier_block *nb,
 	return NOTIFY_OK;
 }
 
-static int __devinit sht15_probe(struct platform_device *pdev)
+static int sht15_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 	struct sht15_data *data = kzalloc(sizeof(*data), GFP_KERNEL);
@@ -1011,7 +1011,7 @@ error_ret:
 	return ret;
 }
 
-static int __devexit sht15_remove(struct platform_device *pdev)
+static int sht15_remove(struct platform_device *pdev)
 {
 	struct sht15_data *data = platform_get_drvdata(pdev);
 
@@ -1042,7 +1042,7 @@ static int __devexit sht15_remove(struct platform_device *pdev)
 }
 
 /*
- * sht_drivers simultaneously refers to __devinit and __devexit function
+ * sht_drivers simultaneously refers to and function
  * which causes spurious section mismatch warning. So use __refdata to
  * get rid from this.
  */
@@ -1053,35 +1053,35 @@ static struct platform_driver __refdata sht_drivers[] = {
 			.owner = THIS_MODULE,
 		},
 		.probe = sht15_probe,
-		.remove = __devexit_p(sht15_remove),
+		.remove = sht15_remove,
 	}, {
 		.driver = {
 			.name = "sht11",
 			.owner = THIS_MODULE,
 		},
 		.probe = sht15_probe,
-		.remove = __devexit_p(sht15_remove),
+		.remove = sht15_remove,
 	}, {
 		.driver = {
 			.name = "sht15",
 			.owner = THIS_MODULE,
 		},
 		.probe = sht15_probe,
-		.remove = __devexit_p(sht15_remove),
+		.remove = sht15_remove,
 	}, {
 		.driver = {
 			.name = "sht71",
 			.owner = THIS_MODULE,
 		},
 		.probe = sht15_probe,
-		.remove = __devexit_p(sht15_remove),
+		.remove = sht15_remove,
 	}, {
 		.driver = {
 			.name = "sht75",
 			.owner = THIS_MODULE,
 		},
 		.probe = sht15_probe,
-		.remove = __devexit_p(sht15_remove),
+		.remove = sht15_remove,
 	},
 };
 

@@ -838,7 +838,7 @@ exit_platform_data_null:
 	return err;
 }
 
-static int __devexit akm8963_remove(struct i2c_client *client)
+static int akm8963_remove(struct i2c_client *client)
 {
 	struct akm8963_data *akm = i2c_get_clientdata(client);
 

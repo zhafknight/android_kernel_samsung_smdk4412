@@ -1744,7 +1744,7 @@ static struct i2c_driver melfas_ts_driver = {
 		   },
 	.id_table = melfas_ts_id,
 	.probe = melfas_ts_probe,
-	.remove = __devexit_p(melfas_ts_remove),
+	.remove = melfas_ts_remove,
 #if !defined(CONFIG_HAS_EARLYSUSPEND)
 	.suspend = melfas_ts_suspend,
 	.resume = melfas_ts_resume,
@@ -1755,7 +1755,7 @@ static struct i2c_driver melfas_ts_driver = {
 extern unsigned int is_lpcharging_state(void);
 #endif
 
-static int __devinit melfas_ts_init(void)
+static int melfas_ts_init(void)
 {
 #ifdef CONFIG_BATTERY_SEC
 	if (is_lpcharging_state()) {

@@ -135,7 +135,7 @@ static struct snd_soc_card ymu831_snd_card = {
 
 static struct platform_device *watch_snd_device;
 
-static int __devinit snd_watch_probe(struct platform_device *pdev)
+static int snd_watch_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct watch_machine_priv *machine_watch;
@@ -173,7 +173,7 @@ err_device_alloc:
 	return ret;
 }
 
-static int __devexit snd_watch_remove(struct platform_device *pdev)
+static int snd_watch_remove(struct platform_device *pdev)
 {
 	struct watch_machine_priv *machine_watch = snd_soc_card_get_drvdata(&ymu831_snd_card);
 	platform_device_unregister(watch_snd_device);
@@ -189,7 +189,7 @@ static struct platform_driver snd_watch_driver = {
 		.name = "ymu831-card",
 	},
 	.probe = snd_watch_probe,
-	.remove = __devexit_p(snd_watch_remove),
+	.remove = snd_watch_remove,
 };
 
 

@@ -1775,7 +1775,7 @@ static const struct file_operations max77693_debugfs_fops = {
 #endif
 #endif
 
-static __devinit int max77693_charger_probe(struct platform_device *pdev)
+static int max77693_charger_probe(struct platform_device *pdev)
 {
 	struct max77693_charger_data *chg_data;
 	struct max77693_dev *max77693 = dev_get_drvdata(pdev->dev.parent);
@@ -1984,7 +1984,7 @@ err_kfree:
 	return ret;
 }
 
-static int __devexit max77693_charger_remove(struct platform_device *pdev)
+static int max77693_charger_remove(struct platform_device *pdev)
 {
 	struct max77693_charger_data *chg_data = platform_get_drvdata(pdev);
 
@@ -2078,7 +2078,7 @@ static struct platform_driver max77693_charger_driver = {
 		.pm	= &max77693_charger_pm_ops,
 	},
 	.probe		= max77693_charger_probe,
-	.remove		= __devexit_p(max77693_charger_remove),
+	.remove		= max77693_charger_remove,
 };
 
 static int __init max77693_charger_init(void)

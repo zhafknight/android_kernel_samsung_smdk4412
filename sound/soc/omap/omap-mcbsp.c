@@ -747,12 +747,12 @@ int omap_mcbsp_st_add_controls(struct snd_soc_codec *codec, int mcbsp_id)
 }
 EXPORT_SYMBOL_GPL(omap_mcbsp_st_add_controls);
 
-static __devinit int asoc_mcbsp_probe(struct platform_device *pdev)
+static int asoc_mcbsp_probe(struct platform_device *pdev)
 {
 	return snd_soc_register_dai(&pdev->dev, &omap_mcbsp_dai);
 }
 
-static int __devexit asoc_mcbsp_remove(struct platform_device *pdev)
+static int asoc_mcbsp_remove(struct platform_device *pdev)
 {
 	snd_soc_unregister_dai(&pdev->dev);
 	return 0;
@@ -765,7 +765,7 @@ static struct platform_driver asoc_mcbsp_driver = {
 	},
 
 	.probe = asoc_mcbsp_probe,
-	.remove = __devexit_p(asoc_mcbsp_remove),
+	.remove = asoc_mcbsp_remove,
 };
 
 static int __init snd_omap_mcbsp_init(void)

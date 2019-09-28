@@ -177,7 +177,7 @@ static void ioh_gpio_setup(struct ioh_gpio *chip, int num_port)
 	gpio->can_sleep = 0;
 }
 
-static int __devinit ioh_gpio_probe(struct pci_dev *pdev,
+static int ioh_gpio_probe(struct pci_dev *pdev,
 				    const struct pci_device_id *id)
 {
 	int ret;
@@ -256,7 +256,7 @@ err_pci_enable:
 	return ret;
 }
 
-static void __devexit ioh_gpio_remove(struct pci_dev *pdev)
+static void ioh_gpio_remove(struct pci_dev *pdev)
 {
 	int err;
 	int i;
@@ -336,7 +336,7 @@ static struct pci_driver ioh_gpio_driver = {
 	.name = "ml_ioh_gpio",
 	.id_table = ioh_gpio_pcidev_id,
 	.probe = ioh_gpio_probe,
-	.remove = __devexit_p(ioh_gpio_remove),
+	.remove = ioh_gpio_remove,
 	.suspend = ioh_gpio_suspend,
 	.resume = ioh_gpio_resume
 };

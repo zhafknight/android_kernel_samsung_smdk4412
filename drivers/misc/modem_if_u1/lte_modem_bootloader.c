@@ -203,7 +203,7 @@ int bootloader_gpio_setup(struct lte_modem_bootloader *loader)
 }
 
 static
-int __devinit lte_modem_bootloader_probe(struct spi_device *spi)
+int lte_modem_bootloader_probe(struct spi_device *spi)
 {
 	int ret;
 
@@ -272,7 +272,7 @@ err_alloc:
 }
 
 static
-int __devexit lte_modem_bootloader_remove(struct spi_device *spi)
+int lte_modem_bootloader_remove(struct spi_device *spi)
 {
 	struct lte_modem_bootloader *loader = spi_get_drvdata(spi);
 
@@ -291,7 +291,7 @@ struct spi_driver lte_modem_bootloader_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = lte_modem_bootloader_probe,
-	.remove = __devexit_p(lte_modem_bootloader_remove),
+	.remove = lte_modem_bootloader_remove,
 };
 
 static

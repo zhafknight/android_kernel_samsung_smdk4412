@@ -109,7 +109,7 @@ static struct snd_soc_card mxs_sgtl5000 = {
 	.num_links	= ARRAY_SIZE(mxs_sgtl5000_dai),
 };
 
-static int __devinit mxs_sgtl5000_probe(struct platform_device *pdev)
+static int mxs_sgtl5000_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = &mxs_sgtl5000;
 	int ret;
@@ -136,7 +136,7 @@ static int __devinit mxs_sgtl5000_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit mxs_sgtl5000_remove(struct platform_device *pdev)
+static int mxs_sgtl5000_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 
@@ -153,7 +153,7 @@ static struct platform_driver mxs_sgtl5000_audio_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = mxs_sgtl5000_probe,
-	.remove = __devexit_p(mxs_sgtl5000_remove),
+	.remove = mxs_sgtl5000_remove,
 };
 
 static int __init mxs_sgtl5000_init(void)

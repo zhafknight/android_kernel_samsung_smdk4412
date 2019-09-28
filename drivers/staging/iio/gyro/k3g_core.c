@@ -642,7 +642,7 @@ static const struct iio_info k3g_info = {
 	.attrs = &k3g_group,
 };
 
-static int __devinit k3g_probe(struct i2c_client *client,
+static int k3g_probe(struct i2c_client *client,
 			  const struct i2c_device_id *id)
 {
 	struct k3g_chip *chip;
@@ -753,7 +753,7 @@ error_devid_detect:
 	return ret;
 }
 
-static int __devexit k3g_remove(struct i2c_client *client)
+static int k3g_remove(struct i2c_client *client)
 {
 	struct k3g_chip *chip = i2c_get_clientdata(client);
 

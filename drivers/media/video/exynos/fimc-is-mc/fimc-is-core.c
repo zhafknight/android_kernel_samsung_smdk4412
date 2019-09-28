@@ -1960,7 +1960,7 @@ static const struct dev_pm_ops fimc_is_pm_ops = {
 
 static struct platform_driver fimc_is_driver = {
 	.probe		= fimc_is_probe,
-	.remove	= __devexit_p(fimc_is_remove),
+	.remove	= fimc_is_remove,
 	.driver = {
 		.name	= FIMC_IS_MODULE_NAME,
 		.owner	= THIS_MODULE,

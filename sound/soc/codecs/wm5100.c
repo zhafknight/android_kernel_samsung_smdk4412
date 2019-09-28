@@ -2737,7 +2737,7 @@ static struct snd_soc_codec_driver soc_codec_dev_wm5100 = {
 	.readable_register = wm5100_readable_register,
 };
 
-static __devinit int wm5100_i2c_probe(struct i2c_client *i2c,
+static int wm5100_i2c_probe(struct i2c_client *i2c,
 				      const struct i2c_device_id *id)
 {
 	struct wm5100_pdata *pdata = dev_get_platdata(&i2c->dev);
@@ -2767,7 +2767,7 @@ static __devinit int wm5100_i2c_probe(struct i2c_client *i2c,
 	return ret;
 }
 
-static __devexit int wm5100_i2c_remove(struct i2c_client *client)
+static int wm5100_i2c_remove(struct i2c_client *client)
 {
 	snd_soc_unregister_codec(&client->dev);
 	kfree(i2c_get_clientdata(client));
@@ -2786,7 +2786,7 @@ static struct i2c_driver wm5100_i2c_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe =    wm5100_i2c_probe,
-	.remove =   __devexit_p(wm5100_i2c_remove),
+	.remove =   wm5100_i2c_remove,
 	.id_table = wm5100_i2c_id,
 };
 

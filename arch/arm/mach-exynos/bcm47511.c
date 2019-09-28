@@ -88,7 +88,7 @@ static const struct rfkill_ops bcm47511_rfkill_ops = {
 	.set_block = bcm47511_set_block,
 };
 
-static int __devinit bcm47511_probe(struct platform_device *dev)
+static int bcm47511_probe(struct platform_device *dev)
 {
 	struct bcm47511_platform_data *pdata;
 	struct bcm47511_data *bd;
@@ -180,7 +180,7 @@ err_rfk_alloc:
 	return ret;
 }
 
-static int __devexit bcm47511_remove(struct platform_device *dev)
+static int bcm47511_remove(struct platform_device *dev)
 {
 	struct bcm47511_data *bd = platform_get_drvdata(dev);
 	struct bcm47511_platform_data *pdata = bd->pdata;
@@ -227,7 +227,7 @@ static int bcm47511_resume(struct platform_device *dev)
 
 static struct platform_driver bcm47511_driver = {
 	.probe		= bcm47511_probe,
-	.remove		= __devexit_p(bcm47511_remove),
+	.remove		= bcm47511_remove,
 	.suspend	= bcm47511_suspend,
 	.resume		= bcm47511_resume,
 	.driver	= {

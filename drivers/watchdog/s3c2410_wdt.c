@@ -400,7 +400,7 @@ static inline void s3c2410wdt_cpufreq_deregister(void)
 
 /* device interface */
 
-static int __devinit s3c2410wdt_probe(struct platform_device *pdev)
+static int s3c2410wdt_probe(struct platform_device *pdev)
 {
 	struct device *dev;
 	unsigned int wtcon;
@@ -535,7 +535,7 @@ static int __devinit s3c2410wdt_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int __devexit s3c2410wdt_remove(struct platform_device *dev)
+static int s3c2410wdt_remove(struct platform_device *dev)
 {
 	free_irq(wdt_irq->start, dev);
 	wdt_irq = NULL;
@@ -608,7 +608,7 @@ MODULE_DEVICE_TABLE(of, s3c2410_wdt_match);
 
 static struct platform_driver s3c2410wdt_driver = {
 	.probe		= s3c2410wdt_probe,
-	.remove		= __devexit_p(s3c2410wdt_remove),
+	.remove		= s3c2410wdt_remove,
 	.shutdown	= s3c2410wdt_shutdown,
 	.suspend	= s3c2410wdt_suspend,
 	.resume		= s3c2410wdt_resume,

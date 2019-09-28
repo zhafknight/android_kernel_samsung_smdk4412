@@ -523,7 +523,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit gd2evf_remove(struct spi_device *spi)
+static int gd2evf_remove(struct spi_device *spi)
 {
 	struct lcd_info *lcd = dev_get_drvdata(&spi->dev);
 
@@ -542,7 +542,7 @@ static struct spi_driver gd2evf_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= gd2evf_probe,
-	.remove		= __devexit_p(gd2evf_remove),
+	.remove		= gd2evf_remove,
 };
 
 static int __init gd2evf_init(void)

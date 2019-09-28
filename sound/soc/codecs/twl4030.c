@@ -2295,7 +2295,7 @@ static struct snd_soc_codec_driver soc_codec_dev_twl4030 = {
 	.reg_cache_default = twl4030_reg,
 };
 
-static int __devinit twl4030_codec_probe(struct platform_device *pdev)
+static int twl4030_codec_probe(struct platform_device *pdev)
 {
 	struct twl4030_codec_audio_data *pdata = pdev->dev.platform_data;
 
@@ -2308,7 +2308,7 @@ static int __devinit twl4030_codec_probe(struct platform_device *pdev)
 			twl4030_dai, ARRAY_SIZE(twl4030_dai));
 }
 
-static int __devexit twl4030_codec_remove(struct platform_device *pdev)
+static int twl4030_codec_remove(struct platform_device *pdev)
 {
 	snd_soc_unregister_codec(&pdev->dev);
 	return 0;
@@ -2318,7 +2318,7 @@ MODULE_ALIAS("platform:twl4030-codec");
 
 static struct platform_driver twl4030_codec_driver = {
 	.probe		= twl4030_codec_probe,
-	.remove		= __devexit_p(twl4030_codec_remove),
+	.remove		= twl4030_codec_remove,
 	.driver		= {
 		.name	= "twl4030-codec",
 		.owner	= THIS_MODULE,

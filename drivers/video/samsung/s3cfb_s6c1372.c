@@ -92,7 +92,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit lvds_lcd_remove(struct platform_device *pdev)
+static int lvds_lcd_remove(struct platform_device *pdev)
 {
 	struct lcd_info *lcd = dev_get_drvdata(&pdev->dev);
 

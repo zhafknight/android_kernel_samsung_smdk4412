@@ -244,7 +244,7 @@ static ssize_t status_check(struct device *dev, struct device_attribute *attr, c
 
 static DEVICE_ATTR(flipStatus, S_IRUGO | S_IWUSR | S_IWGRP , status_check, NULL);
 
-static int __devinit sec_flip_probe(struct platform_device *pdev)
+static int sec_flip_probe(struct platform_device *pdev)
 {
 	struct input_dev *input;
 	int err;
@@ -358,7 +358,7 @@ free_flip:
 	return err;
 }
 
-static int __devexit sec_flip_remove(struct platform_device *pdev)
+static int sec_flip_remove(struct platform_device *pdev)
 {
 	struct sec_flip *flip = platform_get_drvdata(pdev);
 
@@ -381,7 +381,7 @@ static int __devexit sec_flip_remove(struct platform_device *pdev)
 
 static struct platform_driver sec_flip_driver = {
 	.probe		= sec_flip_probe,
-	.remove		= __devexit_p(sec_flip_remove),
+	.remove		= sec_flip_remove,
 	.driver		= {
 		.name	= "sec_flip",
 		.owner	= THIS_MODULE,

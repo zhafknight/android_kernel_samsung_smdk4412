@@ -314,7 +314,7 @@ static struct miscdevice wm831x_wdt_miscdev = {
 	.fops = &wm831x_wdt_fops,
 };
 
-static int __devinit wm831x_wdt_probe(struct platform_device *pdev)
+static int wm831x_wdt_probe(struct platform_device *pdev)
 {
 	struct wm831x_pdata *chip_pdata;
 	struct wm831x_watchdog_pdata *pdata;
@@ -408,7 +408,7 @@ err:
 	return ret;
 }
 
-static int __devexit wm831x_wdt_remove(struct platform_device *pdev)
+static int wm831x_wdt_remove(struct platform_device *pdev)
 {
 	if (update_gpio) {
 		gpio_free(update_gpio);
@@ -422,7 +422,7 @@ static int __devexit wm831x_wdt_remove(struct platform_device *pdev)
 
 static struct platform_driver wm831x_wdt_driver = {
 	.probe = wm831x_wdt_probe,
-	.remove = __devexit_p(wm831x_wdt_remove),
+	.remove = wm831x_wdt_remove,
 	.driver = {
 		.name = "wm831x-watchdog",
 	},

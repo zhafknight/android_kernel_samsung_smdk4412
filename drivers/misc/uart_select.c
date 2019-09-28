@@ -95,7 +95,7 @@ int uart_sel_get_state(void)
 }
 EXPORT_SYMBOL(uart_sel_get_state);
 
-static int __devinit uart_select_probe(struct platform_device *pdev)
+static int uart_select_probe(struct platform_device *pdev)
 {
 	struct uart_select *uart_sel;
 	struct uart_select_platform_data *pdata = pdev->dev.platform_data;
@@ -122,7 +122,7 @@ static int __devinit uart_select_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit uart_select_remove(struct platform_device *pdev)
+static int uart_select_remove(struct platform_device *pdev)
 {
 	device_remove_file(&pdev->dev, &uart_select_attr);
 	platform_set_drvdata(pdev, NULL);
@@ -132,7 +132,7 @@ static int __devexit uart_select_remove(struct platform_device *pdev)
 
 static struct platform_driver uart_select_driver = {
 	.probe		= uart_select_probe,
-	.remove		= __devexit_p(uart_select_remove),
+	.remove		= uart_select_remove,
 	.driver		= {
 		.name	= "uart-select",
 		.owner	= THIS_MODULE,

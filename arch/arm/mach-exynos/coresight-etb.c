@@ -347,7 +347,7 @@ static void etb_sysfs_exit(void)
 	kobject_put(etb.kobj);
 }
 
-static int __devinit etb_probe(struct platform_device *pdev)
+static int etb_probe(struct platform_device *pdev)
 {
 	int ret;
 	struct resource *res;

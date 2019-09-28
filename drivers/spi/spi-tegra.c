@@ -570,7 +570,7 @@ err0:
 	return ret;
 }
 
-static int __devexit spi_tegra_remove(struct platform_device *pdev)
+static int spi_tegra_remove(struct platform_device *pdev)
 {
 	struct spi_master	*master;
 	struct spi_tegra_data	*tspi;
@@ -597,7 +597,7 @@ static int __devexit spi_tegra_remove(struct platform_device *pdev)
 MODULE_ALIAS("platform:spi_tegra");
 
 #ifdef CONFIG_OF
-static struct of_device_id spi_tegra_of_match_table[] __devinitdata = {
+static struct of_device_id spi_tegra_of_match_table[] = {
 	{ .compatible = "nvidia,tegra20-spi", },
 	{}
 };
@@ -612,7 +612,7 @@ static struct platform_driver spi_tegra_driver = {
 		.owner =	THIS_MODULE,
 		.of_match_table = spi_tegra_of_match_table,
 	},
-	.remove =	__devexit_p(spi_tegra_remove),
+	.remove =	spi_tegra_remove,
 };
 
 static int __init spi_tegra_init(void)

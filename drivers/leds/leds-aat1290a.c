@@ -214,7 +214,7 @@ static int aat1290a_led_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit aat1290a_led_remove(struct platform_device *pdev)
+static int aat1290a_led_remove(struct platform_device *pdev)
 {
 	led_pdata->freeGpio();
 	misc_deregister(&aat1290a_miscdev);
@@ -228,7 +228,7 @@ static int __devexit aat1290a_led_remove(struct platform_device *pdev)
 
 static struct platform_driver aat1290a_led_driver = {
 	.probe		= aat1290a_led_probe,
-	.remove		= __devexit_p(aat1290a_led_remove),
+	.remove		= aat1290a_led_remove,
 	.driver		= {
 		.name	= "aat1290a-led",
 		.owner	= THIS_MODULE,

@@ -233,7 +233,7 @@ static struct miscdevice orion_wdt_miscdev = {
 	.fops		= &orion_wdt_fops,
 };
 
-static int __devinit orion_wdt_probe(struct platform_device *pdev)
+static int orion_wdt_probe(struct platform_device *pdev)
 {
 	struct orion_wdt_platform_data *pdata = pdev->dev.platform_data;
 	int ret;
@@ -262,7 +262,7 @@ static int __devinit orion_wdt_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit orion_wdt_remove(struct platform_device *pdev)
+static int orion_wdt_remove(struct platform_device *pdev)
 {
 	int ret;
 
@@ -286,7 +286,7 @@ static void orion_wdt_shutdown(struct platform_device *pdev)
 
 static struct platform_driver orion_wdt_driver = {
 	.probe		= orion_wdt_probe,
-	.remove		= __devexit_p(orion_wdt_remove),
+	.remove		= orion_wdt_remove,
 	.shutdown	= orion_wdt_shutdown,
 	.driver		= {
 		.owner	= THIS_MODULE,

@@ -455,7 +455,7 @@ static void samsung_fake_bat_resume(struct device *dev)
 #define samsung_fake_bat_resume NULL
 #endif /* CONFIG_PM */
 
-static int __devinit samsung_fake_bat_probe(struct platform_device *pdev)
+static int samsung_fake_bat_probe(struct platform_device *pdev)
 {
 	int i;
 	int ret = 0;
@@ -501,7 +501,7 @@ __end__:
 	return ret;
 }
 
-static int __devexit samsung_fake_bat_remove(struct platform_device *pdev)
+static int samsung_fake_bat_remove(struct platform_device *pdev)
 {
 	int i;
 
@@ -523,7 +523,7 @@ static struct platform_driver samsung_fake_bat_driver = {
 		.pm	= &samsung_fake_bat_pm_ops,
 	},
 	.probe		= samsung_fake_bat_probe,
-	.remove		= __devexit_p(samsung_fake_bat_remove),
+	.remove		= samsung_fake_bat_remove,
 };
 
 static int __init samsung_fake_bat_init(void)

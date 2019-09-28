@@ -422,7 +422,7 @@ static int abituguru_write(struct abituguru_data *data,
    By setting the alarm thresholds so that we will always get an
    alarm for sensor type X and then enabling the sensor as sensor type
    X, if we then get an alarm it is a sensor of type X. */
-static int __devinit
+static int
 abituguru_detect_bank1_sensor_type(struct abituguru_data *data,
 				   u8 sensor_addr)
 {
@@ -565,7 +565,7 @@ abituguru_detect_bank1_sensor_type_exit:
    they would defeat their purpose. Although for the bank2_sensors detection a
    read/write test would be feasible because of the reaction above, I've
    however opted to stay on the safe side. */
-static void __devinit
+static void
 abituguru_detect_no_bank2_sensors(struct abituguru_data *data)
 {
 	int i;
@@ -619,7 +619,7 @@ abituguru_detect_no_bank2_sensors(struct abituguru_data *data)
 		(int)data->bank2_sensors);
 }
 
-static void __devinit
+static void
 abituguru_detect_no_pwms(struct abituguru_data *data)
 {
 	int i, j;
@@ -1141,7 +1141,7 @@ static struct sensor_device_attribute_2 abituguru_sysfs_attr[] = {
 	SENSOR_ATTR_2(name, 0444, show_name, NULL, 0, 0),
 };
 
-static int __devinit abituguru_probe(struct platform_device *pdev)
+static int abituguru_probe(struct platform_device *pdev)
 {
 	struct abituguru_data *data;
 	int i, j, used, sysfs_names_free, sysfs_attr_i, res = -ENODEV;
@@ -1305,7 +1305,7 @@ abituguru_probe_error:
 	return res;
 }
 
-static int __devexit abituguru_remove(struct platform_device *pdev)
+static int abituguru_remove(struct platform_device *pdev)
 {
 	int i;
 	struct abituguru_data *data = platform_get_drvdata(pdev);
@@ -1411,7 +1411,7 @@ static struct platform_driver abituguru_driver = {
 		.name	= ABIT_UGURU_NAME,
 	},
 	.probe		= abituguru_probe,
-	.remove		= __devexit_p(abituguru_remove),
+	.remove		= abituguru_remove,
 	.suspend	= abituguru_suspend,
 	.resume		= abituguru_resume,
 };

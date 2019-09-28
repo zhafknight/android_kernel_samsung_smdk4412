@@ -154,7 +154,7 @@ static struct lcd_ops l4f_ops = {
 	.get_power	= l4f00242t03_lcd_power_get,
 };
 
-static int __devinit l4f00242t03_probe(struct spi_device *spi)
+static int l4f00242t03_probe(struct spi_device *spi)
 {
 	struct l4f00242t03_priv *priv;
 	struct l4f00242t03_pdata *pdata = spi->dev.platform_data;
@@ -253,7 +253,7 @@ err:
 	return ret;
 }
 
-static int __devexit l4f00242t03_remove(struct spi_device *spi)
+static int l4f00242t03_remove(struct spi_device *spi)
 {
 	struct l4f00242t03_priv *priv = dev_get_drvdata(&spi->dev);
 	struct l4f00242t03_pdata *pdata = priv->spi->dev.platform_data;
@@ -291,7 +291,7 @@ static struct spi_driver l4f00242t03_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= l4f00242t03_probe,
-	.remove		= __devexit_p(l4f00242t03_remove),
+	.remove		= l4f00242t03_remove,
 	.shutdown	= l4f00242t03_shutdown,
 };
 

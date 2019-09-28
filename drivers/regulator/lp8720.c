@@ -312,7 +312,7 @@ static struct regulator_desc regulators[] = {
 	},
 };
 
-static int __devinit setup_regulators(struct lp8720 *lp8720,
+static int setup_regulators(struct lp8720 *lp8720,
 	struct lp8720_platform_data *pdata)
 {
 	int i, err;
@@ -347,7 +347,7 @@ err_nomem:
 	return err;
 }
 
-static int __devinit lp8720_i2c_probe(struct i2c_client *i2c,
+static int lp8720_i2c_probe(struct i2c_client *i2c,
 			    const struct i2c_device_id *id)
 {
 	struct lp8720 *lp8720;
@@ -424,7 +424,7 @@ err_detect:
 	return ret;
 }
 
-static int __devexit lp8720_i2c_remove(struct i2c_client *i2c)
+static int lp8720_i2c_remove(struct i2c_client *i2c)
 {
 	struct lp8720 *lp8720 = i2c_get_clientdata(i2c);
 	struct lp8720_platform_data *pdata = i2c->dev.platform_data;
@@ -450,7 +450,7 @@ static struct i2c_driver lp8720_i2c_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe    = lp8720_i2c_probe,
-	.remove   = __devexit_p(lp8720_i2c_remove),
+	.remove   = lp8720_i2c_remove,
 	.id_table = lp8720_i2c_id,
 };
 

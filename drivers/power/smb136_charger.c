@@ -416,7 +416,7 @@ err_callbacks:
 	return ret;
 }
 
-static int __devexit smb136_remove(struct i2c_client *client)
+static int smb136_remove(struct i2c_client *client)
 {
 	struct smb136_chg_data *chg = i2c_get_clientdata(client);
 
@@ -440,7 +440,7 @@ static struct i2c_driver smb136_i2c_driver = {
 	},
 	.id_table	= smb136_id,
 	.probe	= smb136_i2c_probe,
-	.remove	= __devexit_p(smb136_remove),
+	.remove	= smb136_remove,
 	.command = NULL,
 };
 

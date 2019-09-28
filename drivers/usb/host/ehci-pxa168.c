@@ -222,7 +222,7 @@ err1:
 	return err;
 }
 
-static int __devinit ehci_pxa168_drv_probe(struct platform_device *pdev)
+static int ehci_pxa168_drv_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	struct usb_hcd *hcd;

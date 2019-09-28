@@ -324,7 +324,7 @@ static inline void remove_ohci_sys_file(struct ohci_hcd *ohci)
 	device_remove_file(ohci_to_hcd(ohci)->self.controller,
 			&dev_attr_ohci_power);
 }
-static int __devinit ohci_hcd_s5p_drv_probe(struct platform_device *pdev)
+static int ohci_hcd_s5p_drv_probe(struct platform_device *pdev)
 {
 	struct s5p_ohci_platdata *pdata;
 	struct s5p_ohci_hcd *s5p_ohci;
@@ -427,7 +427,7 @@ fail_hcd:
 	return err;
 }
 
-static int __devexit ohci_hcd_s5p_drv_remove(struct platform_device *pdev)
+static int ohci_hcd_s5p_drv_remove(struct platform_device *pdev)
 {
 	struct s5p_ohci_platdata *pdata = pdev->dev.platform_data;
 	struct s5p_ohci_hcd *s5p_ohci = platform_get_drvdata(pdev);
@@ -494,7 +494,7 @@ static const struct dev_pm_ops ohci_s5p_pm_ops = {
 
 static struct platform_driver ohci_hcd_s5p_driver = {
 	.probe		= ohci_hcd_s5p_drv_probe,
-	.remove		= __devexit_p(ohci_hcd_s5p_drv_remove),
+	.remove		= ohci_hcd_s5p_drv_remove,
 	.shutdown	= ohci_hcd_s5p_drv_shutdown,
 	.driver = {
 		.name	= "s5p-ohci",

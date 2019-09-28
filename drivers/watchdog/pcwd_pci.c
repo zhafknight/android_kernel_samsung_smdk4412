@@ -696,7 +696,7 @@ static struct notifier_block pcipcwd_notifier = {
  *	Init & exit routines
  */
 
-static int __devinit pcipcwd_card_init(struct pci_dev *pdev,
+static int pcipcwd_card_init(struct pci_dev *pdev,
 		const struct pci_device_id *ent)
 {
 	int ret = -EIO;
@@ -801,7 +801,7 @@ err_out_disable_device:
 	return ret;
 }
 
-static void __devexit pcipcwd_card_exit(struct pci_dev *pdev)
+static void pcipcwd_card_exit(struct pci_dev *pdev)
 {
 	/* Stop the timer before we leave */
 	if (!nowayout)
@@ -828,7 +828,7 @@ static struct pci_driver pcipcwd_driver = {
 	.name		= WATCHDOG_NAME,
 	.id_table	= pcipcwd_pci_tbl,
 	.probe		= pcipcwd_card_init,
-	.remove		= __devexit_p(pcipcwd_card_exit),
+	.remove		= pcipcwd_card_exit,
 };
 
 static int __init pcipcwd_init_module(void)

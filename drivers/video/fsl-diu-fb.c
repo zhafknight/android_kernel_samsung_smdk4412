@@ -43,7 +43,7 @@
  * FIXME - change timing to proper amounts
  * hsync 31.5kHz, vsync 60Hz
  */
-static struct fb_videomode __devinitdata fsl_diu_default_mode = {
+static struct fb_videomode fsl_diu_default_mode = {
 	.refresh	= 60,
 	.xres		= 1024,
 	.yres		= 768,
@@ -58,7 +58,7 @@ static struct fb_videomode __devinitdata fsl_diu_default_mode = {
 	.vmode		= FB_VMODE_NONINTERLACED
 };
 
-static struct fb_videomode __devinitdata fsl_diu_mode_db[] = {
+static struct fb_videomode fsl_diu_mode_db[] = {
 	{
 		.name		= "1024x768-60",
 		.refresh	= 60,
@@ -1166,7 +1166,7 @@ static int init_fbinfo(struct fb_info *info)
 	return 0;
 }
 
-static int __devinit install_fb(struct fb_info *info)
+static int install_fb(struct fb_info *info)
 {
 	int rc;
 	struct mfb_info *mfbi = info->par;
@@ -1471,7 +1471,7 @@ static ssize_t show_monitor(struct device *device,
 	return diu_ops.show_monitor_port(machine_data->monitor_port, buf);
 }
 
-static int __devinit fsl_diu_probe(struct platform_device *ofdev)
+static int fsl_diu_probe(struct platform_device *ofdev)
 {
 	struct device_node *np = ofdev->dev.of_node;
 	struct mfb_info *mfbi;

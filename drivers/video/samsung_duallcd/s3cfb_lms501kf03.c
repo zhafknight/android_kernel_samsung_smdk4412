@@ -342,7 +342,7 @@ static const struct backlight_ops s5p_bl_ops = {
 };
 #endif
 
-static int __devinit lms501kf03_probe(struct spi_device *spi)
+static int lms501kf03_probe(struct spi_device *spi)
 {
 	int ret;
 #ifdef CONFIG_BACKLIGHT_LMS501KF03_TFT

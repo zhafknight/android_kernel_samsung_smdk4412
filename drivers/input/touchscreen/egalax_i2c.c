@@ -657,7 +657,7 @@ static void egalax_i2c_early_suspend(struct early_suspend *handler)
 
 #endif // #ifdef CONFIG_HAS_EARLYSUSPEND
 
-static int __devinit egalax_i2c_probe(struct i2c_client *client,
+static int egalax_i2c_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	int i, ret = 0;
@@ -763,7 +763,7 @@ fail1:
 	return ret;
 }
 
-static int __devexit egalax_i2c_remove(struct i2c_client *client)
+static int egalax_i2c_remove(struct i2c_client *client)
 {
 	struct _egalax_i2c *egalax_i2c = i2c_get_clientdata(client);
 
@@ -812,7 +812,7 @@ static struct i2c_driver egalax_i2c_driver = {
 	},
 	.id_table	= egalax_i2c_idtable,
 	.probe		= egalax_i2c_probe,
-	.remove		= __devexit_p(egalax_i2c_remove),
+	.remove		= egalax_i2c_remove,
 };
 
 static const struct file_operations egalax_cdev_fops = {

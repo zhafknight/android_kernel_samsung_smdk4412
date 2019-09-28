@@ -2048,7 +2048,7 @@ static int sec_bat_read_proc(char *buf, char **start,
 }
 #endif /* CONFIG_TARGET_LOCALE_KOR */
 
-static int __devinit sec_bat_probe(struct platform_device *pdev)
+static int sec_bat_probe(struct platform_device *pdev)
 {
 	struct sec_battery_platform_data *pdata = dev_get_platdata(&pdev->dev);
 	struct battery_data *battery;
@@ -2263,7 +2263,7 @@ err_pdata:
 	return ret;
 }
 
-static int __devexit sec_bat_remove(struct platform_device *pdev)
+static int sec_bat_remove(struct platform_device *pdev)
 {
 	struct battery_data *battery = platform_get_drvdata(pdev);
 
@@ -2304,7 +2304,7 @@ static struct platform_driver sec_bat_driver = {
 		.pm = &sec_battery_pm_ops,
 	},
 	.probe		= sec_bat_probe,
-	.remove		= __devexit_p(sec_bat_remove),
+	.remove		= sec_bat_remove,
 };
 
 static int __init sec_bat_init(void)

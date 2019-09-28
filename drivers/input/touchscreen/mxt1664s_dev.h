@@ -286,7 +286,7 @@ struct mxt_data {
 extern struct class *sec_class;
 #endif
 
-extern int  __devinit mxt_sysfs_init(struct i2c_client *client);
+extern int  mxt_sysfs_init(struct i2c_client *client);
 
 extern int mxt_read_mem(struct mxt_data *data, u16 reg, u8 len, u8 *buf);
 extern int mxt_write_mem(struct mxt_data *data,	u16 reg, u8 len, const u8 *buf);

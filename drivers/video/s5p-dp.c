@@ -2201,7 +2201,7 @@ static void s5p_dp_late_resume(struct early_suspend *handler)
 }
 #endif
 
-static int __devinit s5p_dp_probe(struct platform_device *pdev)
+static int s5p_dp_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	struct s5p_dp_device *dp;
@@ -2358,7 +2358,7 @@ err_dp:
 	return ret;
 }
 
-static int __devexit s5p_dp_remove(struct platform_device *pdev)
+static int s5p_dp_remove(struct platform_device *pdev)
 {
 	struct s5p_dp_platdata *pdata = pdev->dev.platform_data;
 	struct s5p_dp_device *dp = platform_get_drvdata(pdev);
@@ -2480,7 +2480,7 @@ static const struct dev_pm_ops s5p_dp_pm_ops = {
 
 static struct platform_driver s5p_dp_driver = {
 	.probe		= s5p_dp_probe,
-	.remove		= __devexit_p(s5p_dp_remove),
+	.remove		= s5p_dp_remove,
 	.driver		= {
 		.name	= "s5p-dp",
 		.owner	= THIS_MODULE,

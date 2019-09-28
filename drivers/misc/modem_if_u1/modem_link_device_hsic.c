@@ -1206,7 +1206,7 @@ static int if_usb_set_pipe(struct usb_link_device *usb_ld,
 	return 0;
 }
 
-static int __devinit if_usb_probe(struct usb_interface *intf,
+static int if_usb_probe(struct usb_interface *intf,
 					const struct usb_device_id *id)
 {
 	int err;

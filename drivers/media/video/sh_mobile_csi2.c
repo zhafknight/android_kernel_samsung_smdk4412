@@ -245,7 +245,7 @@ static int sh_csi2_notify(struct notifier_block *nb,
 	return NOTIFY_OK;
 }
 
-static __devinit int sh_csi2_probe(struct platform_device *pdev)
+static int sh_csi2_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	unsigned int irq;
@@ -319,7 +319,7 @@ ernotify:
 	return ret;
 }
 
-static __devexit int sh_csi2_remove(struct platform_device *pdev)
+static int sh_csi2_remove(struct platform_device *pdev)
 {
 	struct sh_csi2 *priv = platform_get_drvdata(pdev);
 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
@@ -335,7 +335,7 @@ static __devexit int sh_csi2_remove(struct platform_device *pdev)
 }
 
 static struct platform_driver __refdata sh_csi2_pdrv = {
-	.remove  = __devexit_p(sh_csi2_remove),
+	.remove  = sh_csi2_remove,
 	.driver  = {
 		.name	= "sh-mobile-csi2",
 		.owner	= THIS_MODULE,

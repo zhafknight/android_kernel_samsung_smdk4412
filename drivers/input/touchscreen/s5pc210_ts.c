@@ -313,7 +313,7 @@ static void s5pv310_ts_config(unsigned char state)
 	}
 }
 
-static int __devinit s5pv310_ts_probe(struct platform_device *pdev)
+static int s5pv310_ts_probe(struct platform_device *pdev)
 {
 	int rc;
 
@@ -373,7 +373,7 @@ static int __devinit s5pv310_ts_probe(struct platform_device *pdev)
 	return	0;
 }
 
-static int __devexit s5pv310_ts_remove(struct platform_device *pdev)
+static int s5pv310_ts_remove(struct platform_device *pdev)
 {
 #ifdef CONFIG_DEBUG_S5PV310_TS_MSG
 	printk(KERN_DEBUG "%s\n", __func__);

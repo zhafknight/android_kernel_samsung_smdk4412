@@ -483,7 +483,7 @@ static void ep93xxfb_dealloc_videomem(struct fb_info *info)
 				  info->screen_base, info->fix.smem_start);
 }
 
-static int __devinit ep93xxfb_probe(struct platform_device *pdev)
+static int ep93xxfb_probe(struct platform_device *pdev)
 {
 	struct ep93xxfb_mach_info *mach_info = pdev->dev.platform_data;
 	struct fb_info *info;
@@ -598,7 +598,7 @@ failed:
 	return err;
 }
 
-static int __devexit ep93xxfb_remove(struct platform_device *pdev)
+static int ep93xxfb_remove(struct platform_device *pdev)
 {
 	struct fb_info *info = platform_get_drvdata(pdev);
 	struct ep93xx_fbi *fbi = info->par;
@@ -622,14 +622,14 @@ static int __devexit ep93xxfb_remove(struct platform_device *pdev)
 
 static struct platform_driver ep93xxfb_driver = {
 	.probe		= ep93xxfb_probe,
-	.remove		= __devexit_p(ep93xxfb_remove),
+	.remove		= ep93xxfb_remove,
 	.driver = {
 		.name	= "ep93xx-fb",
 		.owner	= THIS_MODULE,
 	},
 };
 
-static int __devinit ep93xxfb_init(void)
+static int ep93xxfb_init(void)
 {
 	return platform_driver_register(&ep93xxfb_driver);
 }

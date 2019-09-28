@@ -345,13 +345,13 @@ static int write_mem(struct mxt_data *data, u16 reg, u8 len, const u8 *buf)
 	return ret == sizeof(tmp) ? 0 : -EIO;
 }
 
-static int __devinit mxt_reset(struct mxt_data *data)
+static int mxt_reset(struct mxt_data *data)
 {
 	u8 buf = 1u;
 	return write_mem(data, data->cmd_proc + CMD_RESET_OFFSET, 1, &buf);
 }
 
-static int __devinit mxt_backup(struct mxt_data *data)
+static int mxt_backup(struct mxt_data *data)
 {
 	u8 buf = 0x55u;
 	return write_mem(data, data->cmd_proc + CMD_BACKUP_OFFSET, 1, &buf);
@@ -436,7 +436,7 @@ static int change_config(struct mxt_data *data,
 	return write_mem(data, reg+offeset, 1, &value);
 }
 
-static u32 __devinit crc24(u32 crc, u8 byte1, u8 byte2)
+static u32 crc24(u32 crc, u8 byte1, u8 byte2)
 {
 	static const u32 crcpoly = 0x80001B;
 	u32 res;
@@ -451,7 +451,7 @@ static u32 __devinit crc24(u32 crc, u8 byte1, u8 byte2)
 	return res;
 }
 
-static int __devinit calculate_infoblock_crc(struct mxt_data *data,
+static int calculate_infoblock_crc(struct mxt_data *data,
 							u32 *crc_pointer)
 {
 	u32 crc = 0;
@@ -939,7 +939,7 @@ uint8_t reportid_to_type(struct mxt_data *data, u8 report_id, u8 *instance)
 		return 0;
 }
 
-static int __devinit mxt_init_touch_driver(struct mxt_data *data)
+static int mxt_init_touch_driver(struct mxt_data *data)
 {
 	struct object_t *object_table;
 	struct report_id_map_t *report_id_map_t;
@@ -3276,7 +3276,7 @@ static const struct attribute_group mxt_attr_group = {
 };
 
 #endif
-static int __devinit mxt_probe(struct i2c_client *client,
+static int mxt_probe(struct i2c_client *client,
 	const struct i2c_device_id *id)
 {
 	struct mxt_platform_data *pdata = client->dev.platform_data;
@@ -3681,7 +3681,7 @@ err_alloc_dev:
 	return ret;
 }
 
-static int __devexit mxt_remove(struct i2c_client *client)
+static int mxt_remove(struct i2c_client *client)
 {
 	struct mxt_data *data = i2c_get_clientdata(client);
 
@@ -3713,7 +3713,7 @@ static const struct dev_pm_ops mxt_pm_ops = {
 static struct i2c_driver mxt_i2c_driver = {
 	.id_table = mxt_idtable,
 	.probe = mxt_probe,
-	.remove = __devexit_p(mxt_remove),
+	.remove = mxt_remove,
 	.driver = {
 		.owner	= THIS_MODULE,
 		.name	= MXT_DEV_NAME,

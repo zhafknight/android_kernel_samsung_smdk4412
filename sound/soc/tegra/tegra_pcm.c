@@ -366,12 +366,12 @@ struct snd_soc_platform_driver tegra_pcm_platform = {
 	.pcm_free	= tegra_pcm_free,
 };
 
-static int __devinit tegra_pcm_platform_probe(struct platform_device *pdev)
+static int tegra_pcm_platform_probe(struct platform_device *pdev)
 {
 	return snd_soc_register_platform(&pdev->dev, &tegra_pcm_platform);
 }
 
-static int __devexit tegra_pcm_platform_remove(struct platform_device *pdev)
+static int tegra_pcm_platform_remove(struct platform_device *pdev)
 {
 	snd_soc_unregister_platform(&pdev->dev);
 	return 0;
@@ -383,7 +383,7 @@ static struct platform_driver tegra_pcm_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = tegra_pcm_platform_probe,
-	.remove = __devexit_p(tegra_pcm_platform_remove),
+	.remove = tegra_pcm_platform_remove,
 };
 
 static int __init snd_tegra_pcm_init(void)

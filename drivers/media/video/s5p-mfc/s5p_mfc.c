@@ -1117,7 +1117,7 @@ static struct video_device s5p_mfc_enc_videodev = {
 };
 
 /* MFC probe function */
-static int __devinit s5p_mfc_probe(struct platform_device *pdev)
+static int s5p_mfc_probe(struct platform_device *pdev)
 {
 	struct s5p_mfc_dev *dev;
 	struct video_device *vfd;
@@ -1439,7 +1439,7 @@ free_dev:
 }
 
 /* Remove the driver */
-static int __devexit s5p_mfc_remove(struct platform_device *pdev)
+static int s5p_mfc_remove(struct platform_device *pdev)
 {
 	struct s5p_mfc_dev *dev = platform_get_drvdata(pdev);
 
@@ -1616,7 +1616,7 @@ MODULE_DEVICE_TABLE(platform, mfc_driver_ids);
 
 static struct platform_driver s5p_mfc_driver = {
 	.probe	= s5p_mfc_probe,
-	.remove	= __devexit_p(s5p_mfc_remove),
+	.remove	= s5p_mfc_remove,
 	.id_table = mfc_driver_ids,
 	.driver	= {
 		.name	= S5P_MFC_NAME,
@@ -1638,7 +1638,7 @@ static int __init s5p_mfc_init(void)
 	return 0;
 }
 
-static void __devexit s5p_mfc_exit(void)
+static void s5p_mfc_exit(void)
 {
 	platform_driver_unregister(&s5p_mfc_driver);
 }

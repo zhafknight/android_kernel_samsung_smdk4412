@@ -511,7 +511,7 @@ static int al3201_init_client(struct i2c_client *client)
 	return 0;
 }
 
-static int __devinit al3201_probe(struct i2c_client *client,
+static int al3201_probe(struct i2c_client *client,
 				  const struct i2c_device_id *id)
 {
 	int err = 0;

@@ -1410,7 +1410,7 @@ static int sh_mobile_lcdc_notify(struct notifier_block *nb,
 
 static int sh_mobile_lcdc_remove(struct platform_device *pdev);
 
-static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
+static int sh_mobile_lcdc_probe(struct platform_device *pdev)
 {
 	struct fb_info *info;
 	struct sh_mobile_lcdc_priv *priv;

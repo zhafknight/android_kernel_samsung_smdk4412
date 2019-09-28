@@ -285,7 +285,7 @@ static int idpram_pm_resume(struct device *dev)
 	return 0;
 }
 
-static int __devinit idpram_pm_probe(struct platform_device *pdev)
+static int idpram_pm_probe(struct platform_device *pdev)
 {
 	return 0;
 }

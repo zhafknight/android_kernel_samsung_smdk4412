@@ -9233,7 +9233,7 @@ void mc_asoc_set_codec_ldod(int status)
 	}
 }
 
-static int __devinit mc_asoc_spi_probe(
+static int mc_asoc_spi_probe(
 	struct spi_device *spi)
 {
 	struct mc_asoc_priv	*mc_asoc_priv;
@@ -9272,7 +9272,7 @@ err_alloc_priv:
 	return err;
 }
 
-static int __devexit mc_asoc_spi_remove(struct spi_device *spi)
+static int mc_asoc_spi_remove(struct spi_device *spi)
 {
 	struct mc_asoc_priv	*mc_asoc_priv	= dev_get_drvdata(&spi->dev);
 	struct mc_asoc_data	*mc_asoc;
@@ -9302,7 +9302,7 @@ static struct spi_driver	mc_asoc_spi_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe	= mc_asoc_spi_probe,
-	.remove	= __devexit_p(mc_asoc_spi_remove),
+	.remove	= mc_asoc_spi_remove,
 };
 #elif (BUS_SELECT == BUS_SEL_SLIM)
 #endif

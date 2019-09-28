@@ -531,7 +531,7 @@ void c2c_reset_interrupt(void)
 EXPORT_SYMBOL(c2c_reset_interrupt);
 #endif
 
-static int __devinit samsung_c2c_probe(struct platform_device *pdev)
+static int samsung_c2c_probe(struct platform_device *pdev)
 {
 	struct exynos_c2c_platdata *pdata = pdev->dev.platform_data;
 	struct resource *res = NULL;
@@ -649,7 +649,7 @@ release_ap_sscm:
 	return err;
 }
 
-static int __devexit samsung_c2c_remove(struct platform_device *pdev)
+static int samsung_c2c_remove(struct platform_device *pdev)
 {
 	/* TODO */
 	return 0;
@@ -686,7 +686,7 @@ static int samsung_c2c_resume(struct platform_device *dev)
 
 static struct platform_driver samsung_c2c_driver = {
 	.probe		= samsung_c2c_probe,
-	.remove		= __devexit_p(samsung_c2c_remove),
+	.remove		= samsung_c2c_remove,
 	.suspend	= samsung_c2c_suspend,
 	.resume		= samsung_c2c_resume,
 	.driver		= {

@@ -2129,7 +2129,7 @@ err_info:
 	return ret;
 }
 
-static int __devexit fimc_remove(struct platform_device *pdev)
+static int fimc_remove(struct platform_device *pdev)
 {
 	struct fimc_dev *fimc =
 		(struct fimc_dev *)platform_get_drvdata(pdev);
@@ -2491,7 +2491,7 @@ MODULE_DEVICE_TABLE(platform, fimc_driver_ids);
 
 static struct platform_driver fimc_driver = {
 	.probe		= fimc_probe,
-	.remove	= __devexit_p(fimc_remove),
+	.remove	= fimc_remove,
 	.id_table	= fimc_driver_ids,
 	.driver = {
 		.name	= MODULE_NAME,

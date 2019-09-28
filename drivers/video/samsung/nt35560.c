@@ -588,7 +588,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit nt35560_remove(struct spi_device *spi)
+static int nt35560_remove(struct spi_device *spi)
 {
 	struct lcd_info *lcd = dev_get_drvdata(&spi->dev);
 
@@ -607,7 +607,7 @@ static struct spi_driver nt35560_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= nt35560_probe,
-	.remove		= __devexit_p(nt35560_remove),
+	.remove		= nt35560_remove,
 };
 
 static int __init nt35560_init(void)

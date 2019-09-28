@@ -1190,10 +1190,10 @@ static struct i2c_driver synaptics_ts_driver = {
 	},
 	.id_table = synaptics_ts_id,
 	.probe = synaptics_ts_probe,
-	.remove = __devexit_p(synaptics_ts_remove),
+	.remove = synaptics_ts_remove,
 };
 
-static int __devinit synaptics_ts_init(void)
+static int synaptics_ts_init(void)
 {
 	return i2c_add_driver(&synaptics_ts_driver);
 }

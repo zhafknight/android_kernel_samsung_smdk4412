@@ -846,7 +846,7 @@ static irqreturn_t exynos_dp_irq_handler(int irq, void *arg)
 	return IRQ_HANDLED;
 }
 
-static int __devinit exynos_dp_probe(struct platform_device *pdev)
+static int exynos_dp_probe(struct platform_device *pdev)
 {
 	struct resource *res;
 	struct exynos_dp_device *dp;
@@ -968,7 +968,7 @@ err_dp:
 	return ret;
 }
 
-static int __devexit exynos_dp_remove(struct platform_device *pdev)
+static int exynos_dp_remove(struct platform_device *pdev)
 {
 	struct exynos_dp_platdata *pdata = pdev->dev.platform_data;
 	struct exynos_dp_device *dp = platform_get_drvdata(pdev);
@@ -1043,7 +1043,7 @@ static const struct dev_pm_ops exynos_dp_pm_ops = {
 
 static struct platform_driver exynos_dp_driver = {
 	.probe		= exynos_dp_probe,
-	.remove		= __devexit_p(exynos_dp_remove),
+	.remove		= exynos_dp_remove,
 	.driver		= {
 		.name	= "exynos-dp",
 		.owner	= THIS_MODULE,

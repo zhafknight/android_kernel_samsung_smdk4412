@@ -280,7 +280,7 @@ static struct miscdevice sp805_wdt_miscdev = {
 	.fops = &sp805_wdt_fops,
 };
 
-static int __devinit
+static int
 sp805_wdt_probe(struct amba_device *adev, const struct amba_id *id)
 {
 	int ret = 0;
@@ -340,7 +340,7 @@ err:
 	return ret;
 }
 
-static int __devexit sp805_wdt_remove(struct amba_device *adev)
+static int sp805_wdt_remove(struct amba_device *adev)
 {
 	misc_deregister(&sp805_wdt_miscdev);
 	iounmap(wdt->base);
@@ -365,7 +365,7 @@ static struct amba_driver sp805_wdt_driver = {
 	},
 	.id_table	= sp805_wdt_ids,
 	.probe		= sp805_wdt_probe,
-	.remove = __devexit_p(sp805_wdt_remove),
+	.remove = sp805_wdt_remove,
 };
 
 static int __init sp805_wdt_init(void)

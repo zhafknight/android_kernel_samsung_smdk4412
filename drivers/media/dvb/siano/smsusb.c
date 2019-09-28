@@ -388,7 +388,7 @@ static int smsusb_init_device(struct usb_interface *intf, int board_id)
 	return rc;
 }
 
-static int __devinit smsusb_probe(struct usb_interface *intf,
+static int smsusb_probe(struct usb_interface *intf,
 			const struct usb_device_id *id)
 {
 	struct usb_device *udev = interface_to_usbdev(intf);
@@ -480,7 +480,7 @@ static int smsusb_resume(struct usb_interface *intf)
 	return 0;
 }
 
-static const struct usb_device_id smsusb_id_table[] __devinitconst = {
+static const struct usb_device_id smsusb_id_table[]const = {
 	{ USB_DEVICE(0x187f, 0x0010),
 		.driver_info = SMS1XXX_BOARD_SIANO_STELLAR },
 	{ USB_DEVICE(0x187f, 0x0100),

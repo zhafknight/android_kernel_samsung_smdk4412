@@ -123,7 +123,7 @@ void mali_drm_exit(struct platform_device *dev)
 	}
 }
 
-static int __devinit mali_platform_drm_probe(struct platform_device *dev)
+static int mali_platform_drm_probe(struct platform_device *dev)
 {
 	return mali_drm_init(dev);
 }
@@ -148,7 +148,7 @@ static int mali_platform_drm_resume(struct platform_device *dev)
 
 static struct platform_driver platform_drm_driver = {
 	.probe = mali_platform_drm_probe,
-	.remove = __devexit_p(mali_platform_drm_remove),
+	.remove = mali_platform_drm_remove,
 	.suspend = mali_platform_drm_suspend,
 	.resume = mali_platform_drm_resume,
 	.driver = {

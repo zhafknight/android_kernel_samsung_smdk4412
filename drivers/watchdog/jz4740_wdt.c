@@ -217,7 +217,7 @@ static struct miscdevice jz4740_wdt_miscdev = {
 	.fops = &jz4740_wdt_fops,
 };
 
-static int __devinit jz4740_wdt_probe(struct platform_device *pdev)
+static int jz4740_wdt_probe(struct platform_device *pdev)
 {
 	int ret = 0, size;
 	struct resource *res;
@@ -269,7 +269,7 @@ err_release_region:
 }
 
 
-static int __devexit jz4740_wdt_remove(struct platform_device *pdev)
+static int jz4740_wdt_remove(struct platform_device *pdev)
 {
 	jz4740_wdt_disable();
 	misc_deregister(&jz4740_wdt_miscdev);
@@ -288,7 +288,7 @@ static int __devexit jz4740_wdt_remove(struct platform_device *pdev)
 
 static struct platform_driver jz4740_wdt_driver = {
 	.probe = jz4740_wdt_probe,
-	.remove = __devexit_p(jz4740_wdt_remove),
+	.remove = jz4740_wdt_remove,
 	.driver = {
 		.name = "jz4740-wdt",
 		.owner	= THIS_MODULE,

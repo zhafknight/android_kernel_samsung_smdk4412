@@ -1152,7 +1152,7 @@ static struct platform_driver isif_driver = {
 		.name	= "isif",
 		.owner = THIS_MODULE,
 	},
-	.remove = __devexit_p(isif_remove),
+	.remove = isif_remove,
 	.probe = isif_probe,
 };
 

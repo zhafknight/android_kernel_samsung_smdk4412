@@ -1088,7 +1088,7 @@ static struct i2c_driver alc5623_i2c_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = alc5623_i2c_probe,
-	.remove =  __devexit_p(alc5623_i2c_remove),
+	.remove =  alc5623_i2c_remove,
 	.id_table = alc5623_i2c_table,
 };
 

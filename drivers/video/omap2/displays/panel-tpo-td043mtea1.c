@@ -499,7 +499,7 @@ static int tpo_td043_spi_probe(struct spi_device *spi)
 	return 0;
 }
 
-static int __devexit tpo_td043_spi_remove(struct spi_device *spi)
+static int tpo_td043_spi_remove(struct spi_device *spi)
 {
 	struct tpo_td043_device *tpo_td043 = dev_get_drvdata(&spi->dev);
 
@@ -516,7 +516,7 @@ static struct spi_driver tpo_td043_spi_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe	= tpo_td043_spi_probe,
-	.remove	= __devexit_p(tpo_td043_spi_remove),
+	.remove	= tpo_td043_spi_remove,
 };
 
 static int __init tpo_td043_init(void)

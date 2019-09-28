@@ -502,7 +502,7 @@ static ssize_t barcode_led_status_show(struct device *dev, struct device_attribu
 }
 static DEVICE_ATTR(barcode_led_status, 0664, barcode_led_status_show, NULL);
 
-static int __devinit barcode_emul_probe(struct i2c_client *client,
+static int barcode_emul_probe(struct i2c_client *client,
 		const struct i2c_device_id *id)
 {
 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
@@ -557,7 +557,7 @@ err_free_mem:
 	return error;
 }
 
-static int __devexit barcode_emul_remove(struct i2c_client *client)
+static int barcode_emul_remove(struct i2c_client *client)
 {
 	struct barcode_emul_data *data = i2c_get_clientdata(client);
 
@@ -599,7 +599,7 @@ static struct i2c_driver ice4_i2c_driver = {
 #endif
 	},
 	.probe = barcode_emul_probe,
-	.remove = __devexit_p(barcode_emul_remove),
+	.remove = barcode_emul_remove,
 	.id_table = ice4_id,
 };
 

@@ -1243,7 +1243,7 @@ err_alloc:
 	return ret;
 }
 
-static int __devexit ea8061_remove(struct device *dev)
+static int ea8061_remove(struct device *dev)
 {
 	struct lcd_info *lcd = dev_get_drvdata(dev);
 
@@ -1268,7 +1268,7 @@ static void ea8061_shutdown(struct device *dev)
 static struct mipi_lcd_driver ea8061_mipi_driver = {
 	.name = "ea8061",
 	.probe			= ea8061_probe,
-	.remove			= __devexit_p(ea8061_remove),
+	.remove			= ea8061_remove,
 	.shutdown		= ea8061_shutdown,
 };
 

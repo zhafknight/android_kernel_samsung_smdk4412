@@ -250,7 +250,7 @@ static ssize_t show_label(struct device *dev,
 		       attr->index & DIMM_MASK);
 }
 
-static int __devinit i5k_amb_hwmon_init(struct platform_device *pdev)
+static int i5k_amb_hwmon_init(struct platform_device *pdev)
 {
 	int i, j, k, d = 0;
 	u16 c;
@@ -396,7 +396,7 @@ exit_remove:
 	return res;
 }
 
-static int __devinit i5k_amb_add(void)
+static int i5k_amb_add(void)
 {
 	int res = -ENODEV;
 
@@ -415,7 +415,7 @@ err:
 	return res;
 }
 
-static int __devinit i5k_find_amb_registers(struct i5k_amb_data *data,
+static int i5k_find_amb_registers(struct i5k_amb_data *data,
 					    unsigned long devid)
 {
 	struct pci_dev *pcidev;
@@ -449,7 +449,7 @@ out:
 	return res;
 }
 
-static int __devinit i5k_channel_probe(u16 *amb_present, unsigned long dev_id)
+static int i5k_channel_probe(u16 *amb_present, unsigned long dev_id)
 {
 	struct pci_dev *pcidev;
 	u16 val16;
@@ -478,14 +478,14 @@ out:
 static struct {
 	unsigned long err;
 	unsigned long fbd0;
-} chipset_ids[] __devinitdata  = {
+} chipset_ids[]  = {
 	{ PCI_DEVICE_ID_INTEL_5000_ERR, PCI_DEVICE_ID_INTEL_5000_FBD0 },
 	{ PCI_DEVICE_ID_INTEL_5400_ERR, PCI_DEVICE_ID_INTEL_5400_FBD0 },
 	{ 0, 0 }
 };
 
 #ifdef MODULE
-static struct pci_device_id i5k_amb_ids[] __devinitdata = {
+static struct pci_device_id i5k_amb_ids[] = {
 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5400_ERR) },
 	{ 0, }
@@ -493,7 +493,7 @@ static struct pci_device_id i5k_amb_ids[] __devinitdata = {
 MODULE_DEVICE_TABLE(pci, i5k_amb_ids);
 #endif
 
-static int __devinit i5k_amb_probe(struct platform_device *pdev)
+static int i5k_amb_probe(struct platform_device *pdev)
 {
 	struct i5k_amb_data *data;
 	struct resource *reso;
@@ -554,7 +554,7 @@ err:
 	return res;
 }
 
-static int __devexit i5k_amb_remove(struct platform_device *pdev)
+static int i5k_amb_remove(struct platform_device *pdev)
 {
 	int i;
 	struct i5k_amb_data *data = platform_get_drvdata(pdev);
@@ -577,7 +577,7 @@ static struct platform_driver i5k_amb_driver = {
 		.name = DRVNAME,
 	},
 	.probe = i5k_amb_probe,
-	.remove = __devexit_p(i5k_amb_remove),
+	.remove = i5k_amb_remove,
 };
 
 static int __init i5k_amb_init(void)

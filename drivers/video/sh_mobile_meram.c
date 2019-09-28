@@ -473,7 +473,7 @@ static struct sh_mobile_meram_ops sh_mobile_meram_ops = {
 
 static int sh_mobile_meram_remove(struct platform_device *pdev);
 
-static int __devinit sh_mobile_meram_probe(struct platform_device *pdev)
+static int sh_mobile_meram_probe(struct platform_device *pdev)
 {
 	struct sh_mobile_meram_priv *priv;
 	struct sh_mobile_meram_info *pdata = pdev->dev.platform_data;

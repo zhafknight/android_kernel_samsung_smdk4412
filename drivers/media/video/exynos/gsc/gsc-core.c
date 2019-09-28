@@ -1442,7 +1442,7 @@ err_info:
 	return ret;
 }
 
-static int __devexit gsc_remove(struct platform_device *pdev)
+static int gsc_remove(struct platform_device *pdev)
 {
 	struct gsc_dev *gsc =
 		(struct gsc_dev *)platform_get_drvdata(pdev);
@@ -1644,7 +1644,7 @@ MODULE_DEVICE_TABLE(platform, gsc_driver_ids);
 
 static struct platform_driver gsc_driver = {
 	.probe		= gsc_probe,
-	.remove	= __devexit_p(gsc_remove),
+	.remove	= gsc_remove,
 	.id_table	= gsc_driver_ids,
 	.driver = {
 		.name	= GSC_MODULE_NAME,

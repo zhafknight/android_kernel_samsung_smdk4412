@@ -778,7 +778,7 @@ int cx8802_unregister_driver(struct cx8802_driver *drv)
 }
 
 /* ----------------------------------------------------------- */
-static int __devinit cx8802_probe(struct pci_dev *pci_dev,
+static int cx8802_probe(struct pci_dev *pci_dev,
 			       const struct pci_device_id *pci_id)
 {
 	struct cx8802_dev *dev;
@@ -827,7 +827,7 @@ static int __devinit cx8802_probe(struct pci_dev *pci_dev,
 	return err;
 }
 
-static void __devexit cx8802_remove(struct pci_dev *pci_dev)
+static void cx8802_remove(struct pci_dev *pci_dev)
 {
 	struct cx8802_dev *dev;
 
@@ -885,7 +885,7 @@ static struct pci_driver cx8802_pci_driver = {
 	.name     = "cx88-mpeg driver manager",
 	.id_table = cx8802_pci_tbl,
 	.probe    = cx8802_probe,
-	.remove   = __devexit_p(cx8802_remove),
+	.remove   = cx8802_remove,
 };
 
 static int __init cx8802_init(void)

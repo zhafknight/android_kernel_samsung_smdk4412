@@ -236,7 +236,7 @@ static struct max8925_regulator_info max8925_regulator_info[] = {
 	MAX8925_LDO(20, 750, 3900, 50),
 };
 
-static struct max8925_regulator_info * __devinit find_regulator_info(int id)
+static struct max8925_regulator_info * find_regulator_info(int id)
 {
 	struct max8925_regulator_info *ri;
 	int i;
@@ -249,7 +249,7 @@ static struct max8925_regulator_info * __devinit find_regulator_info(int id)
 	return NULL;
 }
 
-static int __devinit max8925_regulator_probe(struct platform_device *pdev)
+static int max8925_regulator_probe(struct platform_device *pdev)
 {
 	struct max8925_chip *chip = dev_get_drvdata(pdev->dev.parent);
 	struct max8925_platform_data *pdata = chip->dev->platform_data;
@@ -276,7 +276,7 @@ static int __devinit max8925_regulator_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit max8925_regulator_remove(struct platform_device *pdev)
+static int max8925_regulator_remove(struct platform_device *pdev)
 {
 	struct regulator_dev *rdev = platform_get_drvdata(pdev);
 
@@ -292,7 +292,7 @@ static struct platform_driver max8925_regulator_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= max8925_regulator_probe,
-	.remove		= __devexit_p(max8925_regulator_remove),
+	.remove		= max8925_regulator_remove,
 };
 
 static int __init max8925_regulator_init(void)

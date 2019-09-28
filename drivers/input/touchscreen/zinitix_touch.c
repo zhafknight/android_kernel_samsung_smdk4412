@@ -2402,7 +2402,7 @@ static int zinitix_touch_remove(struct i2c_client *client)
 	return 0;
 }
 
-static int __devinit zinitix_touch_init(void)
+static int zinitix_touch_init(void)
 {
 	return i2c_add_driver(&zinitix_touch_driver);
 }

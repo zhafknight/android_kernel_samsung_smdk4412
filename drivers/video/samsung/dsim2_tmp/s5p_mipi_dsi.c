@@ -678,7 +678,7 @@ err_free:
 	return ret;
 }
 
-static int __devexit s5p_mipi_dsi_remove(struct platform_device *pdev)
+static int s5p_mipi_dsi_remove(struct platform_device *pdev)
 {
 	struct mipi_dsim_device *dsim = platform_get_drvdata(pdev);
 	struct mipi_dsim_ddi *dsim_ddi;
@@ -770,7 +770,7 @@ static const struct dev_pm_ops s5p_mipi_dsi_pm_ops = {
 
 static struct platform_driver s5p_mipi_dsi_driver = {
 	.probe			= s5p_mipi_dsi_probe,
-	.remove			= __devexit_p(s5p_mipi_dsi_remove),
+	.remove			= s5p_mipi_dsi_remove,
 	.driver = {
 		   .name = "s5p-mipi-dsim",
 		   .owner = THIS_MODULE,

@@ -276,7 +276,7 @@ static struct miscdevice ar7_wdt_miscdev = {
 	.fops		= &ar7_wdt_fops,
 };
 
-static int __devinit ar7_wdt_probe(struct platform_device *pdev)
+static int ar7_wdt_probe(struct platform_device *pdev)
 {
 	int rc;
 
@@ -330,7 +330,7 @@ out:
 	return rc;
 }
 
-static int __devexit ar7_wdt_remove(struct platform_device *pdev)
+static int ar7_wdt_remove(struct platform_device *pdev)
 {
 	misc_deregister(&ar7_wdt_miscdev);
 	iounmap(ar7_wdt);
@@ -347,7 +347,7 @@ static void ar7_wdt_shutdown(struct platform_device *pdev)
 
 static struct platform_driver ar7_wdt_driver = {
 	.probe = ar7_wdt_probe,
-	.remove = __devexit_p(ar7_wdt_remove),
+	.remove = ar7_wdt_remove,
 	.shutdown = ar7_wdt_shutdown,
 	.driver = {
 		.owner = THIS_MODULE,

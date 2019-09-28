@@ -1173,7 +1173,7 @@ static void kr3dh_format_chip_data(struct kr3dh_chip *chip,
 	chip->int2_duration = pdata->int2_duration & KR3DH_INT_DURATION_MASK;
 }
 
-static int __devinit kr3dh_probe(struct i2c_client *client,
+static int kr3dh_probe(struct i2c_client *client,
 			  const struct i2c_device_id *id)
 {
 	struct kr3dh_chip *chip;
@@ -1234,7 +1234,7 @@ error_sysfs:
 	return ret;
 }
 
-static int __devexit kr3dh_remove(struct i2c_client *client)
+static int kr3dh_remove(struct i2c_client *client)
 {
 	struct kr3dh_chip *chip = i2c_get_clientdata(client);
 

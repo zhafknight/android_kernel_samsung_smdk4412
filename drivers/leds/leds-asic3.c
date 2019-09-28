@@ -91,7 +91,7 @@ static int blink_set(struct led_classdev *cdev,
 	return 0;
 }
 
-static int __devinit asic3_led_probe(struct platform_device *pdev)
+static int asic3_led_probe(struct platform_device *pdev)
 {
 	struct asic3_led *led = pdev->dev.platform_data;
 	int ret;
@@ -125,7 +125,7 @@ ret0:
 	return ret;
 }
 
-static int __devexit asic3_led_remove(struct platform_device *pdev)
+static int asic3_led_remove(struct platform_device *pdev)
 {
 	struct asic3_led *led = pdev->dev.platform_data;
 
@@ -138,7 +138,7 @@ static int __devexit asic3_led_remove(struct platform_device *pdev)
 
 static struct platform_driver asic3_led_driver = {
 	.probe		= asic3_led_probe,
-	.remove		= __devexit_p(asic3_led_remove),
+	.remove		= asic3_led_remove,
 	.driver		= {
 		.name	= "leds-asic3",
 		.owner	= THIS_MODULE,

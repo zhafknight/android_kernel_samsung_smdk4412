@@ -152,7 +152,7 @@ static int fm34_init_parameter(struct fm34_data *fm34)
 	return ret;
 }
 
-static int __devinit fm34_probe(
+static int fm34_probe(
 		struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct fm34_data *fm34;
@@ -237,7 +237,7 @@ err_device_create:
 	return ret;
 }
 
-static int __devexit fm34_remove(struct i2c_client *client)
+static int fm34_remove(struct i2c_client *client)
 {
 	struct fm34_data *fm34 = i2c_get_clientdata(client);
 	i2c_set_clientdata(client, NULL);
@@ -269,7 +269,7 @@ static const struct dev_pm_ops fm34_pm_ops = {
 
 static struct i2c_driver fm34_driver = {
 	.probe = fm34_probe,
-	.remove = __devexit_p(fm34_remove),
+	.remove = fm34_remove,
 	.id_table = fm34_id,
 	.driver = {
 		.name = "fm34_we395",

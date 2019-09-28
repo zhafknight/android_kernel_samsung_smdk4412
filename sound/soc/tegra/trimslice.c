@@ -151,7 +151,7 @@ static struct snd_soc_card snd_soc_trimslice = {
 	.num_dapm_routes = ARRAY_SIZE(trimslice_audio_map),
 };
 
-static __devinit int tegra_snd_trimslice_probe(struct platform_device *pdev)
+static int tegra_snd_trimslice_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = &snd_soc_trimslice;
 	struct tegra_trimslice *trimslice;
@@ -187,7 +187,7 @@ err_free_trimslice:
 	return ret;
 }
 
-static int __devexit tegra_snd_trimslice_remove(struct platform_device *pdev)
+static int tegra_snd_trimslice_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 	struct tegra_trimslice *trimslice = snd_soc_card_get_drvdata(card);
@@ -207,7 +207,7 @@ static struct platform_driver tegra_snd_trimslice_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = tegra_snd_trimslice_probe,
-	.remove = __devexit_p(tegra_snd_trimslice_remove),
+	.remove = tegra_snd_trimslice_remove,
 };
 
 static int __init snd_tegra_trimslice_init(void)

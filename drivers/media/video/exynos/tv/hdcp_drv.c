@@ -154,7 +154,7 @@ ddc_write_err:
 	return -ETIME;
 }
 
-static int __devinit hdcp_probe(struct i2c_client *client,
+static int hdcp_probe(struct i2c_client *client,
 			const struct i2c_device_id *dev_id)
 {
 	int ret = 0;
@@ -197,7 +197,7 @@ static struct i2c_driver hdcp_driver = {
 	},
 	.id_table	= hdcp_idtable,
 	.probe		= hdcp_probe,
-	.remove		= __devexit_p(hdcp_remove),
+	.remove		= hdcp_remove,
 	.suspend	= hdcp_suspend,
 	.resume		= hdcp_resume,
 };

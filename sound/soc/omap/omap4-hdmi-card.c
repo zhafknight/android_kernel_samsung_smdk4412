@@ -78,7 +78,7 @@ static struct snd_soc_card snd_soc_omap4_hdmi = {
 	.num_links = 1,
 };
 
-static __devinit int omap4_hdmi_probe(struct platform_device *pdev)
+static int omap4_hdmi_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = &snd_soc_omap4_hdmi;
 	int ret;
@@ -94,7 +94,7 @@ static __devinit int omap4_hdmi_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit omap4_hdmi_remove(struct platform_device *pdev)
+static int omap4_hdmi_remove(struct platform_device *pdev)
 {
 	struct snd_soc_card *card = platform_get_drvdata(pdev);
 
@@ -109,7 +109,7 @@ static struct platform_driver omap4_hdmi_driver = {
 		.owner = THIS_MODULE,
 	},
 	.probe = omap4_hdmi_probe,
-	.remove = __devexit_p(omap4_hdmi_remove),
+	.remove = omap4_hdmi_remove,
 };
 
 static int __init omap4_hdmi_init(void)

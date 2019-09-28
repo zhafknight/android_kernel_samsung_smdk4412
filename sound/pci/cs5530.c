@@ -81,13 +81,13 @@ static int snd_cs5530_dev_free(struct snd_device *device)
 	return snd_cs5530_free(chip);
 }
 
-static void __devexit snd_cs5530_remove(struct pci_dev *pci)
+static void snd_cs5530_remove(struct pci_dev *pci)
 {
 	snd_card_free(pci_get_drvdata(pci));
 	pci_set_drvdata(pci, NULL);
 }
 
-static u8 __devinit snd_cs5530_mixer_read(unsigned long io, u8 reg)
+static u8 snd_cs5530_mixer_read(unsigned long io, u8 reg)
 {
 	outb(reg, io + 4);
 	udelay(20);
@@ -96,7 +96,7 @@ static u8 __devinit snd_cs5530_mixer_read(unsigned long io, u8 reg)
 	return reg;
 }
 
-static int __devinit snd_cs5530_create(struct snd_card *card,
+static int snd_cs5530_create(struct snd_card *card,
 				       struct pci_dev *pci,
 				       struct snd_cs5530 **rchip)
 {
@@ -244,7 +244,7 @@ static int __devinit snd_cs5530_create(struct snd_card *card,
 	return 0;
 }
 
-static int __devinit snd_cs5530_probe(struct pci_dev *pci,
+static int snd_cs5530_probe(struct pci_dev *pci,
 					const struct pci_device_id *pci_id)
 {
 	static int dev;
@@ -288,7 +288,7 @@ static struct pci_driver driver = {
 	.name = "CS5530_Audio",
 	.id_table = snd_cs5530_ids,
 	.probe = snd_cs5530_probe,
-	.remove = __devexit_p(snd_cs5530_remove),
+	.remove = snd_cs5530_remove,
 };
 
 static int __init alsa_card_cs5530_init(void)

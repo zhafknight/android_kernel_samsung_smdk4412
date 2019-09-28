@@ -736,7 +736,7 @@ static struct ab8500_reg_init ab8500_reg_init[] = {
 	REG_INIT(AB8500_REGUCTRLDISCH2,		0x04, 0x44, 0x16),
 };
 
-static __devinit int ab8500_regulator_probe(struct platform_device *pdev)
+static int ab8500_regulator_probe(struct platform_device *pdev)
 {
 	struct ab8500 *ab8500 = dev_get_drvdata(pdev->dev.parent);
 	struct ab8500_platform_data *pdata;
@@ -841,7 +841,7 @@ static __devinit int ab8500_regulator_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static __devexit int ab8500_regulator_remove(struct platform_device *pdev)
+static int ab8500_regulator_remove(struct platform_device *pdev)
 {
 	int i;
 
@@ -860,7 +860,7 @@ static __devexit int ab8500_regulator_remove(struct platform_device *pdev)
 
 static struct platform_driver ab8500_regulator_driver = {
 	.probe = ab8500_regulator_probe,
-	.remove = __devexit_p(ab8500_regulator_remove),
+	.remove = ab8500_regulator_remove,
 	.driver         = {
 		.name   = "ab8500-regulator",
 		.owner  = THIS_MODULE,

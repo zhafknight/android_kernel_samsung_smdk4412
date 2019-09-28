@@ -156,7 +156,7 @@ unsigned int twl4030_audio_get_mclk(void)
 }
 EXPORT_SYMBOL_GPL(twl4030_audio_get_mclk);
 
-static int __devinit twl4030_audio_probe(struct platform_device *pdev)
+static int twl4030_audio_probe(struct platform_device *pdev)
 {
 	struct twl4030_audio *audio;
 	struct twl4030_audio_data *pdata = pdev->dev.platform_data;
@@ -238,7 +238,7 @@ static int __devinit twl4030_audio_probe(struct platform_device *pdev)
 	return ret;
 }
 
-static int __devexit twl4030_audio_remove(struct platform_device *pdev)
+static int twl4030_audio_remove(struct platform_device *pdev)
 {
 	struct twl4030_audio *audio = platform_get_drvdata(pdev);
 
@@ -254,20 +254,20 @@ MODULE_ALIAS("platform:twl4030-audio");
 
 static struct platform_driver twl4030_audio_driver = {
 	.probe		= twl4030_audio_probe,
-	.remove		= __devexit_p(twl4030_audio_remove),
+	.remove		= twl4030_audio_remove,
 	.driver		= {
 		.owner	= THIS_MODULE,
 		.name	= "twl4030-audio",
 	},
 };
 
-static int __devinit twl4030_audio_init(void)
+static int twl4030_audio_init(void)
 {
 	return platform_driver_register(&twl4030_audio_driver);
 }
 module_init(twl4030_audio_init);
 
-static void __devexit twl4030_audio_exit(void)
+static void twl4030_audio_exit(void)
 {
 	platform_driver_unregister(&twl4030_audio_driver);
 }

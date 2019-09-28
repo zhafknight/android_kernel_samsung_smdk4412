@@ -55,7 +55,7 @@ static DEFINE_PCI_DEVICE_TABLE(ct_pci_dev_ids) = {
 };
 MODULE_DEVICE_TABLE(pci, ct_pci_dev_ids);
 
-static int __devinit
+static int
 ct_card_probe(struct pci_dev *pci, const struct pci_device_id *pci_id)
 {
 	static int dev;
@@ -118,7 +118,7 @@ error:
 	return err;
 }
 
-static void __devexit ct_card_remove(struct pci_dev *pci)
+static void ct_card_remove(struct pci_dev *pci)
 {
 	snd_card_free(pci_get_drvdata(pci));
 	pci_set_drvdata(pci, NULL);
@@ -146,7 +146,7 @@ static struct pci_driver ct_driver = {
 	.name = "SB-XFi",
 	.id_table = ct_pci_dev_ids,
 	.probe = ct_card_probe,
-	.remove = __devexit_p(ct_card_remove),
+	.remove = ct_card_remove,
 #ifdef CONFIG_PM
 	.suspend = ct_card_suspend,
 	.resume = ct_card_resume,

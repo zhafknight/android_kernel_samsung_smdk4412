@@ -134,7 +134,7 @@ static const struct ad7879_bus_ops ad7879_spi_bus_ops = {
 	.write		= ad7879_spi_write,
 };
 
-static int __devinit ad7879_spi_probe(struct spi_device *spi)
+static int ad7879_spi_probe(struct spi_device *spi)
 {
 	struct ad7879 *ts;
 	int err;
@@ -161,7 +161,7 @@ static int __devinit ad7879_spi_probe(struct spi_device *spi)
 	return 0;
 }
 
-static int __devexit ad7879_spi_remove(struct spi_device *spi)
+static int ad7879_spi_remove(struct spi_device *spi)
 {
 	struct ad7879 *ts = spi_get_drvdata(spi);
 
@@ -179,7 +179,7 @@ static struct spi_driver ad7879_spi_driver = {
 		.pm	= &ad7879_spi_pm,
 	},
 	.probe		= ad7879_spi_probe,
-	.remove		= __devexit_p(ad7879_spi_remove),
+	.remove		= ad7879_spi_remove,
 };
 
 static int __init ad7879_spi_init(void)

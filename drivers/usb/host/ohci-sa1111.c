@@ -178,7 +178,7 @@ void usb_hcd_sa1111_remove (struct usb_hcd *hcd, struct sa1111_dev *dev)
 
 /*-------------------------------------------------------------------------*/
 
-static int __devinit
+static int
 ohci_sa1111_start (struct usb_hcd *hcd)
 {
 	struct ohci_hcd	*ohci = hcd_to_ohci (hcd);

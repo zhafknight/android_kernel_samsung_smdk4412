@@ -17,7 +17,7 @@
 
 static int wakeup_assist_keycode[] = { KEY_POWER };
 
-static int __devinit wakeup_assist_probe(struct platform_device *pdev)
+static int wakeup_assist_probe(struct platform_device *pdev)
 {
 	int error;
 	struct input_dev *input_dev;
@@ -53,7 +53,7 @@ static int __devinit wakeup_assist_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int __devexit wakeup_assist_remove(struct platform_device *pdev)
+static int wakeup_assist_remove(struct platform_device *pdev)
 {
 	struct input_dev *input_dev = platform_get_drvdata(pdev);
 
@@ -85,7 +85,7 @@ static const struct dev_pm_ops wakeup_assist_pm_ops = {
 
 static struct platform_driver wakeup_assist_driver = {
 	.probe		= wakeup_assist_probe,
-	.remove		= __devexit_p(wakeup_assist_remove),
+	.remove		= wakeup_assist_remove,
 	.driver		= {
 		.name	= DEV_NAME,
 		.owner	= THIS_MODULE,

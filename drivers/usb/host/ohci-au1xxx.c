@@ -109,7 +109,7 @@ static void au1xxx_stop_ohc(void)
 	au_sync();
 }
 
-static int __devinit ohci_au1xxx_start(struct usb_hcd *hcd)
+static int ohci_au1xxx_start(struct usb_hcd *hcd)
 {
 	struct ohci_hcd	*ohci = hcd_to_ohci(hcd);
 	int ret;

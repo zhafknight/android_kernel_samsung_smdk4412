@@ -78,7 +78,7 @@ static const struct backlight_ops bl_ops = {
 	.update_status		= tosa_bl_update_status,
 };
 
-static int __devinit tosa_bl_probe(struct i2c_client *client,
+static int tosa_bl_probe(struct i2c_client *client,
 		const struct i2c_device_id *id)
 {
 	struct backlight_properties props;
@@ -127,7 +127,7 @@ err_gpio_bl:
 	return ret;
 }
 
-static int __devexit tosa_bl_remove(struct i2c_client *client)
+static int tosa_bl_remove(struct i2c_client *client)
 {
 	struct tosa_bl_data *data = i2c_get_clientdata(client);
 
@@ -175,7 +175,7 @@ static struct i2c_driver tosa_bl_driver = {
 		.owner		= THIS_MODULE,
 	},
 	.probe		= tosa_bl_probe,
-	.remove		= __devexit_p(tosa_bl_remove),
+	.remove		= tosa_bl_remove,
 	.suspend	= tosa_bl_suspend,
 	.resume		= tosa_bl_resume,
 	.id_table	= tosa_bl_id,

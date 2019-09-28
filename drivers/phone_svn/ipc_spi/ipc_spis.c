@@ -3640,7 +3640,7 @@ err:
 }
 #endif
 
-static int __devinit ipc_spi_platform_probe(struct platform_device *pdev)
+static int ipc_spi_platform_probe(struct platform_device *pdev)
 {
 	int r;
 	int irq;
@@ -3757,7 +3757,7 @@ err:
 	return r;
 }
 
-static int __devexit ipc_spi_platform_remove(struct platform_device *pdev)
+static int ipc_spi_platform_remove(struct platform_device *pdev)
 {
 	struct ipc_spi *od = platform_get_drvdata(pdev);
 
@@ -3821,7 +3821,7 @@ static int ipc_spi_remove(struct spi_device *spi)
 
 static struct platform_driver ipc_spi_platform_driver = {
 	.probe = ipc_spi_platform_probe,
-	.remove = __devexit_p(ipc_spi_platform_remove),
+	.remove = ipc_spi_platform_remove,
 	.suspend = ipc_spi_platform_suspend,
 	.resume = ipc_spi_platform_resume,
 	.driver = {
@@ -3831,7 +3831,7 @@ static struct platform_driver ipc_spi_platform_driver = {
 
 static struct spi_driver ipc_spi_driver = {
 	.probe = ipc_spi_probe,
-	.remove = __devexit_p(ipc_spi_remove),
+	.remove = ipc_spi_remove,
 	.driver = {
 		.name = "ipc_spi",
 		.bus = &spi_bus_type,

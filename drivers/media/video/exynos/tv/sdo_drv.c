@@ -370,7 +370,7 @@ static void sdo_entity_info_print(struct sdo_device *sdev)
 	dev_dbg(sdev->dev, "*********************************************\n\n");
 }
 
-static int __devinit sdo_probe(struct platform_device *pdev)
+static int sdo_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct sdo_device *sdev;
@@ -486,7 +486,7 @@ fail:
 	return ret;
 }
 
-static int __devexit sdo_remove(struct platform_device *pdev)
+static int sdo_remove(struct platform_device *pdev)
 {
 	struct v4l2_subdev *sd = dev_get_drvdata(&pdev->dev);
 	struct sdo_device *sdev = sd_to_sdev(sd);
@@ -509,7 +509,7 @@ static int __devexit sdo_remove(struct platform_device *pdev)
 
 static struct platform_driver sdo_driver __refdata = {
 	.probe = sdo_probe,
-	.remove = __devexit_p(sdo_remove),
+	.remove = sdo_remove,
 	.driver = {
 		.name = "s5p-sdo",
 		.owner = THIS_MODULE,

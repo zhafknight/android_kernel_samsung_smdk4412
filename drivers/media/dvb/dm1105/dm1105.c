@@ -615,7 +615,7 @@ static void dm1105_set_dma_addr(struct dm1105_dev *dev)
 	dm_writel(DM1105_STADR, cpu_to_le32(dev->dma_addr));
 }
 
-static int __devinit dm1105_dma_map(struct dm1105_dev *dev)
+static int dm1105_dma_map(struct dm1105_dev *dev)
 {
 	dev->ts_buf = pci_alloc_consistent(dev->pdev,
 					6 * DM1105_DMA_BYTES,
@@ -735,7 +735,7 @@ static irqreturn_t dm1105_irq(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-int __devinit dm1105_ir_init(struct dm1105_dev *dm1105)
+int dm1105_ir_init(struct dm1105_dev *dm1105)
 {
 	struct rc_dev *dev;
 	int err = -ENOMEM;
@@ -775,12 +775,12 @@ int __devinit dm1105_ir_init(struct dm1105_dev *dm1105)
 	return 0;
 }
 
-void __devexit dm1105_ir_exit(struct dm1105_dev *dm1105)
+void dm1105_ir_exit(struct dm1105_dev *dm1105)
 {
 	rc_unregister_device(dm1105->ir.dev);
 }
 
-static int __devinit dm1105_hw_init(struct dm1105_dev *dev)
+static int dm1105_hw_init(struct dm1105_dev *dev)
 {
 	dm1105_disable_irqs(dev);
 
@@ -848,7 +848,7 @@ static struct ds3000_config dvbworld_ds3000_config = {
 	.demod_address = 0x68,
 };
 
-static int __devinit frontend_init(struct dm1105_dev *dev)
+static int frontend_init(struct dm1105_dev *dev)
 {
 	int ret;
 
@@ -948,7 +948,7 @@ static int __devinit frontend_init(struct dm1105_dev *dev)
 	return 0;
 }
 
-static void __devinit dm1105_read_mac(struct dm1105_dev *dev, u8 *mac)
+static void dm1105_read_mac(struct dm1105_dev *dev, u8 *mac)
 {
 	static u8 command[1] = { 0x28 };
 
@@ -970,7 +970,7 @@ static void __devinit dm1105_read_mac(struct dm1105_dev *dev, u8 *mac)
 	dev_info(&dev->pdev->dev, "MAC %pM\n", mac);
 }
 
-static int __devinit dm1105_probe(struct pci_dev *pdev,
+static int dm1105_probe(struct pci_dev *pdev,
 				  const struct pci_device_id *ent)
 {
 	struct dm1105_dev *dev;
@@ -1168,7 +1168,7 @@ err_kfree:
 	return ret;
 }
 
-static void __devexit dm1105_remove(struct pci_dev *pdev)
+static void dm1105_remove(struct pci_dev *pdev)
 {
 	struct dm1105_dev *dev = pci_get_drvdata(pdev);
 	struct dvb_adapter *dvb_adapter = &dev->dvb_adapter;
@@ -1201,7 +1201,7 @@ static void __devexit dm1105_remove(struct pci_dev *pdev)
 	kfree(dev);
 }
 
-static struct pci_device_id dm1105_id_table[] __devinitdata = {
+static struct pci_device_id dm1105_id_table[] = {
 	{
 		.vendor = PCI_VENDOR_ID_TRIGEM,
 		.device = PCI_DEVICE_ID_DM1105,
@@ -1223,7 +1223,7 @@ static struct pci_driver dm1105_driver = {
 	.name = DRIVER_NAME,
 	.id_table = dm1105_id_table,
 	.probe = dm1105_probe,
-	.remove = __devexit_p(dm1105_remove),
+	.remove = dm1105_remove,
 };
 
 static int __init dm1105_init(void)

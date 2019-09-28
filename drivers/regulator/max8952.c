@@ -184,7 +184,7 @@ static struct regulator_desc regulator = {
 	.owner		= THIS_MODULE,
 };
 
-static int __devinit max8952_pmic_probe(struct i2c_client *client,
+static int max8952_pmic_probe(struct i2c_client *client,
 		const struct i2c_device_id *i2c_id)
 {
 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
@@ -319,7 +319,7 @@ err_reg:
 	return ret;
 }
 
-static int __devexit max8952_pmic_remove(struct i2c_client *client)
+static int max8952_pmic_remove(struct i2c_client *client)
 {
 	struct max8952_data *max8952 = i2c_get_clientdata(client);
 	struct max8952_platform_data *pdata = max8952->pdata;
@@ -343,7 +343,7 @@ MODULE_DEVICE_TABLE(i2c, max8952_ids);
 
 static struct i2c_driver max8952_pmic_driver = {
 	.probe		= max8952_pmic_probe,
-	.remove		= __devexit_p(max8952_pmic_remove),
+	.remove		= max8952_pmic_remove,
 	.driver		= {
 		.name	= "max8952",
 	},
