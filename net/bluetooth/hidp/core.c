@@ -945,13 +945,6 @@ static int hidp_setup_hid(struct hidp_session *session,
 	hid->hid_get_raw_report = hidp_get_raw_report;
 	hid->hid_output_raw_report = hidp_output_raw_report;
 
-	/* True if device is blacklisted in drivers/hid/hid-core.c */
-	if (hid_ignore(hid)) {
-		hid_destroy_device(session->hid);
-		session->hid = NULL;
-		return -ENODEV;
-	}
-
 	return 0;
 
 fault:
@@ -1024,7 +1017,7 @@ int hidp_add_connection(struct hidp_connadd_req *req, struct socket *ctrl_sock, 
 
 	if (req->rd_size > 0) {
 		err = hidp_setup_hid(session, req);
-		if (err && err != -ENODEV)
+		if (err)
 			goto purge;
 	}
 
