@@ -35,6 +35,8 @@ sound
 drivers/leds
 include/linux/leds.h
 drivers/hid
+include/linux/hid*
+include/linux/i2c/i2c-hid.h
 include/linux/opp.h
 include/linux/platform_data/exynos4_tmu.h
 drivers/watchdog
