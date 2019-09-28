@@ -3,11 +3,8 @@
  *
  * Authors:
  *	Eunchul Kim <chulspro.kim@samsung.com>
-<<<<<<< HEAD
-=======
  *	Jinyoung Jeon <jy0.jeon@samsung.com>
  *	Sangmin Lee <lsmin.lee@samsung.com>
->>>>>>> 3c2e81ef344a
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,14 +29,11 @@
 #ifndef _EXYNOS_DRM_IPP_H_
 #define _EXYNOS_DRM_IPP_H_
 
-<<<<<<< HEAD
-=======
 #define for_each_ipp_ops(pos)	\
 	for (pos = 0; pos < EXYNOS_DRM_OPS_MAX; pos++)
 #define for_each_ipp_planar(pos)	\
 	for (pos = 0; pos < EXYNOS_DRM_PLANAR_MAX; pos++)
 
->>>>>>> 3c2e81ef344a
 #define IPP_GET_LCD_WIDTH	_IOR('F', 302, int)
 #define IPP_GET_LCD_HEIGHT	_IOR('F', 303, int)
 #define IPP_SET_WRITEBACK	_IOW('F', 304, u32)
@@ -52,8 +46,6 @@ enum drm_exynos_ipp_state {
 };
 
 /*
-<<<<<<< HEAD
-=======
  * A structure of command work information.
  * @work: work structure.
  * @ippdrv: current work ippdrv.
@@ -103,19 +95,10 @@ struct drm_exynos_ipp_cmd_node {
 };
 
 /*
->>>>>>> 3c2e81ef344a
  * A structure of buffer information.
  *
  * @gem_objs: Y, Cb, Cr each gem object.
  * @base: Y, Cb, Cr each planar address.
-<<<<<<< HEAD
- * @size: Y, Cb, Cr each planar size.
- */
-struct drm_exynos_ipp_buf_info {
-	void	*gem_objs[EXYNOS_DRM_PLANAR_MAX];
-	dma_addr_t	base[EXYNOS_DRM_PLANAR_MAX];
-	uint64_t size[EXYNOS_DRM_PLANAR_MAX];
-=======
  */
 struct drm_exynos_ipp_buf_info {
 	unsigned long	handles[EXYNOS_DRM_PLANAR_MAX];
@@ -144,7 +127,6 @@ struct drm_exynos_ipp_event_work {
 	struct work_struct	work;
 	struct exynos_drm_ippdrv *ippdrv;
 	u32	buf_id[EXYNOS_DRM_OPS_MAX];
->>>>>>> 3c2e81ef344a
 };
 
 /*
@@ -159,60 +141,17 @@ struct exynos_drm_ipp_ops {
 	int (*set_fmt)(struct device *dev, u32 fmt);
 	int (*set_transf)(struct device *dev,
 		enum drm_exynos_degree degree,
-<<<<<<< HEAD
-		enum drm_exynos_flip flip);
-	int (*set_size)(struct device *dev, int swap,
-		struct drm_exynos_pos *pos, struct drm_exynos_sz *sz);
-	int (*set_addr)(struct device *dev,
-			 struct drm_exynos_ipp_buf_info *buf_info, u32 buf_id,
-		enum drm_exynos_ipp_buf_ctrl buf_ctrl);
-=======
 		enum drm_exynos_flip flip, bool *swap);
 	int (*set_size)(struct device *dev, int swap,
 		struct drm_exynos_pos *pos, struct drm_exynos_sz *sz);
 	int (*set_addr)(struct device *dev,
 		 struct drm_exynos_ipp_buf_info *buf_info, u32 buf_id,
 		enum drm_exynos_ipp_buf_type buf_type);
->>>>>>> 3c2e81ef344a
 };
 
 /*
  * A structure of ipp driver.
  *
-<<<<<<< HEAD
- * @list: list head.
- * @dev: platform device.
- * @drm_dev: drm device.
- * @state: state of ipp drivers.
- * @ipp_id: id of ipp driver.
- * @dedicated: dedicated ipp device.
- * @iommu_used: iommu used status.
- * @cmd: used command.
- * @ops: source, destination operations.
- * @property: current property.
- * @prop_idr: property idr.
- * @cmd_list: list head to command information.
- * @event_list: list head to event information.
- * @reset: reset ipp block.
- * @check_property: check property about format, size, buffer.
- * @start: ipp each device start.
- * @stop: ipp each device stop.
- */
-struct exynos_drm_ippdrv {
-	struct list_head	list;
-	struct device	*dev;
-	struct drm_device	*drm_dev;
-	enum drm_exynos_ipp_state	state;
-	u32	ipp_id;
-	bool	dedicated;
-	bool	iommu_used;
-	enum drm_exynos_ipp_cmd	cmd;
-	struct exynos_drm_ipp_ops	*ops[EXYNOS_DRM_OPS_MAX];
-	struct drm_exynos_ipp_property	*property;
-	struct idr	prop_idr;
-	struct list_head	cmd_list;
-	struct list_head	event_list;
-=======
  * @drv_list: list head for registed sub driver information.
  * @parent_dev: parent device information.
  * @dev: platform device.
@@ -242,17 +181,13 @@ struct exynos_drm_ippdrv {
 	struct drm_exynos_ipp_cmd_node *cmd;
 	struct list_head	cmd_list;
 	struct drm_exynos_ipp_prop_list *prop_list;
->>>>>>> 3c2e81ef344a
 
 	int (*check_property)(struct device *dev,
 		struct drm_exynos_ipp_property *property);
 	int (*reset)(struct device *dev);
 	int (*start)(struct device *dev, enum drm_exynos_ipp_cmd cmd);
 	void (*stop)(struct device *dev, enum drm_exynos_ipp_cmd cmd);
-<<<<<<< HEAD
-=======
 	void (*sched_event)(struct work_struct *work);
->>>>>>> 3c2e81ef344a
 };
 
 #ifdef CONFIG_DRM_EXYNOS_IPP
@@ -262,25 +197,16 @@ extern int exynos_drm_ipp_get_property(struct drm_device *drm_dev, void *data,
 					 struct drm_file *file);
 extern int exynos_drm_ipp_set_property(struct drm_device *drm_dev, void *data,
 					 struct drm_file *file);
-<<<<<<< HEAD
-extern int exynos_drm_ipp_buf(struct drm_device *drm_dev, void *data,
-					 struct drm_file *file);
-extern int exynos_drm_ipp_ctrl(struct drm_device *drm_dev, void *data,
-=======
 extern int exynos_drm_ipp_queue_buf(struct drm_device *drm_dev, void *data,
 					 struct drm_file *file);
 extern int exynos_drm_ipp_cmd_ctrl(struct drm_device *drm_dev, void *data,
->>>>>>> 3c2e81ef344a
 					 struct drm_file *file);
 extern int exynos_drm_ippnb_register(struct notifier_block *nb);
 extern int exynos_drm_ippnb_unregister(struct notifier_block *nb);
 extern int exynos_drm_ippnb_send_event(unsigned long val, void *v);
-<<<<<<< HEAD
-=======
 extern void ipp_sched_cmd(struct work_struct *work);
 extern void ipp_sched_event(struct work_struct *work);
 
->>>>>>> 3c2e81ef344a
 #else
 static inline int exynos_drm_ippdrv_register(struct exynos_drm_ippdrv *ippdrv)
 {
@@ -306,22 +232,14 @@ static inline int exynos_drm_ipp_set_property(struct drm_device *drm_dev,
 	return -ENOTTY;
 }
 
-<<<<<<< HEAD
-static inline int exynos_drm_ipp_buf(struct drm_device *drm_dev,
-=======
 static inline int exynos_drm_ipp_queue_buf(struct drm_device *drm_dev,
->>>>>>> 3c2e81ef344a
 						void *data,
 						struct drm_file *file)
 {
 	return -ENOTTY;
 }
 
-<<<<<<< HEAD
-static inline int exynos_drm_ipp_ctrl(struct drm_device *drm_dev,
-=======
 static inline int exynos_drm_ipp_cmd_ctrl(struct drm_device *drm_dev,
->>>>>>> 3c2e81ef344a
 						void *data,
 						struct drm_file *file)
 {
@@ -344,12 +262,5 @@ static inline int exynos_drm_ippnb_send_event(unsigned long val, void *v)
 }
 #endif
 
-<<<<<<< HEAD
-/* ToDo: Must be change to queue_work */
-void ipp_send_event_handler(struct exynos_drm_ippdrv *ippdrv,
-	int buf_idx);
-
-=======
->>>>>>> 3c2e81ef344a
 #endif /* _EXYNOS_DRM_IPP_H_ */
 

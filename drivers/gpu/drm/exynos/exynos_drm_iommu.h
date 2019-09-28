@@ -26,37 +26,6 @@
 #ifndef _EXYNOS_DRM_IOMMU_H_
 #define _EXYNOS_DRM_IOMMU_H_
 
-<<<<<<< HEAD
-struct exynos_iommu_gem_data {
-	unsigned int	gem_handle_in;
-	void		*gem_obj_out;
-};
-
-/* get all pages to gem object and map them to iommu table. */
-dma_addr_t exynos_drm_iommu_map_gem(struct drm_device *drm_dev,
-					struct drm_gem_object *obj);
-
-/* unmap device address space to gem object from iommu table. */
-void exynos_drm_iommu_unmap_gem(struct drm_gem_object *obj);
-
-/* map physical memory region pointed by paddr to iommu table. */
-dma_addr_t exynos_drm_iommu_map(void *in_vmm, dma_addr_t paddr,
-					size_t size);
-
-/* unmap device address space pointed by dev_addr from iommu table. */
-void exynos_drm_iommu_unmap(void *in_vmm, dma_addr_t dev_addr);
-
-/* setup device address space for device iommu. */
-void *exynos_drm_iommu_setup(unsigned long s_iova, unsigned long size);
-
-int exynos_drm_iommu_activate(void *in_vmm, struct device *dev);
-
-void exynos_drm_iommu_deactivate(void *in_vmm, struct device *dev);
-
-/* clean up allocated device address space for device iommu. */
-void exynos_drm_iommu_cleanup(void *in_vmm);
-
-=======
 #define EXYNOS_DEV_ADDR_START	0x20000000
 #define EXYNOS_DEV_ADDR_SIZE	0x40000000
 #define EXYNOS_DEV_ADDR_ORDER	0x4
@@ -113,5 +82,4 @@ static inline bool is_drm_iommu_supported(struct drm_device *drm_dev)
 }
 
 #endif
->>>>>>> 3c2e81ef344a
 #endif

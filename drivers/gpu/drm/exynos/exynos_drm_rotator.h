@@ -1,12 +1,4 @@
 /*
-<<<<<<< HEAD
- * Copyright (C) 2012 Samsung Electronics Co.Ltd
- * Authors: YoungJun Cho <yj44.cho@samsung.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundationr
-=======
  * Copyright (c) 2012 Samsung Electronics Co., Ltd.
  *
  * Authors:
@@ -31,15 +23,11 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
->>>>>>> 3c2e81ef344a
  */
 
 #ifndef	_EXYNOS_DRM_ROTATOR_H_
 #define	_EXYNOS_DRM_ROTATOR_H_
 
-<<<<<<< HEAD
-=======
 /* TODO */
 
->>>>>>> 3c2e81ef344a
 #endif
