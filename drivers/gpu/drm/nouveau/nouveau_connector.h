@@ -28,16 +28,9 @@
 #define __NOUVEAU_CONNECTOR_H__
 
 #include <drm/drm_edid.h>
-<<<<<<< HEAD
-<<<<<<< HEAD
-#include "nouveau_i2c.h"
-=======
-=======
 #include "nouveau_crtc.h"
->>>>>>> 3c2e81ef344a
 
 struct nouveau_i2c_port;
->>>>>>> 612a9aab56a9
 
 enum nouveau_underscan_type {
 	UNDERSCAN_OFF,
