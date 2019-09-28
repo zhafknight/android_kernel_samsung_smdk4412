@@ -7,6 +7,7 @@
  * published by the Free Software Foundation.
 */
 
+#include <linux/platform_device.h>
 #include <linux/reboot.h>
 #include <linux/suspend.h>
 #include <linux/cpufreq.h>
