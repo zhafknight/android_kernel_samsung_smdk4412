@@ -30,6 +30,7 @@ include/linux/usb*
 include/linux/video*
 include/media
 include/sound
+include/uapi/sound
 sound
 drivers/leds
 include/linux/leds.h
