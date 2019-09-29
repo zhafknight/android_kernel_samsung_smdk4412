@@ -1627,6 +1627,7 @@ int fimc_outdev_overlay_buf(struct file *filp,
 			    struct fimc_ctx *ctx)
 {
 	int ret = 0, i;
+	unsigned long populate;
 	struct fimc_overlay_buf *buf;
 
 	buf = &ctx->overlay.buf;
@@ -1635,12 +1636,20 @@ int fimc_outdev_overlay_buf(struct file *filp,
 		ctx->overlay.req_idx = i;
 		buf->size[i] = ctx->dst[i].length[0];
 		buf->phy_addr[i] = ctx->dst[i].base[0];
+
+		down_write(&current->mm->mmap_sem);
 		buf->vir_addr[i] = do_mmap_pgoff(filp, 0, buf->size[i],
-					PROT_READ|PROT_WRITE, MAP_SHARED, 0);
+					PROT_READ|PROT_WRITE, MAP_SHARED, 0,
+					&populate);
+
 		if (buf->vir_addr[i] == -EINVAL) {
 			fimc_err("%s: fail\n", __func__);
 			return -EINVAL;
 		}
+
+		up_write(&current->mm->mmap_sem);
+		if (populate)
+			mm_populate(buf->vir_addr[i], populate);
 
 		fimc_dbg("idx : %d, size(0x%08x), phy_addr(0x%08x), "
 				"vir_addr(0x%08x)\n", i, buf->size[i],
