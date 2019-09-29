@@ -1913,9 +1913,6 @@ static const struct alg_test_desc alg_test_descs[] = {
 			}
 		}
 	}, {
-		.alg = "compress_null",
-		.test = alg_test_null,
-	}, {
 		.alg = "crc32c",
 		.test = alg_test_crc32c,
 		.fips_allowed = 1,
@@ -2130,9 +2127,6 @@ static const struct alg_test_desc alg_test_descs[] = {
 			}
 		}
 	}, {
-		.alg = "digest_null",
-		.test = alg_test_null,
-	}, {
 		.alg = "ecb(__aes-aesni)",
 		.test = alg_test_null,
 		.fips_allowed = 1,
@@ -2242,9 +2236,6 @@ static const struct alg_test_desc alg_test_descs[] = {
 				}
 			}
 		}
-	}, {
-		.alg = "ecb(cipher_null)",
-		.test = alg_test_null,
 	}, {
 		.alg = "ecb(des)",
 		.test = alg_test_skcipher,
