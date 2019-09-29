@@ -19,6 +19,7 @@
 #include <asm/mach/irq.h>
 
 #include <plat/cpu.h>
+#include <mach/map.h>
 
 #include "irqchip.h"
 
@@ -36,7 +37,7 @@ struct combiner_chip_data {
 };
 
 static struct irq_domain *combiner_irq_domain;
-static struct combiner_chip_data combiner_data[MAX_COMBINER_NR];
+static struct combiner_chip_data combiner_data[EXYNOS4_MAX_COMBINER_NR];
 
 static inline void __iomem *combiner_base(struct irq_data *data)
 {
@@ -48,14 +49,14 @@ static inline void __iomem *combiner_base(struct irq_data *data)
 
 static void combiner_mask_irq(struct irq_data *data)
 {
-	u32 mask = 1 << (data->hwirq % 32);
+	u32 mask = 1 << (data->irq % 32);
 
 	__raw_writel(mask, combiner_base(data) + COMBINER_ENABLE_CLEAR);
 }
 
 static void combiner_unmask_irq(struct irq_data *data)
 {
-	u32 mask = 1 << (data->hwirq % 32);
+	u32 mask = 1 << (data->irq % 32);
 
 	__raw_writel(mask, combiner_base(data) + COMBINER_ENABLE_SET);
 }
@@ -74,8 +75,10 @@ static void combiner_handle_cascade_irq(unsigned int irq, struct irq_desc *desc)
 	spin_unlock(&irq_controller_lock);
 	status &= chip_data->irq_mask;
 
-	if (status == 0)
+	if (status == 0) {
+		do_bad_IRQ(irq, desc);
 		goto out;
+	}
 
 	combiner_irq = __ffs(status);
 
@@ -133,6 +136,8 @@ static void __init combiner_cascade_irq(unsigned int combiner_nr,
 	if (irq_set_handler_data(irq, &combiner_data[combiner_nr]) != 0)
 		BUG();
 	irq_set_chained_handler(irq, combiner_handle_cascade_irq);
+
+	combiner_data[combiner_nr].parent_irq = irq;
 }
 
 static void __init combiner_init_one(unsigned int combiner_nr,
