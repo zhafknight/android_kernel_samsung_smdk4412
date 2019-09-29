@@ -992,7 +992,7 @@ config USB_G_SERIAL
 
 config USB_MIDI_GADGET
 	tristate "MIDI Gadget (EXPERIMENTAL)"
-	depends on SND && EXPERIMENTAL
+	depends on SND
 	select SND_RAWMIDI
 	help
 	  The MIDI Gadget acts as a USB Audio device, with one MIDI

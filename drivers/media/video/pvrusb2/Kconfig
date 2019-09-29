@@ -20,7 +20,7 @@ config VIDEO_PVRUSB2
 config VIDEO_PVRUSB2_SYSFS
 	bool "pvrusb2 sysfs support (EXPERIMENTAL)"
 	default y
-	depends on VIDEO_PVRUSB2 && SYSFS && EXPERIMENTAL
+	depends on VIDEO_PVRUSB2 && SYSFS
 	---help---
 	  This option enables the operation of a sysfs based
 	  interface for query and control of the pvrusb2 driver.
@@ -36,7 +36,7 @@ config VIDEO_PVRUSB2_SYSFS
 config VIDEO_PVRUSB2_DVB
 	bool "pvrusb2 ATSC/DVB support (EXPERIMENTAL)"
 	default y
-	depends on VIDEO_PVRUSB2 && DVB_CORE && EXPERIMENTAL
+	depends on VIDEO_PVRUSB2 && DVB_CORE
 	select DVB_LGDT330X if !DVB_FE_CUSTOMISE
 	select DVB_S5H1409 if !DVB_FE_CUSTOMISE
 	select DVB_S5H1411 if !DVB_FE_CUSTOMISE
