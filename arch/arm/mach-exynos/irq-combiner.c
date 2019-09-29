@@ -14,6 +14,7 @@
 
 #include <linux/io.h>
 #include <linux/interrupt.h>
+#include <linux/irqchip/chained_irq.h>
 
 #include <asm/mach/irq.h>
 #include <plat/cpu.h>

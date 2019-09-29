@@ -16,6 +16,7 @@
 #include <linux/kernel.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
+#include <linux/irqchip/chained_irq.h>
 #include <linux/io.h>
 
 #include <mach/regs-irq.h>
