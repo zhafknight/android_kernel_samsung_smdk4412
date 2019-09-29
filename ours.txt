@@ -3,6 +3,7 @@ arch/arm/mach-s5pv210
 arch/arm/plat-s5p
 arch/arm/plat-samsung
 drivers/gpio
+include/asm-generic/gpio.h
 include/linux/gpio.h
 drivers/i2c/busses/i2c-s3c2410.c
 drivers/media
