@@ -132,6 +132,7 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 #ifdef CONFIG_S3C_DMA_MEM
 	struct s3c_mem_dma_param dma_param;
 #endif
+	unsigned long populate;
 
 	switch (cmd) {
 	case S3C_MEM_ALLOC:
@@ -142,8 +143,11 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 		}
 		flag = MEM_ALLOC;
+
+		down_write(&current->mm->mmap_sem);
 		param.vir_addr = do_mmap_pgoff(file, 0, param.size,
-				(PROT_READ|PROT_WRITE), MAP_SHARED, 0);
+				(PROT_READ|PROT_WRITE), MAP_SHARED, 0,
+				&populate);
 		DEBUG("param.vir_addr = %08x, %d\n",
 						param.vir_addr, __LINE__);
 		if (param.vir_addr == -EINVAL) {
@@ -161,6 +165,10 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		      "size = %d \t param.vir_addr = 0x%X, %d\n",
 				param.phy_addr, param.size, param.vir_addr,
 				__LINE__);
+
+		up_write(&current->mm->mmap_sem);
+		if (populate)
+			mm_populate(param.vir_addr, populate);
 
 		if (copy_to_user((struct s3c_mem_alloc *)arg, &param,
 				 sizeof(struct s3c_mem_alloc))) {
@@ -234,9 +242,12 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				return -ENOMEM;
 			}
 
+			down_write(&current->mm->mmap_sem);
+
 			param.vir_addr =
 			    do_mmap_pgoff(file, 0, param.size,
-				    (PROT_READ | PROT_WRITE), MAP_SHARED, 0);
+				    (PROT_READ | PROT_WRITE), MAP_SHARED, 0,
+				    &populate);
 			DEBUG("param.vir_addr = %08x, %d\n", param.vir_addr,
 			      __LINE__);
 
@@ -248,6 +259,11 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				mutex_unlock(&mem_alloc_lock);
 				return -EFAULT;
 			}
+
+			up_write(&current->mm->mmap_sem);
+			if (populate)
+				mm_populate(param.vir_addr, populate);
+
 
 			if (copy_to_user((struct s3c_mem_alloc *)arg, &param,
 					 sizeof(struct s3c_mem_alloc))) {
@@ -291,8 +307,12 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 		}
 		flag = MEM_ALLOC_CACHEABLE;
+
+		down_write(&current->mm->mmap_sem);
+
 		param.vir_addr = do_mmap_pgoff(file, 0, param.size,
-				(PROT_READ|PROT_WRITE), MAP_SHARED, 0);
+				(PROT_READ|PROT_WRITE), MAP_SHARED, 0,
+				&populate);
 		DEBUG("param.vir_addr = %08x, %d\n",
 				param.vir_addr, __LINE__);
 		if (param.vir_addr == -EINVAL) {
@@ -301,6 +321,11 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			mutex_unlock(&mem_cacheable_alloc_lock);
 			return -EFAULT;
 		}
+
+		up_write(&current->mm->mmap_sem);
+		if (populate)
+			mm_populate(param.vir_addr, populate);
+
 		param.phy_addr = physical_address;
 		DEBUG("KERNEL MALLOC : param.phy_addr = 0x%X"
 		      " \t size = %d \t param.vir_addr = 0x%X, %d\n",
@@ -337,8 +362,12 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		physical_address = param.phy_addr;
 		DEBUG("param.phy_addr = %08x, %d\n",
 		      physical_address, __LINE__);
+
+		down_write(&current->mm->mmap_sem);
+
 		param.vir_addr = do_mmap_pgoff(file, 0, param.size,
-				(PROT_READ|PROT_WRITE), MAP_SHARED, 0);
+				(PROT_READ|PROT_WRITE), MAP_SHARED, 0,
+				&populate);
 		DEBUG("param.vir_addr = %08x, %d\n",
 				param.vir_addr, __LINE__);
 		if (param.vir_addr == -EINVAL) {
@@ -351,6 +380,10 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		      "size = %d \t param.vir_addr = 0x%X, %d\n",
 				param.phy_addr, param.size, param.vir_addr,
 				__LINE__);
+
+		up_write(&current->mm->mmap_sem);
+		if (populate)
+			mm_populate(param.vir_addr, populate);
 
 		if (copy_to_user((struct s3c_mem_alloc *)arg, &param,
 				 sizeof(struct s3c_mem_alloc))) {
@@ -382,8 +415,12 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		physical_address = param.phy_addr;
 		DEBUG("param.phy_addr = %08x, %d\n",
 		      physical_address, __LINE__);
+
+		down_write(&current->mm->mmap_sem);
+
 		param.vir_addr = do_mmap_pgoff(file, 0, param.size,
-				(PROT_READ|PROT_WRITE), MAP_SHARED, 0);
+				(PROT_READ|PROT_WRITE), MAP_SHARED, 0,
+				&populate);
 		DEBUG("param.vir_addr = %08x, %d\n",
 				param.vir_addr, __LINE__);
 		if (param.vir_addr == -EINVAL) {
@@ -392,6 +429,11 @@ long s3c_mem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			mutex_unlock(&mem_cacheable_share_alloc_lock);
 			return -EFAULT;
 		}
+
+		up_write(&current->mm->mmap_sem);
+		if (populate)
+			mm_populate(param.vir_addr, populate);
+
 		DEBUG("MALLOC_SHARE : param.phy_addr = 0x%X \t "
 		      "size = %d \t param.vir_addr = 0x%X, %d\n",
 				param.phy_addr, param.size, param.vir_addr,
