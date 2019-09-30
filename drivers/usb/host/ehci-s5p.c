@@ -541,7 +541,7 @@ static ssize_t store_port_power(struct device *dev,
 	device_unlock(dev);
 	return count;
 }
-static DEVICE_ATTR(port_power, 0664, NULL, store_port_power);
+static DEVICE_ATTR(port_power, 0222, NULL, store_port_power);
 #endif
 
 static inline int create_ehci_sys_file(struct ehci_hcd *ehci)

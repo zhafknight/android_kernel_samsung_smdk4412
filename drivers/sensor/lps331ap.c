@@ -1394,12 +1394,12 @@ static ssize_t lps331_name_show(struct device *dev,
 {
 	return sprintf(buf, "%s\n", CHIP_ID);
 }
-static DEVICE_ATTR(vendor, 0644, lps331_vendor_show, NULL);
-static DEVICE_ATTR(name, 0644, lps331_name_show, NULL);
+static DEVICE_ATTR(vendor, 0444, lps331_vendor_show, NULL);
+static DEVICE_ATTR(name, 0444, lps331_name_show, NULL);
 
 static DEVICE_ATTR(calibration, 0664,
 		lps331ap_cabratioin_show, lps331ap_cabratioin_store);
-static DEVICE_ATTR(sea_level_pressure, 0664,
+static DEVICE_ATTR(sea_level_pressure, 0220,
 		NULL, sea_level_pressure_store);
 
 static void lps331ap_prs_input_work_func(struct work_struct *work)

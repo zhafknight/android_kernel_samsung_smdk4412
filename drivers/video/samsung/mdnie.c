@@ -951,14 +951,14 @@ static ssize_t color_correct_show(struct device *dev,
 
 static struct device_attribute mdnie_attributes[] = {
 	__ATTR(mode, 0664, mode_show, mode_store),
-	__ATTR(mode_max, 0664, mode_max_show, NULL),
+	__ATTR(mode_max, 0444, mode_max_show, NULL),
 	__ATTR(scenario, 0664, scenario_show, scenario_store),
 #if defined(CONFIG_FB_MDNIE_PWM)
 	__ATTR(cabc, 0664, cabc_show, cabc_store),
 #endif
 	__ATTR(tuning, 0664, tuning_show, tuning_store),
 	__ATTR(accessibility, 0664, accessibility_show, accessibility_store),
-	__ATTR(accessibility_max, 0664, accessibility_max_show, NULL),
+	__ATTR(accessibility_max, 0444, accessibility_max_show, NULL),
 #if !defined(CONFIG_FB_MDNIE_PWM)
 	__ATTR(color_correct, 0444, color_correct_show, NULL),
 #endif

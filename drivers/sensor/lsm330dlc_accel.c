@@ -916,10 +916,10 @@ static ssize_t lsm330dlc_accel_name_show(struct device *dev,
 	return sprintf(buf, "%s\n", CHIP_ID);
 }
 
-static DEVICE_ATTR(name, 0664,
+static DEVICE_ATTR(name, 0444,
 	lsm330dlc_accel_name_show, NULL);
 
-static DEVICE_ATTR(vendor, 0664,
+static DEVICE_ATTR(vendor, 0444,
 	lsm330dlc_accel_vendor_show, NULL);
 
 static DEVICE_ATTR(position, 0664,
@@ -928,7 +928,7 @@ static DEVICE_ATTR(position, 0664,
 static DEVICE_ATTR(calibration, 0664,
 		   lsm330dlc_accel_calibration_show
 		   , lsm330dlc_accel_calibration_store);
-static DEVICE_ATTR(raw_data, 0664, lsm330dlc_accel_fs_read, NULL);
+static DEVICE_ATTR(raw_data, 0444, lsm330dlc_accel_fs_read, NULL);
 #ifdef USES_MOVEMENT_RECOGNITION
 static DEVICE_ATTR(reactive_alert, 0664,
 	lsm330dlc_accel_reactive_alert_show,
@@ -936,7 +936,7 @@ static DEVICE_ATTR(reactive_alert, 0664,
 #endif
 
 #ifdef DEBUG_ODR
-static DEVICE_ATTR(odr, 0664, lsm330dlc_accel_odr_read, NULL);
+static DEVICE_ATTR(odr, 0444, lsm330dlc_accel_odr_read, NULL);
 #endif
 
 void lsm330dlc_accel_shutdown(struct i2c_client *client)

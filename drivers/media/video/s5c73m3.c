@@ -3603,7 +3603,7 @@ static ssize_t s5c73m3_camera_isp_core_show(struct device *dev,
 static DEVICE_ATTR(rear_camtype, S_IRUGO,
 		s5c73m3_camera_rear_camtype_show, NULL);
 static DEVICE_ATTR(rear_camfw, S_IRUGO, s5c73m3_camera_rear_camfw_show, NULL);
-static DEVICE_ATTR(rear_flash, S_IWUSR|S_IWGRP|S_IROTH,
+static DEVICE_ATTR(rear_flash, S_IWUSR|S_IWGRP,
 	NULL, s5c73m3_camera_rear_flash);
 static DEVICE_ATTR(isp_core, S_IRUGO, s5c73m3_camera_isp_core_show, NULL);
 

@@ -1361,24 +1361,24 @@ lsm330dlc_gyro_position_store(struct device *dev,
 	return count;
 }
 
-static DEVICE_ATTR(power_off, 0664,
+static DEVICE_ATTR(power_off, 0444,
 	lsm330dlc_gyro_power_off, NULL);
-static DEVICE_ATTR(power_on, 0664,
+static DEVICE_ATTR(power_on, 0444,
 	lsm330dlc_gyro_power_on, NULL);
-static DEVICE_ATTR(temperature, 0664,
+static DEVICE_ATTR(temperature, 0444,
 	lsm330dlc_gyro_get_temp, NULL);
-static DEVICE_ATTR(selftest, 0664,
+static DEVICE_ATTR(selftest, 0444,
 	lsm330dlc_gyro_self_test, NULL);
 static DEVICE_ATTR(selftest_dps, 0664,
 	lsm330dlc_gyro_selftest_dps_show, lsm330dlc_gyro_selftest_dps_store);
-static DEVICE_ATTR(vendor, 0664,
+static DEVICE_ATTR(vendor, 0444,
 	lsm330dlc_gyro_vendor_show, NULL);
-static DEVICE_ATTR(name, 0664,
+static DEVICE_ATTR(name, 0444,
 	lsm330dlc_gyro_name_show, NULL);
 static DEVICE_ATTR(position, 0664,
 	lsm330dlc_gyro_position_show, lsm330dlc_gyro_position_store);
 #ifdef DEBUG_REGISTER
-static DEVICE_ATTR(reg_data, 0664,
+static DEVICE_ATTR(reg_data, 0444,
 	register_data_show, NULL);
 #endif
 

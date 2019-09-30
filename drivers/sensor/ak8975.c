@@ -617,25 +617,25 @@ static ssize_t ak8975_show_name(struct device *dev,
 	return sprintf(buf, "%s\n", CHIP_ID);
 }
 
-static DEVICE_ATTR(raw_data, 0664,
+static DEVICE_ATTR(raw_data, 0444,
 		ak8975_show_raw_data, NULL);
-static DEVICE_ATTR(vendor, 0664,
+static DEVICE_ATTR(vendor, 0444,
 		ak8975_show_vendor, NULL);
-static DEVICE_ATTR(name, 0664,
+static DEVICE_ATTR(name, 0444,
 		ak8975_show_name, NULL);
 
 #ifdef FACTORY_TEST
-static DEVICE_ATTR(ak8975_asa, 0664,
+static DEVICE_ATTR(ak8975_asa, 0444,
 		ak8975c_get_asa, NULL);
-static DEVICE_ATTR(ak8975_selftest, 0664,
+static DEVICE_ATTR(ak8975_selftest, 0444,
 		ak8975c_get_selftest, NULL);
-static DEVICE_ATTR(ak8975_chk_registers, 0664,
+static DEVICE_ATTR(ak8975_chk_registers, 0444,
 		ak8975c_check_registers, NULL);
-static DEVICE_ATTR(ak8975_chk_cntl, 0664,
+static DEVICE_ATTR(ak8975_chk_cntl, 0444,
 		ak8975c_check_cntl, NULL);
-static DEVICE_ATTR(status, 0664,
+static DEVICE_ATTR(status, 0444,
 		ak8975c_get_status, NULL);
-static DEVICE_ATTR(adc, 0664,
+static DEVICE_ATTR(adc, 0444,
 		ak8975_adc, NULL);
 #endif
 
