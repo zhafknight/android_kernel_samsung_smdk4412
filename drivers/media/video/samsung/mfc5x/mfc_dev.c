@@ -28,6 +28,7 @@
 #include <linux/sched.h>
 #include <linux/firmware.h>
 #include <linux/proc_fs.h>
+#include <linux/seq_file.h>
 #ifdef CONFIG_PM_RUNTIME
 #include <linux/clk.h>
 #endif
@@ -1421,16 +1422,27 @@ static void mfc_firmware_request_complete_handler(const struct firmware *fw,
 	mfcdev->fw.requesting = 0;
 }
 
-static int proc_read_inst_number(char *buf, char **start,
-								off_t off, int count,
-								int *eof, void *data)
+static int proc_read_inst_number(struct seq_file *m, void *v)
 {
-	int len = 0;
+	seq_printf(m, "%d\n", atomic_read(&mfcdev->inst_cnt));
 
-	len += sprintf(buf + len, "%d\n", atomic_read(&mfcdev->inst_cnt));
-
-	return len;
+	return 0;
 }
+
+/*
+ * seq_file wrappers for procfile show routines.
+ */
+static int mfc_proc_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, proc_read_inst_number, PDE_DATA(file_inode(file)));
+}
+
+static const struct file_operations mfc_proc_fops = {
+	.open           = mfc_proc_open,
+	.read           = seq_read,
+	.llseek         = seq_lseek,
+	.release        = seq_release,
+};
 
 /* FIXME: check every exception case (goto) */
 static int mfc_probe(struct platform_device *pdev)
@@ -1453,8 +1465,8 @@ static int mfc_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 
-	if (!create_proc_read_entry(MFC_PROC_TOTAL_INSTANCE_NUMBER, 0,
-				mfc_proc_entry, proc_read_inst_number, NULL)) {
+	if (!proc_create_data(MFC_PROC_TOTAL_INSTANCE_NUMBER, 0,
+				mfc_proc_entry, &mfc_proc_fops, NULL)) {
 		dev_err(&pdev->dev, "unable to create /proc/%s/%s\n",
 			MFC_PROC_ROOT, MFC_PROC_TOTAL_INSTANCE_NUMBER);
 		ret = -ENOMEM;
