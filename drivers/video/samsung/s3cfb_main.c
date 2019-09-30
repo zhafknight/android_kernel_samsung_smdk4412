@@ -21,6 +21,7 @@
 #include <linux/irq.h>
 #include <linux/mm.h>
 #include <linux/fb.h>
+#include <linux/console.h>
 #include <linux/ctype.h>
 #include <linux/dma-mapping.h>
 #include <linux/interrupt.h>
@@ -227,6 +228,8 @@ int s3cfb_register_framebuffer(struct s3cfb_global *fbdev)
 	struct s3c_platform_fb *pdata = to_fb_plat(fbdev->dev);
 	int ret, i, j;
 
+	console_lock();
+
 	/* on registering framebuffer, framebuffer of default window is registered at first. */
 	for (i = pdata->default_win; i < pdata->nr_wins + pdata->default_win; i++) {
 		j = i % pdata->nr_wins;
@@ -247,6 +250,9 @@ int s3cfb_register_framebuffer(struct s3cfb_global *fbdev)
 		}
 #endif
 	}
+
+	console_unlock();
+
 	return 0;
 
 err:
@@ -254,6 +260,9 @@ err:
 		j = i % pdata->nr_wins;
 		unregister_framebuffer(fbdev->fb[j]);
 	}
+
+	console_unlock();
+
 	return -EINVAL;
 }
 
