@@ -146,7 +146,7 @@ int mali_stream_create_fence(mali_sync_pt *pt)
 	spin_lock(&files->file_lock);
 	fdt = files_fdtable(files);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)
-	__set_close_on_exec(fd, fdt);
+	set_close_on_exec(fd, fdt);
 #else
 	FD_SET(fd, fdt->close_on_exec);
 #endif
