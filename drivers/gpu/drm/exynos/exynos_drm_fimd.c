@@ -885,6 +885,7 @@ static int fimd_probe(struct platform_device *pdev)
 
 	DRM_DEBUG_KMS("%s\n", __FILE__);
 
+#ifdef CONFIG_OF_VIDEOMODE
 	if (dev->of_node) {
 		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
 		if (!pdata) {
@@ -899,12 +900,15 @@ static int fimd_probe(struct platform_device *pdev)
 			return ret;
 		}
 	} else {
+#endif
 		pdata = dev->platform_data;
 		if (!pdata) {
 			DRM_ERROR("no platform data specified\n");
 			return -EINVAL;
 		}
+#ifdef CONFIG_OF_VIDEOMODE
 	}
+#endif
 
 	panel = &pdata->panel;
 	if (!panel) {
