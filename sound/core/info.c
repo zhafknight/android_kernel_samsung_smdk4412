@@ -522,7 +522,7 @@ int __init snd_info_init(void)
 {
 	struct proc_dir_entry *p;
 
-	p = create_proc_entry("asound", S_IFDIR | S_IRUGO | S_IXUGO, NULL);
+	p = proc_mkdir("asound", NULL);
 	if (p == NULL)
 		return -ENOMEM;
 	snd_proc_root = p;
@@ -682,31 +682,26 @@ int snd_info_card_free(struct snd_card *card)
  *
  * Reads one line from the buffer and stores the string.
  *
- * Returns zero if successful, or 1 if error or EOF.
+ * Return: Zero if successful, or 1 if error or EOF.
  */
 int snd_info_get_line(struct snd_info_buffer *buffer, char *line, int len)
 {
 	int c = -1;
 
+	if (snd_BUG_ON(!buffer || !buffer->buffer))
+		return 1;
 	if (len <= 0 || buffer->stop || buffer->error)
 		return 1;
-	while (--len > 0) {
-		c = buffer->buffer[buffer->curr++];
-		if (c == '\n') {
-			if (buffer->curr >= buffer->size)
-				buffer->stop = 1;
-			break;
-		}
-		*line++ = c;
-		if (buffer->curr >= buffer->size) {
-			buffer->stop = 1;
-			break;
-		}
-	}
-	while (c != '\n' && !buffer->stop) {
+	while (!buffer->stop) {
 		c = buffer->buffer[buffer->curr++];
 		if (buffer->curr >= buffer->size)
 			buffer->stop = 1;
+		if (c == '\n')
+			break;
+		if (len) {
+			len--;
+			*line++ = c;
+		}
 	}
 	*line = '\0';
 	return 0;
@@ -960,7 +955,7 @@ int snd_info_register(struct snd_info_entry * entry)
 			mutex_unlock(&info_mutex);
 			return -ENOMEM;
 		}
-		p->size = entry->size;
+		proc_set_size(p, entry->size);
 	}
 	entry->p = p;
 	if (entry->parent)
