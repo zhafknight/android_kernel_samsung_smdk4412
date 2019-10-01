@@ -312,8 +312,7 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
 	switch (state) {
 
 	case CPUFREQ_PRECHANGE:
-		if (WARN(policy->transition_ongoing,
-				"In middle of another frequency transition\n"))
+		if (policy->transition_ongoing)
 			return;
 
 		policy->transition_ongoing = true;
@@ -337,8 +336,7 @@ static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
 		break;
 
 	case CPUFREQ_POSTCHANGE:
-		if (WARN(!policy->transition_ongoing,
-				"No frequency transition in progress\n"))
+		if (policy->transition_ongoing)
 			return;
 
 		policy->transition_ongoing = false;
