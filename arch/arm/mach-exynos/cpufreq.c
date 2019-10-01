@@ -47,11 +47,8 @@ static struct cpufreq_freqs freqs;
 static bool exynos_cpufreq_disable;
 static bool exynos_cpufreq_lock_disable;
 static bool exynos_cpufreq_init_done;
-
-static unsigned int locking_frequency;
-static bool frequency_locked;
-static DEFINE_MUTEX(cpufreq_lock);
-static DEFINE_MUTEX(set_cpufreq_lock);
+static DEFINE_MUTEX(set_freq_lock);
+static DEFINE_MUTEX(set_cpu_freq_lock);
 
 unsigned int g_cpufreq_limit_id;
 unsigned int g_cpufreq_limit_val[DVFS_LOCK_ID_END];
@@ -67,6 +64,10 @@ int exynos_verify_speed(struct cpufreq_policy *policy)
 					      exynos_info->freq_table);
 }
 
+unsigned int exynos_getspeed(unsigned int cpu)
+{
+	return clk_get_rate(exynos_info->cpu_clk) / 1000;
+}
 
 static unsigned int exynos_get_safe_armvolt(unsigned int old_index, unsigned int new_index)
 {
@@ -92,139 +93,37 @@ static unsigned int exynos_get_safe_armvolt(unsigned int old_index, unsigned int
 	return safe_arm_volt;
 }
 
-static unsigned int exynos_getspeed(unsigned int cpu)
-{
-	return clk_get_rate(exynos_info->cpu_clk) / 1000;
-}
-
-static int exynos_cpufreq_get_index(unsigned int freq)
-{
-	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
-	int index;
-
-	for (index = 0;
-		freq_table[index].frequency != CPUFREQ_TABLE_END; index++)
-		if (freq_table[index].frequency == freq)
-			break;
-
-	if (freq_table[index].frequency == CPUFREQ_TABLE_END)
-		return -EINVAL;
-
-	return index;
-}
-
-static int exynos_cpufreq_scale(unsigned int target_freq)
-{
-	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
-	unsigned int *volt_table = exynos_info->volt_table;
-	struct cpufreq_policy *policy = cpufreq_cpu_get(0);
-	unsigned int arm_volt, safe_arm_volt = 0;
-	unsigned int mpll_freq_khz = exynos_info->mpll_freq_khz;
-	int index, old_index;
-	int ret = 0;
-
-	freqs.old = policy->cur;
-	freqs.new = target_freq;
-
-	if (freqs.new == freqs.old)
-		goto out;
-
-	/*
-	 * The policy max have been changed so that we cannot get proper
-	 * old_index with cpufreq_frequency_table_target(). Thus, ignore
-	 * policy and get the index from the raw freqeuncy table.
-	 */
-	old_index = exynos_cpufreq_get_index(freqs.old);
-	if (old_index < 0) {
-		ret = old_index;
-		goto out;
-	}
-
-	index = exynos_cpufreq_get_index(target_freq);
-	if (index < 0) {
-		ret = index;
-		goto out;
-	}
-
-	/*
-	 * ARM clock source will be changed APLL to MPLL temporary
-	 * To support this level, need to control regulator for
-	 * required voltage level
-	 */
-	if (exynos_info->need_apll_change != NULL) {
-		if (exynos_info->need_apll_change(old_index, index) &&
-		   (freq_table[index].frequency < mpll_freq_khz) &&
-		   (freq_table[old_index].frequency < mpll_freq_khz))
-			safe_arm_volt = volt_table[exynos_info->pll_safe_idx];
-	}
-	arm_volt = volt_table[index];
-
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
-
-	/* When the new frequency is higher than current frequency */
-	if ((freqs.new > freqs.old) && !safe_arm_volt) {
-		/* Firstly, voltage up to increase frequency */
-		ret = regulator_set_voltage(arm_regulator, arm_volt, arm_volt);
-		if (ret) {
-			pr_err("%s: failed to set cpu voltage to %d\n",
-				__func__, arm_volt);
-			freqs.new = freqs.old;
-			goto post_notify;
-		}
-	}
-
-	if (safe_arm_volt) {
-		ret = regulator_set_voltage(arm_regulator, safe_arm_volt,
-				      safe_arm_volt);
-		if (ret) {
-			pr_err("%s: failed to set cpu voltage to %d\n",
-				__func__, safe_arm_volt);
-			freqs.new = freqs.old;
-			goto post_notify;
-		}
-	}
-
-	exynos_info->set_freq(old_index, index);
-
-post_notify:
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
-
-	if (ret)
-		goto out;
-
-	/* When the new frequency is lower than current frequency */
-	if ((freqs.new < freqs.old) ||
-	   ((freqs.new > freqs.old) && safe_arm_volt)) {
-		/* down the voltage after frequency change */
-		regulator_set_voltage(arm_regulator, arm_volt,
-				arm_volt);
-		if (ret) {
-			pr_err("%s: failed to set cpu voltage to %d\n",
-				__func__, arm_volt);
-			goto out;
-		}
-	}
-
-out:
-
-	cpufreq_cpu_put(policy);
-
-	return ret;
-}
-
 static int exynos_target(struct cpufreq_policy *policy,
 			  unsigned int target_freq,
 			  unsigned int relation)
 {
+	unsigned int index, old_index = UINT_MAX;
+	unsigned int arm_volt, safe_arm_volt = 0;
+	int ret = 0, i;
 	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
-	unsigned int index;
-	unsigned int new_freq;
-	int ret = 0;
+	unsigned int *volt_table = exynos_info->volt_table;
 
-	mutex_lock(&cpufreq_lock);
+	mutex_lock(&set_freq_lock);
 
-	if (frequency_locked)
+	if (exynos_cpufreq_disable)
 		goto out;
+
+	freqs.old = policy->cur;
+
+	/*
+	 * cpufreq_frequency_table_target() cannot be used for freqs.old
+	 * because policy->min/max may have been changed. If changed, the
+	 * resulting old_index may be inconsistent with freqs.old, which
+	 * will lead to inconsistent voltage/frequency configurations later.
+	 */
+	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+		if (freq_table[i].frequency == freqs.old)
+			old_index = freq_table[i].driver_data;
+	}
+	if (old_index == UINT_MAX) {
+		ret = -EINVAL;
+		goto out;
+	}
 
 	if (cpufreq_frequency_table_target(policy, freq_table,
 					   target_freq, relation, &index)) {
@@ -232,12 +131,53 @@ static int exynos_target(struct cpufreq_policy *policy,
 		goto out;
 	}
 
-	new_freq = freq_table[index].frequency;
+	/* Need to set performance limitation */
+	if (!exynos_cpufreq_lock_disable && (index > g_cpufreq_lock_level))
+		index = g_cpufreq_lock_level;
 
-	ret = exynos_cpufreq_scale(new_freq);
+	if (!exynos_cpufreq_lock_disable && (index < g_cpufreq_limit_level))
+		index = g_cpufreq_limit_level;
+
+#if defined(CONFIG_CPU_EXYNOS4210)
+	/* Do NOT step up max arm clock directly to reduce power consumption */
+	if (index == exynos_info->max_support_idx && old_index > 3)
+		index = 3;
+#endif
+
+	freqs.new = freq_table[index].frequency;
+	freqs.cpu = policy->cpu;
+
+	safe_arm_volt = exynos_get_safe_armvolt(old_index, index);
+
+	arm_volt = volt_table[index];
+
+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+
+	/* When the new frequency is higher than current frequency */
+	if ((freqs.new > freqs.old) && !safe_arm_volt) {
+		/* Firstly, voltage up to increase frequency */
+		regulator_set_voltage(arm_regulator, arm_volt,
+				     arm_volt + 25000);
+	}
+
+	if (safe_arm_volt)
+		regulator_set_voltage(arm_regulator, safe_arm_volt,
+				     safe_arm_volt + 25000);
+	if (freqs.new != freqs.old)
+		exynos_info->set_freq(old_index, index);
+
+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+
+	/* When the new frequency is lower than current frequency */
+	if ((freqs.new < freqs.old) ||
+	   ((freqs.new > freqs.old) && safe_arm_volt)) {
+		/* down the voltage after frequency change */
+		regulator_set_voltage(arm_regulator, arm_volt,
+				     arm_volt + 25000);
+	}
 
 out:
-	mutex_unlock(&cpufreq_lock);
+	mutex_unlock(&set_freq_lock);
 
 	return ret;
 }
@@ -319,8 +259,6 @@ atomic_t exynos_cpufreq_lock_count;
 int exynos_cpufreq_lock(unsigned int nId,
 			 enum cpufreq_level_index cpufreq_level)
 {
-	return 0;
-#if 0
 	int ret = 0, i, old_idx = -EINVAL;
 	unsigned int freq_old, freq_new, arm_volt, safe_arm_volt;
 	unsigned int *volt_table;
@@ -352,11 +290,11 @@ int exynos_cpufreq_lock(unsigned int nId,
 	volt_table = exynos_info->volt_table;
 	freq_table = exynos_info->freq_table;
 
-	mutex_lock(&set_cpufreq_lock);
+	mutex_lock(&set_cpu_freq_lock);
 	if (g_cpufreq_lock_id & (1 << nId)) {
 		printk(KERN_ERR "%s:Device [%d] already locked cpufreq\n",
 				__func__,  nId);
-		mutex_unlock(&set_cpufreq_lock);
+		mutex_unlock(&set_cpu_freq_lock);
 		return 0;
 	}
 
@@ -367,7 +305,7 @@ int exynos_cpufreq_lock(unsigned int nId,
 	if (cpufreq_level < g_cpufreq_lock_level)
 		g_cpufreq_lock_level = cpufreq_level;
 
-	mutex_unlock(&set_cpufreq_lock);
+	mutex_unlock(&set_cpu_freq_lock);
 
 	if ((g_cpufreq_lock_level < g_cpufreq_limit_level)
 				&& (nId != DVFS_LOCK_ID_PM))
@@ -382,7 +320,7 @@ int exynos_cpufreq_lock(unsigned int nId,
 	/* If current frequency is lower than requested freq,
 	 * it needs to update
 	 */
-	mutex_lock(&cpufreq_lock);
+	mutex_lock(&set_freq_lock);
 	freq_old = policy->cur;
 	freq_new = freq_table[cpufreq_level].frequency;
 
@@ -396,7 +334,7 @@ int exynos_cpufreq_lock(unsigned int nId,
 		}
 		if (old_idx == -EINVAL) {
 			printk(KERN_ERR "%s: Level not found\n", __func__);
-			mutex_unlock(&cpufreq_lock);
+			mutex_unlock(&set_freq_lock);
 			return -EINVAL;
 		}
 
@@ -419,21 +357,20 @@ int exynos_cpufreq_lock(unsigned int nId,
 		cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 	}
 
-	mutex_unlock(&cpufreq_lock);
+	mutex_unlock(&set_freq_lock);
+
 	return ret;
-#endif
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_lock);
 
 void exynos_cpufreq_lock_free(unsigned int nId)
 {
-#if 0
 	unsigned int i;
 
 	if (!exynos_cpufreq_init_done)
 		return;
 
-	mutex_lock(&set_cpufreq_lock);
+	mutex_lock(&set_cpu_freq_lock);
 	g_cpufreq_lock_id &= ~(1 << nId);
 	g_cpufreq_lock_val[nId] = exynos_info->min_support_idx;
 	g_cpufreq_lock_level = exynos_info->min_support_idx;
@@ -443,8 +380,7 @@ void exynos_cpufreq_lock_free(unsigned int nId)
 				g_cpufreq_lock_level = g_cpufreq_lock_val[i];
 		}
 	}
-	mutex_unlock(&set_cpufreq_lock);
-#endif
+	mutex_unlock(&set_cpu_freq_lock);
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_lock_free);
 
@@ -492,8 +428,6 @@ static struct notifier_block pm_qos_cpu_dma_notifier = {
 int exynos_cpufreq_upper_limit(unsigned int nId,
 				enum cpufreq_level_index cpufreq_level)
 {
-	return 0;
-#if 0
 	int ret = 0, old_idx = 0, i;
 	unsigned int freq_old, freq_new, arm_volt, safe_arm_volt;
 	unsigned int *volt_table;
@@ -525,10 +459,10 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 	volt_table = exynos_info->volt_table;
 	freq_table = exynos_info->freq_table;
 
-	mutex_lock(&set_cpufreq_lock);
+	mutex_lock(&set_cpu_freq_lock);
 	if (g_cpufreq_limit_id & (1 << nId)) {
 		pr_err("[CPUFREQ]This device [%d] already limited cpufreq\n", nId);
-		mutex_unlock(&set_cpufreq_lock);
+		mutex_unlock(&set_cpu_freq_lock);
 		return 0;
 	}
 
@@ -539,9 +473,9 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 	if (cpufreq_level > g_cpufreq_limit_level)
 		g_cpufreq_limit_level = cpufreq_level;
 
-	mutex_unlock(&set_cpufreq_lock);
+	mutex_unlock(&set_cpu_freq_lock);
 
-	mutex_lock(&cpufreq_lock);
+	mutex_lock(&set_freq_lock);
 	/* If cur frequency is higher than limit freq, it needs to update */
 	freq_old = policy->cur;
 	freq_new = freq_table[cpufreq_level].frequency;
@@ -554,7 +488,7 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 				break;
 			} else if (i == exynos_info->min_support_idx) {
 				printk(KERN_ERR "%s: Level is not found\n", __func__);
-				mutex_unlock(&cpufreq_lock);
+				mutex_unlock(&set_freq_lock);
 
 				return -EINVAL;
 			} else {
@@ -579,21 +513,19 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 		cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 	}
 
-	mutex_unlock(&cpufreq_lock);
+	mutex_unlock(&set_freq_lock);
 
 	return ret;
-#endif
 }
 
 void exynos_cpufreq_upper_limit_free(unsigned int nId)
 {
-#if 0
 	unsigned int i;
 
 	if (!exynos_cpufreq_init_done)
 		return;
 
-	mutex_lock(&set_cpufreq_lock);
+	mutex_lock(&set_cpu_freq_lock);
 	g_cpufreq_limit_id &= ~(1 << nId);
 	g_cpufreq_limit_val[nId] = exynos_info->max_support_idx;
 	g_cpufreq_limit_level = exynos_info->max_support_idx;
@@ -604,15 +536,12 @@ void exynos_cpufreq_upper_limit_free(unsigned int nId)
 				g_cpufreq_limit_level = g_cpufreq_limit_val[i];
 		}
 	}
-	mutex_unlock(&set_cpufreq_lock);
-#endif
+	mutex_unlock(&set_cpu_freq_lock);
 }
 
 /* This API serve highest priority level locking */
 int exynos_cpufreq_level_fix(unsigned int freq)
 {
-	return 0;
-#if 0
 	struct cpufreq_policy *policy;
 	int ret = 0;
 
@@ -631,18 +560,16 @@ int exynos_cpufreq_level_fix(unsigned int freq)
 
 	exynos_cpufreq_disable = true;
 	return ret;
-#endif
+
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_level_fix);
 
 void exynos_cpufreq_level_unfix(void)
 {
-#if 0
 	if (!exynos_cpufreq_init_done)
 		return;
 
 	exynos_cpufreq_disable = false;
-#endif
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_level_unfix);
 
@@ -842,52 +769,6 @@ static struct notifier_block exynos_cpufreq_reboot_notifier = {
 	.notifier_call = exynos_cpufreq_reboot_notifier_call,
 };
 
-/**
- * exynos_cpufreq_pm_notifier - block CPUFREQ's activities in suspend-resume
- *			context
- * @notifier
- * @pm_event
- * @v
- *
- * While frequency_locked == true, target() ignores every frequency but
- * locking_frequency. The locking_frequency value is the initial frequency,
- * which is set by the bootloader. In order to eliminate possible
- * inconsistency in clock values, we save and restore frequencies during
- * suspend and resume and block CPUFREQ activities. Note that the standard
- * suspend/resume cannot be used as they are too deep (syscore_ops) for
- * regulator actions.
- */
-static int exynos_cpufreq_pm_notifier(struct notifier_block *notifier,
-				       unsigned long pm_event, void *v)
-{
-	int ret;
-
-	switch (pm_event) {
-	case PM_SUSPEND_PREPARE:
-		mutex_lock(&cpufreq_lock);
-		frequency_locked = true;
-		mutex_unlock(&cpufreq_lock);
-
-		ret = exynos_cpufreq_scale(locking_frequency);
-		if (ret < 0)
-			return NOTIFY_BAD;
-
-		break;
-
-	case PM_POST_SUSPEND:
-		mutex_lock(&cpufreq_lock);
-		frequency_locked = false;
-		mutex_unlock(&cpufreq_lock);
-		break;
-	}
-
-	return NOTIFY_OK;
-}
-
-static struct notifier_block exynos_cpufreq_nb = {
-	.notifier_call = exynos_cpufreq_pm_notifier,
-};
-
 static struct cpufreq_driver exynos_driver = {
 	.flags		= CPUFREQ_STICKY,
 	.verify		= exynos_verify_speed,
@@ -950,10 +831,6 @@ static int __init exynos_cpufreq_init(void)
 
 	g_cpufreq_lock_level = exynos_info->min_support_idx;
 	g_cpufreq_limit_level = exynos_info->max_support_idx;
-
-	locking_frequency = exynos_getspeed(0);
-
-	register_pm_notifier(&exynos_cpufreq_nb);
 
 	if (cpufreq_register_driver(&exynos_driver)) {
 		pr_err("failed to register cpufreq driver\n");
