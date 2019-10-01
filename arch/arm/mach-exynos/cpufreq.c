@@ -118,7 +118,7 @@ static int exynos_target(struct cpufreq_policy *policy,
 	 */
 	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
 		if (freq_table[i].frequency == freqs.old)
-			old_index = freq_table[i].index;
+			old_index = freq_table[i].driver_data;
 	}
 	if (old_index == UINT_MAX) {
 		ret = -EINVAL;
@@ -328,7 +328,7 @@ int exynos_cpufreq_lock(unsigned int nId,
 		/* Find out current level index */
 		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
 			if (freq_old == freq_table[i].frequency) {
-				old_idx = freq_table[i].index;
+				old_idx = freq_table[i].driver_data;
 				break;
 			}
 		}
@@ -484,7 +484,7 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 		/* Find out current level index */
 		for (i = 0; i <= exynos_info->min_support_idx; i++) {
 			if (freq_old == freq_table[i].frequency) {
-				old_idx = freq_table[i].index;
+				old_idx = freq_table[i].driver_data;
 				break;
 			} else if (i == exynos_info->min_support_idx) {
 				printk(KERN_ERR "%s: Level is not found\n", __func__);
