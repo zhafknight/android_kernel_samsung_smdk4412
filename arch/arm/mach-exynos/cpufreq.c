@@ -151,7 +151,8 @@ static int exynos_target(struct cpufreq_policy *policy,
 
 	arm_volt = volt_table[index];
 
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+	policy->transition_ongoing = false;
+	//cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
 
 	/* When the new frequency is higher than current frequency */
 	if ((freqs.new > freqs.old) && !safe_arm_volt) {
@@ -166,7 +167,8 @@ static int exynos_target(struct cpufreq_policy *policy,
 	if (freqs.new != freqs.old)
 		exynos_info->set_freq(old_index, index);
 
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+	policy->transition_ongoing = true;
+	//cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
 
 	/* When the new frequency is lower than current frequency */
 	if ((freqs.new < freqs.old) ||
@@ -259,6 +261,8 @@ atomic_t exynos_cpufreq_lock_count;
 int exynos_cpufreq_lock(unsigned int nId,
 			 enum cpufreq_level_index cpufreq_level)
 {
+	return 0;
+#if 0
 	int ret = 0, i, old_idx = -EINVAL;
 	unsigned int freq_old, freq_new, arm_volt, safe_arm_volt;
 	unsigned int *volt_table;
@@ -358,13 +362,14 @@ int exynos_cpufreq_lock(unsigned int nId,
 	}
 
 	mutex_unlock(&set_freq_lock);
-
 	return ret;
+#endif
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_lock);
 
 void exynos_cpufreq_lock_free(unsigned int nId)
 {
+#if 0
 	unsigned int i;
 
 	if (!exynos_cpufreq_init_done)
@@ -381,6 +386,7 @@ void exynos_cpufreq_lock_free(unsigned int nId)
 		}
 	}
 	mutex_unlock(&set_cpu_freq_lock);
+#endif
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_lock_free);
 
@@ -428,6 +434,8 @@ static struct notifier_block pm_qos_cpu_dma_notifier = {
 int exynos_cpufreq_upper_limit(unsigned int nId,
 				enum cpufreq_level_index cpufreq_level)
 {
+	return 0;
+#if 0
 	int ret = 0, old_idx = 0, i;
 	unsigned int freq_old, freq_new, arm_volt, safe_arm_volt;
 	unsigned int *volt_table;
@@ -516,10 +524,12 @@ int exynos_cpufreq_upper_limit(unsigned int nId,
 	mutex_unlock(&set_freq_lock);
 
 	return ret;
+#endif
 }
 
 void exynos_cpufreq_upper_limit_free(unsigned int nId)
 {
+#if 0
 	unsigned int i;
 
 	if (!exynos_cpufreq_init_done)
@@ -537,11 +547,14 @@ void exynos_cpufreq_upper_limit_free(unsigned int nId)
 		}
 	}
 	mutex_unlock(&set_cpu_freq_lock);
+#endif
 }
 
 /* This API serve highest priority level locking */
 int exynos_cpufreq_level_fix(unsigned int freq)
 {
+	return 0;
+#if 0
 	struct cpufreq_policy *policy;
 	int ret = 0;
 
@@ -560,16 +573,18 @@ int exynos_cpufreq_level_fix(unsigned int freq)
 
 	exynos_cpufreq_disable = true;
 	return ret;
-
+#endif
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_level_fix);
 
 void exynos_cpufreq_level_unfix(void)
 {
+#if 0
 	if (!exynos_cpufreq_init_done)
 		return;
 
 	exynos_cpufreq_disable = false;
+#endif
 }
 EXPORT_SYMBOL_GPL(exynos_cpufreq_level_unfix);
 
