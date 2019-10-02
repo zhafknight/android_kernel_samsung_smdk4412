@@ -29,6 +29,8 @@ obj-$(CONFIG_DRM_KMS_HELPER) += drm_kms_helper.o
 
 CFLAGS_drm_trace_points.o := -I$(src)
 
+drm-y += drm_backlight.o
+
 obj-$(CONFIG_DRM)	+= drm.o
 obj-$(CONFIG_DRM_USB)   += drm_usb.o
 obj-$(CONFIG_DRM_TTM)	+= ttm/
