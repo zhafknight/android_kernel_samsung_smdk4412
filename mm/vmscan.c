@@ -146,25 +146,6 @@ static bool global_reclaim(struct scan_control *sc)
 }
 #endif
 
-unsigned long zone_reclaimable_pages(struct zone *zone)
-{
-	int nr;
-
-	nr = zone_page_state(zone, NR_ACTIVE_FILE) +
-	     zone_page_state(zone, NR_INACTIVE_FILE);
-
-	if (get_nr_swap_pages() > 0)
-		nr += zone_page_state(zone, NR_ACTIVE_ANON) +
-		      zone_page_state(zone, NR_INACTIVE_ANON);
-
-	return nr;
-}
-
-bool zone_reclaimable(struct zone *zone)
-{
-	return zone->pages_scanned < zone_reclaimable_pages(zone) * 6;
-}
-
 static unsigned long get_lru_size(struct lruvec *lruvec, enum lru_list lru)
 {
 	if (!mem_cgroup_disabled())
@@ -301,7 +282,6 @@ unsigned long shrink_slab(struct shrink_control *shrink,
 					max_pass, delta, total_scan);
 
 		while (total_scan >= batch_size) {
-			long this_scan = SHRINK_BATCH;
 			int nr_before;
 
 			nr_before = do_shrinker_shrink(shrinker, shrink, 0);
@@ -565,7 +545,7 @@ int remove_mapping(struct address_space *mapping, struct page *page)
  */
 void putback_lru_page(struct page *page)
 {
-	bool is_unevictable;
+	int lru;
 	int was_unevictable = PageUnevictable(page);
 
 	VM_BUG_ON(PageLRU(page));
@@ -580,14 +560,14 @@ redo:
 		 * unevictable page on [in]active list.
 		 * We know how to handle that.
 		 */
-		is_unevictable = false;
+		lru = page_lru_base_type(page);
 		lru_cache_add(page);
 	} else {
 		/*
 		 * Put unevictable pages directly on zone's unevictable
 		 * list.
 		 */
-		is_unevictable = true;
+		lru = LRU_UNEVICTABLE;
 		add_page_to_unevictable_list(page);
 		/*
 		 * When racing with an mlock or AS_UNEVICTABLE clearing
@@ -607,7 +587,7 @@ redo:
 	 * page is on unevictable list, it never be freed. To avoid that,
 	 * check after we added it to the list, again.
 	 */
-	if (is_unevictable && page_evictable(page)) {
+	if (lru == LRU_UNEVICTABLE && page_evictable(page)) {
 		if (!isolate_lru_page(page)) {
 			put_page(page);
 			goto redo;
@@ -618,9 +598,9 @@ redo:
 		 */
 	}
 
-	if (was_unevictable && !is_unevictable)
+	if (was_unevictable && lru != LRU_UNEVICTABLE)
 		count_vm_event(UNEVICTABLE_PGRESCUED);
-	else if (!was_unevictable && is_unevictable)
+	else if (!was_unevictable && lru == LRU_UNEVICTABLE)
 		count_vm_event(UNEVICTABLE_PGCULLED);
 
 	put_page(page);		/* drop ref from isolate */
@@ -1809,7 +1789,7 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	 * latencies, so it's better to scan a minimum amount there as
 	 * well.
 	 */
-	if (current_is_kswapd() && !zone_reclaimable(zone))
+	if (current_is_kswapd() && zone->all_unreclaimable)
 		force_scan = true;
 	if (!global_reclaim(sc))
 		force_scan = true;
@@ -2264,8 +2244,8 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 		if (global_reclaim(sc)) {
 			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
 				continue;
-			if (sc->priority != DEF_PRIORITY &&
-			    !zone_reclaimable(zone))
+			if (zone->all_unreclaimable &&
+					sc->priority != DEF_PRIORITY)
 				continue;	/* Let kswapd poll it */
 			if (IS_ENABLED(CONFIG_COMPACTION)) {
 				/*
@@ -2303,6 +2283,11 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 	return aborted_reclaim;
 }
 
+static bool zone_reclaimable(struct zone *zone)
+{
+	return zone->pages_scanned < zone_reclaimable_pages(zone) * 6;
+}
+
 /* All zones in zonelist are unreclaimable? */
 static bool all_unreclaimable(struct zonelist *zonelist,
 		struct scan_control *sc)
@@ -2316,7 +2301,7 @@ static bool all_unreclaimable(struct zonelist *zonelist,
 			continue;
 		if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
 			continue;
-		if (zone_reclaimable(zone))
+		if (!zone->all_unreclaimable)
 			return false;
 	}
 
@@ -2727,7 +2712,7 @@ static bool pgdat_balanced(pg_data_t *pgdat, int order, int classzone_idx)
 		 * DEF_PRIORITY. Effectively, it considers them balanced so
 		 * they must be considered balanced here as well!
 		 */
-		if (!zone_reclaimable(zone)) {
+		if (zone->all_unreclaimable) {
 			balanced_pages += zone->managed_pages;
 			continue;
 		}
@@ -2788,6 +2773,7 @@ static bool kswapd_shrink_zone(struct zone *zone,
 			       unsigned long lru_pages,
 			       unsigned long *nr_attempted)
 {
+	unsigned long nr_slab;
 	int testorder = sc->order;
 	unsigned long balance_gap;
 	struct reclaim_state *reclaim_state = current->reclaim_state;
@@ -2832,11 +2818,14 @@ static bool kswapd_shrink_zone(struct zone *zone,
 	shrink_zone(zone, sc);
 
 	reclaim_state->reclaimed_slab = 0;
-	shrink_slab(&shrink, sc->nr_scanned, lru_pages);
+	nr_slab = shrink_slab(&shrink, sc->nr_scanned, lru_pages);
 	sc->nr_reclaimed += reclaim_state->reclaimed_slab;
 
 	/* Account for the number of pages attempted to reclaim */
 	*nr_attempted += sc->nr_to_reclaim;
+
+	if (nr_slab == 0 && !zone_reclaimable(zone))
+		zone->all_unreclaimable = 1;
 
 	zone_clear_flag(zone, ZONE_WRITEBACK);
 
@@ -2846,7 +2835,7 @@ static bool kswapd_shrink_zone(struct zone *zone,
 	 * BDIs but as pressure is relieved, speculatively avoid congestion
 	 * waits.
 	 */
-	if (zone_reclaimable(zone) &&
+	if (!zone->all_unreclaimable &&
 	    zone_balanced(zone, testorder, 0, classzone_idx)) {
 		zone_clear_flag(zone, ZONE_CONGESTED);
 		zone_clear_flag(zone, ZONE_TAIL_LRU_DIRTY);
@@ -2912,8 +2901,8 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order,
 			if (!populated_zone(zone))
 				continue;
 
-			if (sc.priority != DEF_PRIORITY &&
-			    !zone_reclaimable(zone))
+			if (zone->all_unreclaimable &&
+			    sc.priority != DEF_PRIORITY)
 				continue;
 
 			/*
@@ -2991,8 +2980,8 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order,
 			if (!populated_zone(zone))
 				continue;
 
-			if (sc.priority != DEF_PRIORITY &&
-			    !zone_reclaimable(zone))
+			if (zone->all_unreclaimable &&
+			    sc.priority != DEF_PRIORITY)
 				continue;
 
 			sc.nr_scanned = 0;
@@ -3248,7 +3237,7 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 	}
 	if (!waitqueue_active(&pgdat->kswapd_wait))
 		return;
-	if (zone_balanced(zone, order, 0, 0))
+	if (zone_watermark_ok_safe(zone, order, low_wmark_pages(zone), 0, 0))
 		return;
 
 	trace_mm_vmscan_wakeup_kswapd(pgdat->node_id, zone_idx(zone), order);
@@ -3276,6 +3265,20 @@ unsigned long global_reclaimable_pages(void)
 	return nr;
 }
 
+unsigned long zone_reclaimable_pages(struct zone *zone)
+{
+	int nr;
+
+	nr = zone_page_state(zone, NR_ACTIVE_FILE) +
+	     zone_page_state(zone, NR_INACTIVE_FILE);
+
+	if (get_nr_swap_pages() > 0)
+		nr += zone_page_state(zone, NR_ACTIVE_ANON) +
+		      zone_page_state(zone, NR_INACTIVE_ANON);
+
+	return nr;
+}
+
 #ifdef CONFIG_HIBERNATION
 /*
  * Try to free `nr_to_reclaim' of memory, system-wide, and return the number of
@@ -3290,11 +3293,7 @@ unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
 	struct reclaim_state reclaim_state;
 	struct scan_control sc = {
 		.gfp_mask = GFP_HIGHUSER_MOVABLE,
-#if defined(CONFIG_SLP) && defined(CONFIG_FULL_PAGE_RECLAIM)
-		.may_swap = 0,
-#else
 		.may_swap = 1,
-#endif
 		.may_unmap = 1,
 		.may_writepage = 1,
 		.nr_to_reclaim = nr_to_reclaim,
@@ -3577,7 +3576,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
 	    zone_page_state(zone, NR_SLAB_RECLAIMABLE) <= zone->min_slab_pages)
 		return ZONE_RECLAIM_FULL;
 
-	if (!zone_reclaimable(zone))
+	if (zone->all_unreclaimable)
 		return ZONE_RECLAIM_FULL;
 
 	/*
