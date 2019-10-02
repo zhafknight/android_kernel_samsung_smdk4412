@@ -887,6 +887,7 @@ static int fimd_probe(struct platform_device *pdev)
 	int win;
 	int ret = -EINVAL;
 
+#if 0
 	if (dev->of_node) {
 		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
 		if (!pdata) {
@@ -901,12 +902,15 @@ static int fimd_probe(struct platform_device *pdev)
 			return ret;
 		}
 	} else {
+#endif
 		pdata = dev->platform_data;
 		if (!pdata) {
 			DRM_ERROR("no platform data specified\n");
 			return -EINVAL;
 		}
+#if 0
 	}
+#endif
 
 	panel = &pdata->panel;
 	if (!panel) {
