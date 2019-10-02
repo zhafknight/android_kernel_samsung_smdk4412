@@ -3,6 +3,7 @@
 #include <linux/pm.h>
 #include <asm/io.h>
 #include <asm/cacheflush.h>
+#include <asm/system_misc.h>
 #include <mach/system.h>
 #include <mach/regs-pmu.h>
 #include <mach/gpio.h>
