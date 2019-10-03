@@ -26,7 +26,7 @@
 #include <linux/kernel_stat.h>
 #include <linux/reboot.h>
 #include <linux/slab.h>
-#include <linux/opp.h>
+#include <linux/pm_opp.h>
 #include <linux/clk.h>
 #include <linux/cpufreq.h>
 #include <linux/pm_qos.h>
@@ -682,12 +682,12 @@ void exynos4x12_target(int index)
 	}
 }
 
-unsigned int exynos4x12_get_table_index(struct opp *opp)
+unsigned int exynos4x12_get_table_index(struct dev_pm_opp *opp)
 {
 	unsigned int index;
 
 	for (index = LV_0; index < LV_END; index++)
-		if (opp_get_freq(opp) == exynos4_busfreq_table[index].mem_clk)
+		if (dev_pm_opp_get_freq(opp) == exynos4_busfreq_table[index].mem_clk)
 			break;
 
 	return index;
@@ -800,9 +800,9 @@ unsigned int exynos4x12_get_int_volt(unsigned long index)
 	return exynos4_int_volt[asv_group_index][index];
 }
 
-struct opp *exynos4x12_monitor(struct busfreq_data *data)
+struct dev_pm_opp *exynos4x12_monitor(struct busfreq_data *data)
 {
-	struct opp *opp = data->curr_opp;
+	struct dev_pm_opp *opp = data->curr_opp;
 	int i;
 	unsigned int cpu_load_average = 0;
 	unsigned int dmc0_load_average = 0;
@@ -812,8 +812,8 @@ struct opp *exynos4x12_monitor(struct busfreq_data *data)
 	unsigned long lockfreq;
 	unsigned long dmcfreq;
 	unsigned long newfreq;
-	unsigned long currfreq = opp_get_freq(data->curr_opp) / 1000;
-	unsigned long maxfreq = opp_get_freq(data->max_opp) / 1000;
+	unsigned long currfreq = dev_pm_opp_get_freq(data->curr_opp) / 1000;
+	unsigned long maxfreq = dev_pm_opp_get_freq(data->max_opp) / 1000;
 	unsigned long cpu_load;
 	unsigned long dmc0_load;
 	unsigned long dmc1_load;
@@ -858,25 +858,25 @@ struct opp *exynos4x12_monitor(struct busfreq_data *data)
 	}
 
 	if (cpu_load >= up_cpu_threshold) {
-		cpufreq = opp_get_freq(data->max_opp);
+		cpufreq = dev_pm_opp_get_freq(data->max_opp);
 		if (cpu_load < max_cpu_threshold) {
 			opp = data->curr_opp;
 			if (cpu_load_slope > cpu_slope_size) {
 				cpufreq--;
-				opp = opp_find_freq_floor(data->dev, &cpufreq);
+				opp = dev_pm_opp_find_freq_floor(data->dev, &cpufreq);
 			}
-			cpufreq = opp_get_freq(opp);
+			cpufreq = dev_pm_opp_get_freq(opp);
 		}
 	}
 
 	if (dmc_load >= dmc_max_threshold) {
-		dmcfreq = opp_get_freq(data->max_opp);
+		dmcfreq = dev_pm_opp_get_freq(data->max_opp);
 	} else if (dmc_load < idle_threshold) {
 		if (dmc_load_average < idle_threshold)
 			opp = step_down(data, 1);
 		else
 			opp = data->curr_opp;
-		dmcfreq = opp_get_freq(opp);
+		dmcfreq = dev_pm_opp_get_freq(opp);
 	} else {
 		if (dmc_load < dmc_load_average) {
 			dmc_load = dmc_load_average;
@@ -891,12 +891,12 @@ struct opp *exynos4x12_monitor(struct busfreq_data *data)
 	newfreq = max3(lockfreq, dmcfreq, cpufreq);
 
 	if (samsung_rev() < EXYNOS4412_REV_1_0)
-		newfreq = opp_get_freq(data->max_opp);
+		newfreq = dev_pm_opp_get_freq(data->max_opp);
 
 	pr_debug("curfreq %ld, newfreq %ld, dmc0_load %ld, dmc1_load %ld, cpu_load %ld\n",
 		currfreq, newfreq, dmc0_load, dmc1_load, cpu_load);
 
-	opp = opp_find_freq_ceil(data->dev, &newfreq);
+	opp = dev_pm_opp_find_freq_ceil(data->dev, &newfreq);
 	if (IS_ERR(opp))
 		opp = data->max_opp;
 
@@ -1016,7 +1016,7 @@ int exynos4x12_init(struct device *dev, struct busfreq_data *data)
 	exynos4x12_set_bus_volt();
 
 	for (i = 0; i < LV_END; i++) {
-		ret = opp_add(dev, exynos4_busfreq_table[i].mem_clk,
+		ret = dev_pm_opp_add(dev, exynos4_busfreq_table[i].mem_clk,
 				exynos4_busfreq_table[i].volt);
 		if (ret) {
 			dev_err(dev, "Fail to add opp entries.\n");
@@ -1025,7 +1025,7 @@ int exynos4x12_init(struct device *dev, struct busfreq_data *data)
 	}
 
 	if (samsung_rev() >= EXYNOS4412_REV_2_0) {
-		opp_disable(dev, 440293);
+		dev_pm_opp_disable(dev, 440293);
 		maxfreq = 440220;
 	} else {
 		/* opp_disable(dev, 267200); */
@@ -1035,8 +1035,8 @@ int exynos4x12_init(struct device *dev, struct busfreq_data *data)
 	data->table_size = LV_END;
 
 	/* Find max frequency */
-	data->max_opp = opp_find_freq_floor(dev, &maxfreq);
-	data->min_opp = opp_find_freq_ceil(dev, &minfreq);
+	data->max_opp = dev_pm_opp_find_freq_floor(dev, &maxfreq);
+	data->min_opp = dev_pm_opp_find_freq_ceil(dev, &minfreq);
 
 	sclk_dmc = clk_get(NULL, "sclk_dmc");
 
@@ -1046,7 +1046,7 @@ int exynos4x12_init(struct device *dev, struct busfreq_data *data)
 	} else {
 		freq = clk_get_rate(sclk_dmc) / 1000;
 		clk_put(sclk_dmc);
-		data->curr_opp = opp_find_freq_ceil(dev, &freq);
+		data->curr_opp = dev_pm_opp_find_freq_ceil(dev, &freq);
 	}
 
 	data->vdd_int = regulator_get(NULL, "vdd_int");

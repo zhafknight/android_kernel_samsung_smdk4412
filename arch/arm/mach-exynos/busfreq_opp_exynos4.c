@@ -27,7 +27,7 @@
 #include <linux/suspend.h>
 #include <linux/reboot.h>
 #include <linux/slab.h>
-#include <linux/opp.h>
+#include <linux/pm_opp.h>
 #include <linux/clk.h>
 #include <linux/workqueue.h>
 
@@ -52,7 +52,7 @@
 static DEFINE_MUTEX(busfreq_lock);
 
 struct busfreq_control {
-	struct opp *opp_lock;
+	struct dev_pm_opp *opp_lock;
 	struct device *dev;
 	struct busfreq_data *data;
 	bool init_done;
@@ -69,18 +69,18 @@ void update_busfreq_stat(struct busfreq_data *data, unsigned int index)
 #endif
 }
 
-static struct opp __maybe_unused *step_up(struct busfreq_data *data, int step)
+static struct dev_pm_opp __maybe_unused *step_up(struct busfreq_data *data, int step)
 {
 	int i;
-	struct opp *opp = data->curr_opp;
+	struct dev_pm_opp *opp = data->curr_opp;
 	unsigned long newfreq;
 
 	if (data->max_opp == data->curr_opp)
 		return data->curr_opp;
 
 	for (i = 0; i < step; i++) {
-		newfreq = opp_get_freq(opp) + 1;
-		opp = opp_find_freq_ceil(data->dev, &newfreq);
+		newfreq = dev_pm_opp_get_freq(opp) + 1;
+		opp = dev_pm_opp_find_freq_ceil(data->dev, &newfreq);
 
 		if (opp == data->max_opp)
 			break;
@@ -89,18 +89,18 @@ static struct opp __maybe_unused *step_up(struct busfreq_data *data, int step)
 	return opp;
 }
 
-struct opp *step_down(struct busfreq_data *data, int step)
+struct dev_pm_opp *step_down(struct busfreq_data *data, int step)
 {
 	int i;
-	struct opp *opp = data->curr_opp;
+	struct dev_pm_opp *opp = data->curr_opp;
 	unsigned long newfreq;
 
 	if (data->min_opp == data->curr_opp)
 		return data->curr_opp;
 
 	for (i = 0; i < step; i++) {
-		newfreq = opp_get_freq(opp) - 1;
-		opp = opp_find_freq_floor(data->dev, &newfreq);
+		newfreq = dev_pm_opp_get_freq(opp) - 1;
+		opp = dev_pm_opp_find_freq_floor(data->dev, &newfreq);
 
 		if (opp == data->min_opp)
 			break;
@@ -109,22 +109,22 @@ struct opp *step_down(struct busfreq_data *data, int step)
 	return opp;
 }
 
-static unsigned int _target(struct busfreq_data *data, struct opp *new)
+static unsigned int _target(struct busfreq_data *data, struct dev_pm_opp *new)
 {
 	unsigned int index;
 	unsigned int voltage;
 	unsigned long newfreq;
 	unsigned long currfreq;
 
-	newfreq = opp_get_freq(new);
-	currfreq = opp_get_freq(data->curr_opp);
+	newfreq = dev_pm_opp_get_freq(new);
+	currfreq = dev_pm_opp_get_freq(data->curr_opp);
 
 	index = data->get_table_index(new);
 
 	if (newfreq == 0 || newfreq == currfreq || data->use == false)
 		return data->get_table_index(data->curr_opp);
 
-	voltage = opp_get_voltage(new);
+	voltage = dev_pm_opp_get_voltage(new);
 	if (newfreq > currfreq) {
 		regulator_set_voltage(data->vdd_mif, voltage,
 				voltage + 25000);
@@ -158,7 +158,7 @@ static void exynos_busfreq_timer(struct work_struct *work)
 	struct delayed_work *delayed_work = to_delayed_work(work);
 	struct busfreq_data *data = container_of(delayed_work, struct busfreq_data,
 			worker);
-	struct opp *opp;
+	struct dev_pm_opp *opp;
 	unsigned int index;
 
 	opp = data->monitor(data);
@@ -205,7 +205,7 @@ static int exynos_busfreq_reboot_event(struct notifier_block *this,
 	struct busfreq_data *data = container_of(this, struct busfreq_data,
 			exynos_reboot_notifier);
 
-	unsigned long voltage = opp_get_voltage(data->max_opp);
+	unsigned long voltage = dev_pm_opp_get_voltage(data->max_opp);
 	unsigned int index = data->get_table_index(data->max_opp);
 
 	mutex_lock(&busfreq_lock);
@@ -239,9 +239,9 @@ static ssize_t show_level_lock(struct device *device,
 	int len = 0;
 	unsigned long freq;
 
-	freq = bus_ctrl.opp_lock == NULL ? 0 : opp_get_freq(bus_ctrl.opp_lock);
+	freq = bus_ctrl.opp_lock == NULL ? 0 : dev_pm_opp_get_freq(bus_ctrl.opp_lock);
 
-	len = sprintf(buf, "Current Freq(MIF/INT) : %lu\n", opp_get_freq(data->curr_opp));
+	len = sprintf(buf, "Current Freq(MIF/INT) : %lu\n", dev_pm_opp_get_freq(data->curr_opp));
 	len += sprintf(buf + len, "Current Lock Freq(MIF/INT) : %lu\n", freq);
 
 	return len;
@@ -252,9 +252,9 @@ static ssize_t store_level_lock(struct device *device, struct device_attribute *
 {
 	struct platform_device *pdev = to_platform_device(bus_ctrl.dev);
 	struct busfreq_data *data = (struct busfreq_data *)platform_get_drvdata(pdev);
-	struct opp *opp;
+	struct dev_pm_opp *opp;
 	unsigned long freq;
-	unsigned long maxfreq = opp_get_freq(data->max_opp);
+	unsigned long maxfreq = dev_pm_opp_get_freq(data->max_opp);
 	int ret;
 
 	ret = sscanf(buf, "%lu", &freq);
@@ -267,9 +267,9 @@ static ssize_t store_level_lock(struct device *device, struct device_attribute *
 	if (freq > maxfreq)
 		freq = maxfreq;
 
-	opp = opp_find_freq_ceil(bus_ctrl.dev, &freq);
+	opp = dev_pm_opp_find_freq_ceil(bus_ctrl.dev, &freq);
 	bus_ctrl.opp_lock = opp;
-	pr_info("Lock Freq : %lu\n", opp_get_freq(opp));
+	pr_info("Lock Freq : %lu\n", dev_pm_opp_get_freq(opp));
 	return count;
 }
 
@@ -481,7 +481,7 @@ static struct attribute *busfreq_attributes[] = {
 
 void exynos_request_apply(unsigned long freq)
 {
-	struct opp *opp;
+	struct dev_pm_opp *opp;
 	unsigned int index;
 
 	mutex_lock(&busfreq_lock);
@@ -491,12 +491,12 @@ void exynos_request_apply(unsigned long freq)
 
 	opp = bus_ctrl.data->curr_opp;
 
-	opp = opp_find_freq_ceil(bus_ctrl.data->dev, &freq);
+	opp = dev_pm_opp_find_freq_ceil(bus_ctrl.data->dev, &freq);
 
 	if (bus_ctrl.opp_lock)
 		opp = bus_ctrl.opp_lock;
 
-	if (opp_get_freq(bus_ctrl.data->curr_opp) >= opp_get_freq(opp))
+	if (dev_pm_opp_get_freq(bus_ctrl.data->curr_opp) >= dev_pm_opp_get_freq(opp))
 		goto out;
 
 	index = _target(bus_ctrl.data, opp);

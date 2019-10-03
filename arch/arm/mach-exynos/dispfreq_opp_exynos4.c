@@ -59,7 +59,7 @@ struct exynos4_dispfreq_pm_qos_table {
 
 struct exynos4_dispfreq_data {
 	struct device *dev;
-	struct opp *curr_opp;
+	struct dev_pm_opp *curr_opp;
 	struct delayed_work wq_lowfreq;
 	struct notifier_block nb;
 	struct notifier_block nb_pm;
@@ -248,21 +248,21 @@ static int exynos4_dispfreq_opp_notifier_call(struct notifier_block *nb,
 	return ret;
 }
 
-struct opp *devfreq_recommended_opp(struct device *dev, unsigned long *freq,
+struct dev_pm_opp *devfreq_recommended_opp(struct device *dev, unsigned long *freq,
 				    bool floor)
 {
-	struct opp *opp;
+	struct dev_pm_opp *opp;
 
 	if (floor) {
-		opp = opp_find_freq_floor(dev, freq);
+		opp = dev_pm_opp_find_freq_floor(dev, freq);
 
 		if (opp == ERR_PTR(-ENODEV))
-			opp = opp_find_freq_ceil(dev, freq);
+			opp = dev_pm_opp_find_freq_ceil(dev, freq);
 	} else {
-		opp = opp_find_freq_ceil(dev, freq);
+		opp = dev_pm_opp_find_freq_ceil(dev, freq);
 
 		if (opp == ERR_PTR(-ENODEV))
-			opp = opp_find_freq_floor(dev, freq);
+			opp = dev_pm_opp_find_freq_floor(dev, freq);
 	}
 
 	return opp;
@@ -274,10 +274,10 @@ static int exynos4_dispfreq_profile_target(struct device *dev,
 {
 	/* Inform display client of new frequency */
 	struct exynos4_dispfreq_data *data = dev_get_drvdata(dev);
-	struct opp *opp = devfreq_recommended_opp(dev, _freq, options &
+	struct dev_pm_opp *opp = devfreq_recommended_opp(dev, _freq, options &
 						  DEVFREQ_OPTION_FREQ_GLB);
-	unsigned long old_freq = opp_get_freq(data->curr_opp);
-	unsigned long new_freq = opp_get_freq(opp);
+	unsigned long old_freq = dev_pm_opp_get_freq(data->curr_opp);
+	unsigned long new_freq = dev_pm_opp_get_freq(opp);
 
 	/* TODO: No longer use fb notifier to identify LCD on/off state and
 	   have yet alternative feature of it. So, exynos4-display change
@@ -286,7 +286,7 @@ static int exynos4_dispfreq_profile_target(struct device *dev,
 	if (old_freq == new_freq)
 		return 0;
 
-	opp = opp_find_freq_floor(dev, &new_freq);
+	opp = dev_pm_opp_find_freq_floor(dev, &new_freq);
 	data->curr_opp = opp;
 
 	switch (new_freq) {
@@ -408,7 +408,7 @@ static int exynos4_dispfreq_pm_notifier_callback(struct notifier_block *this,
  */
 static void exynos4_dispfreq_disable(struct exynos4_dispfreq_data *data)
 {
-	struct opp *opp;
+	struct dev_pm_opp *opp;
 	unsigned long freq = EXYNOS4_DISPLAY_LV_DEFAULT;
 
 	/* Cancel workqueue which set low frequency of display client
@@ -424,7 +424,7 @@ static void exynos4_dispfreq_disable(struct exynos4_dispfreq_data *data)
 	mutex_unlock(&data->lock);
 
 	/* Find opp object with high frequency */
-	opp = opp_find_freq_floor(data->dev, &freq);
+	opp = dev_pm_opp_find_freq_floor(data->dev, &freq);
 	if (IS_ERR(opp)) {
 		dev_err(data->dev,
 			"invalid initial frequency %lu kHz.\n", freq);
@@ -449,7 +449,7 @@ static int exynos4_dispfreq_probe(struct platform_device *pdev)
 {
 	struct exynos4_dispfreq_data *data;
 	struct device *dev = &pdev->dev;
-	struct opp *opp;
+	struct dev_pm_opp *opp;
 	int ret = 0;
 	int i;
 	struct exynos4_dispfreq_pm_qos_table *qos_list;
@@ -467,7 +467,7 @@ static int exynos4_dispfreq_probe(struct platform_device *pdev)
 
 	/* Register OPP entries */
 	for (i = 0 ; i < _LV_END ; i++) {
-		ret = opp_add(dev, exynos_dispfreq_clk_table[i].clk,
+		ret = dev_pm_opp_add(dev, exynos_dispfreq_clk_table[i].clk,
 			      exynos_dispfreq_clk_table[i].volt);
 		if (ret) {
 			dev_err(dev, "cannot add opp entries.\n");
@@ -477,7 +477,7 @@ static int exynos4_dispfreq_probe(struct platform_device *pdev)
 
 
 	/* Find opp object with init frequency */
-	opp = opp_find_freq_floor(dev, &data->initial_freq);
+	opp = dev_pm_opp_find_freq_floor(dev, &data->initial_freq);
 	if (IS_ERR(opp)) {
 		dev_err(dev, "invalid initial frequency %lu kHz.\n",
 		       data->initial_freq);
@@ -502,7 +502,7 @@ static int exynos4_dispfreq_probe(struct platform_device *pdev)
 	/* Register exynos4_display as client to opp notifier */
 	memset(&data->nb, 0, sizeof(data->nb));
 	data->nb.notifier_call = exynos4_dispfreq_opp_notifier_call;
-	nh = opp_get_notifier(dev);
+	nh = dev_pm_opp_get_notifier(dev);
 	ret = srcu_notifier_chain_register(nh, &data->nb);
 	if (ret < 0) {
 		dev_err(dev, "failed to get pm notifier: %d\n", ret);
@@ -555,7 +555,7 @@ static int exynos4_dispfreq_remove(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
 	struct exynos4_dispfreq_data *data = pdev->dev.platform_data;
-	struct srcu_notifier_head *nh = opp_get_notifier(dev);
+	struct srcu_notifier_head *nh = dev_pm_opp_get_notifier(dev);
 
 	unregister_pm_notifier(&data->nb_pm);
 	exynos4_dispfreq_disable(data);
