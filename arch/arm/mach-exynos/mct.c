@@ -21,7 +21,7 @@
 #include <linux/delay.h>
 #include <linux/percpu.h>
 
-#include <asm/sched_clock.h>
+#include <linux/sched_clock.h>
 #include <linux/irqchip/arm-gic.h>
 
 #include <plat/cpu.h>
