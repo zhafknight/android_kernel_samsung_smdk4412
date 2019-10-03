@@ -327,57 +327,42 @@ unsigned long __must_check
 gen_pool_alloc_aligned(struct gen_pool *pool, size_t size,
 		       unsigned alignment_order)
 {
+	unsigned long addr, align_mask = 0, flags, start;
 	struct gen_pool_chunk *chunk;
-	unsigned long addr = 0, align_mask = 0, flags, start = 0;
-	int order = pool->min_alloc_order;
-	int nbits, remain;
-
 	size_t chunk_size;
-
-#ifndef CONFIG_ARCH_HAVE_NMI_SAFE_CMPXCHG
-	BUG_ON(in_nmi());
-#endif
 
 	if (size == 0)
 		return 0;
 
-	if (alignment_order > order)
-		align_mask = (1 << (alignment_order - order)) - 1;
+	if (alignment_order > pool->min_alloc_order)
+		align_mask = (1 << (alignment_order - pool->min_alloc_order)) - 1;
 
-	nbits = (size + (1UL << order) - 1) >> order;
-	//size = nbits >> order;
+	size = (size + (1UL << pool->min_alloc_order) - 1) >> pool->min_alloc_order;
 
-	rcu_read_lock();
-	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) {
-		if (size > atomic_read(&chunk->avail))
-			continue;
-
+	read_lock(&pool->lock);
+	list_for_each_entry(chunk, &pool->chunks, next_chunk) {
 		chunk_size = chunk->end_addr - chunk->start_addr + 1;
 		if (chunk_size < size)
 			continue;
 
-retry:
+		spin_lock_irqsave(&chunk->lock, flags);
 		start = bitmap_find_next_zero_area_off(chunk->bits, chunk_size,
 						       0, size, align_mask,
 						       chunk->start_addr);
-		if (start >= chunk_size)
+		if (start >= chunk_size) {
+			spin_unlock_irqrestore(&chunk->lock, flags);
 			continue;
+		}
 
 		bitmap_set(chunk->bits, start, size);
-		remain = bitmap_set_ll(chunk->bits, start, nbits);
-		if (remain) {
-			remain = bitmap_clear_ll(chunk->bits, start,
-						 nbits - remain);
-			BUG_ON(remain);
-			goto retry;
- 		}
-
+		spin_unlock_irqrestore(&chunk->lock, flags);
 		addr = (chunk->start_addr + start) << pool->min_alloc_order;
-		size = nbits << order;
-		atomic_sub(size, &chunk->avail);
-		break;
+		goto done;
 	}
-	rcu_read_unlock();
+
+	addr = 0;
+done:
+	read_unlock(&pool->lock);
 	return addr;
 }
 EXPORT_SYMBOL(gen_pool_alloc_aligned);
