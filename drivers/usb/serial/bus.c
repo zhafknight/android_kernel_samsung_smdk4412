@@ -137,12 +137,6 @@ static ssize_t new_id_show(struct device_driver *driver, char *buf)
 }
 static DRIVER_ATTR_RW(new_id);
 
-static struct attribute *usb_serial_drv_attrs[] = {
-	&driver_attr_new_id.attr,
-	NULL,
-};
-ATTRIBUTE_GROUPS(usb_serial_drv);
-
 static void free_dynids(struct usb_serial_driver *drv)
 {
 	struct usb_dynid *dynid, *n;
@@ -155,14 +149,22 @@ static void free_dynids(struct usb_serial_driver *drv)
 	spin_unlock(&drv->dynids.lock);
 }
 
-#else
-static struct driver_attribute drv_attrs[] = {
-	__ATTR_NULL,
+static struct attribute *usb_serial_drv_attrs[] = {
+	&driver_attr_new_id.attr,
+	NULL,
 };
+
+#else
+static struct attribute *usb_serial_drv_attrs[] = {
+	NULL,
+};
+
 static inline void free_dynids(struct usb_serial_driver *drv)
 {
 }
 #endif
+
+ATTRIBUTE_GROUPS(usb_serial_drv);
 
 struct bus_type usb_serial_bus_type = {
 	.name =		"usb-serial",
