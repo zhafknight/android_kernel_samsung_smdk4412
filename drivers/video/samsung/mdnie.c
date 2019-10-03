@@ -533,11 +533,15 @@ static ssize_t mode_store(struct device *dev,
 	return count;
 }
 
+static DEVICE_ATTR_RW(mode);
+
 static ssize_t mode_max_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	return snprintf(buf, PAGE_SIZE, "%u\n", MODE_MAX);
 }
+
+static DEVICE_ATTR_RO(mode_max);
 
 static ssize_t scenario_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -581,6 +585,8 @@ static ssize_t scenario_store(struct device *dev,
 	return count;
 }
 
+static DEVICE_ATTR_RW(scenario);
+
 #if defined(CONFIG_FB_MDNIE_PWM)
 static ssize_t cabc_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -621,6 +627,8 @@ static ssize_t cabc_store(struct device *dev,
 
 	return count;
 }
+
+static DEVICE_ATTR_RW(cabc);
 
 static ssize_t auto_brightness_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -674,7 +682,7 @@ static ssize_t auto_brightness_store(struct device *dev,
 	return size;
 }
 
-static DEVICE_ATTR(auto_brightness, 0644, auto_brightness_show, auto_brightness_store);
+static DEVICE_ATTR_RW(auto_brightness);
 #endif
 
 static ssize_t tuning_show(struct device *dev,
@@ -748,6 +756,8 @@ static ssize_t tuning_store(struct device *dev,
 
 	return count;
 }
+
+static DEVICE_ATTR_RW(tuning);
 
 static ssize_t accessibility_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -830,6 +840,8 @@ static ssize_t accessibility_store(struct device *dev,
 	return count;
 }
 
+static DEVICE_ATTR_RW(accessibility);
+
 static ssize_t accessibility_max_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -839,6 +851,8 @@ static ssize_t accessibility_max_show(struct device *dev,
 
 	return pos - buf;
 }
+
+static DEVICE_ATTR_RO(accessibility_max);
 
 #ifdef CONFIG_FB_MDNIE_RGB_ADJUST
 #define ADJ_ATTR(name) \
@@ -873,14 +887,18 @@ ADJ_ATTR(r_adj);
 ADJ_ATTR(g_adj);
 ADJ_ATTR(b_adj);
 
-static ssize_t show_rgb_adj_enable(struct device *dev,
+static DEVICE_ATTR(r_adj, 0666, show_r_adj, store_r_adj);
+static DEVICE_ATTR(g_adj, 0666, show_g_adj, store_g_adj);
+static DEVICE_ATTR(b_adj, 0666, show_b_adj, store_b_adj);
+
+static ssize_t rgb_adj_enable_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct mdnie_info *mdnie = dev_get_drvdata(dev);
 	return sprintf(buf, "%u\n", mdnie->rgb_adj_enable);
 }
 
-static ssize_t store_rgb_adj_enable(struct device *dev,
+static ssize_t rgb_adj_enable_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	struct mdnie_info *mdnie = dev_get_drvdata(dev);
@@ -893,7 +911,9 @@ static ssize_t store_rgb_adj_enable(struct device *dev,
 	return size;
 }
 
-static ssize_t show_sensorRGB(struct device *dev,
+static DEVICE_ATTR_RW(rgb_adj_enable);
+
+static ssize_t sensorRGB_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct mdnie_info *mdnie = dev_get_drvdata(dev);
@@ -907,7 +927,7 @@ static ssize_t show_sensorRGB(struct device *dev,
 	return pos - buf;
 }
 
-static ssize_t store_sensorRGB(struct device *dev,
+static ssize_t sensorRGB_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
 	struct mdnie_info *mdnie = dev_get_drvdata(dev);
@@ -926,6 +946,8 @@ static ssize_t store_sensorRGB(struct device *dev,
 
 	return count;
 }
+
+static DEVICE_ATTR_RW(sensorRGB);
 #endif
 
 #if !defined(CONFIG_FB_MDNIE_PWM)
@@ -947,29 +969,40 @@ static ssize_t color_correct_show(struct device *dev,
 
 	return pos - buf;
 }
+
+static DEVICE_ATTR_RO(color_correct);
 #endif
 
-static struct device_attribute mdnie_attributes[] = {
-	__ATTR(mode, 0664, mode_show, mode_store),
-	__ATTR(mode_max, 0444, mode_max_show, NULL),
-	__ATTR(scenario, 0664, scenario_show, scenario_store),
+static struct attribute* mdnie_attributes[] = {
+	&dev_attr_mode.attr,
+	&dev_attr_mode_max.attr,
+	&dev_attr_scenario.attr,
 #if defined(CONFIG_FB_MDNIE_PWM)
-	__ATTR(cabc, 0664, cabc_show, cabc_store),
+	&dev_attr_cabc.attr,
 #endif
-	__ATTR(tuning, 0664, tuning_show, tuning_store),
-	__ATTR(accessibility, 0664, accessibility_show, accessibility_store),
-	__ATTR(accessibility_max, 0444, accessibility_max_show, NULL),
+	&dev_attr_tuning.attr,
+	&dev_attr_accessibility.attr,
+	&dev_attr_accessibility_max.attr,
 #if !defined(CONFIG_FB_MDNIE_PWM)
-	__ATTR(color_correct, 0444, color_correct_show, NULL),
+	&dev_attr_color_correct.attr,
 #endif
 #ifdef CONFIG_FB_MDNIE_RGB_ADJUST
-	__ATTR(r_adj, 0666, show_r_adj, store_r_adj),
-	__ATTR(g_adj, 0666, show_g_adj, store_g_adj),
-	__ATTR(b_adj, 0666, show_b_adj, store_b_adj),
-	__ATTR(rgb_adj_enable, 0666, show_rgb_adj_enable, store_rgb_adj_enable),
-	__ATTR(sensorRGB, 0666, show_sensorRGB, store_sensorRGB),
+	&dev_attr_r_adj.attr,
+	&dev_attr_g_adj.attr,
+	&dev_attr_b_adj.attr,
+	&dev_attr_rgb_adj_enable.attr,
+	&dev_attr_sensorRGB.attr,
 #endif
-	__ATTR_NULL,
+	NULL,
+};
+
+static const struct attribute_group mdnie_group = {
+	.attrs = mdnie_attributes,
+};
+
+static const struct attribute_group *mdnie_groups[] = {
+	&mdnie_group,
+	NULL,
 };
 
 #ifdef CONFIG_PM
@@ -1075,7 +1108,7 @@ static int mdnie_probe(struct platform_device *pdev)
 		goto error0;
 	}
 
-	mdnie_class->dev_attrs = mdnie_attributes;
+	mdnie_class->dev_groups = mdnie_groups;
 
 	mdnie = kzalloc(sizeof(struct mdnie_info), GFP_KERNEL);
 	if (!mdnie) {
