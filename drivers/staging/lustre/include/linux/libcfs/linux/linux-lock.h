@@ -121,7 +121,7 @@
  * completion "implementation" (use Linux kernel's primitives)
  *
  * - DECLARE_COMPLETION(work)
- * - INIT_COMPLETION(c)
+ * - reinit_completion(&c)
  * - COMPLETION_INITIALIZER(work)
  * - init_completion(c)
  * - complete(c)

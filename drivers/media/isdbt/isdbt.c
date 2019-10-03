@@ -301,7 +301,7 @@ void isdbt_work_queue_spi_read_buf(struct work_struct *work)
 	disable_irq(gpio_to_irq(cs->line));
 	s3c_gpio_cfgpin(cs->line, CS_SPI_MODE());
 	udelay(SPIDEV_WARMUP_DELAY);
-	INIT_COMPLETION(pdev->xfer_completion);
+	reinit_completion(&pdev->xfer_completion);
 	pdev->xfer_size = SPI_BURST_READ_SIZE + READ_PACKET_MARGIN ;
 	pdev->xfer_result = fc8100_spi_read(pdev->spidev,
 					pdev->rBuf, pdev->xfer_size);
@@ -486,7 +486,7 @@ static int isdbt_read(struct file *filp, char *buf, size_t count, loff_t *f_pos)
 		if (!pdev->buf_over_flow) {
 			wait_for_completion_timeout(&pdev->overflow_completion,
 							msecs_to_jiffies(SPI_READ_TIMEOUT));
-			INIT_COMPLETION(pdev->overflow_completion);
+			reinit_completion(&pdev->overflow_completion);
 			I_DEV_DBG(" overflow timeout = %ld ", timeout);
 			if (timeout == 0)
 				result = -ETIMEDOUT;

@@ -201,7 +201,7 @@ static int ss222_boot_on(struct modem_ctl *mc)
 	mc->bootd->modem_state_changed(mc->bootd, STATE_BOOTING);
 	mc->iod->modem_state_changed(mc->iod, STATE_BOOTING);
 
-	INIT_COMPLETION(ld->init_cmpl);
+	reinit_completion(&ld->init_cmpl);
 
 	mif_debug("---\n");
 	return 0;

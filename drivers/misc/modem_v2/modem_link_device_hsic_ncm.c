@@ -657,7 +657,7 @@ static int usb_send(struct link_device *ld, struct io_device *iod,
 			}
 
 			mif_err("wait RESUME CMD...\n");
-			INIT_COMPLETION(ld->raw_tx_resumed_by_cp);
+			reinit_completion(&ld->raw_tx_resumed_by_cp);
 			wait_for_completion(&ld->raw_tx_resumed_by_cp);
 			mif_err("resumed done.\n");
 		}

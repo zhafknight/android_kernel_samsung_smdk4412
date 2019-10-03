@@ -1481,7 +1481,7 @@ wl_cfg80211_add_virtual_iface(struct wiphy *wiphy,
 				dhd_mode = DHD_FLAG_P2P_GO_MODE;
 			DNGL_FUNC(dhd_cfg80211_set_p2p_info, (cfg, dhd_mode));
 			/* reinitialize completion to clear previous count */
-			INIT_COMPLETION(cfg->iface_disable);
+			reinit_completion(&cfg->iface_disable);
 
 			return ndev_to_cfgdev(new_ndev);
 		} else {
@@ -8482,7 +8482,7 @@ wl_bss_connect_done(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 #endif /* ROAM_AP_ENV_DETECTION */
 			if (ndev != bcmcfg_to_prmry_ndev(cfg)) {
 				/* reinitialize completion to clear previous count */
-				INIT_COMPLETION(cfg->iface_disable);
+				reinit_completion(&cfg->iface_disable);
 			}
 #ifdef CUSTOM_SET_CPUCORE
 			if (wl_get_chan_isvht80(ndev, dhd)) {

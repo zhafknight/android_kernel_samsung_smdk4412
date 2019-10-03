@@ -663,7 +663,7 @@ static void handle_msg(struct s3c64xx_spi_driver_data *sdd,
 		unsigned long flags;
 		int use_dma;
 
-		INIT_COMPLETION(sdd->xfer_completion);
+		reinit_completion(&sdd->xfer_completion);
 
 		/* Only BPW and Speed may change across transfers */
 		bpw = xfer->bits_per_word ? : spi->bits_per_word;

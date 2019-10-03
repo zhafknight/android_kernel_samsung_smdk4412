@@ -245,7 +245,7 @@ unsigned char s5p_dsim_wr_data(void *ptr,
 
 		spin_lock_irqsave(&dsim->slock, flags);
 
-		INIT_COMPLETION(dsim_wr_comp);
+		reinit_completion(&dsim_wr_comp);
 		s5p_dsim_clear_interrupt(dsim_base, 0x01<<S5P_DSIM_INT_SFR_FIFO_EMPTY);
 
 		do {
@@ -307,7 +307,7 @@ int s5p_dsim_rd_data(void *ptr, u8 addr, u16 count, u8 *buf)
 	}
 
 	mutex_lock(&dsim_rd_wr_mutex);
-	INIT_COMPLETION(dsim_rd_comp);
+	reinit_completion(&dsim_rd_comp);
 
 	switch (count) {
 	case 1:
@@ -421,7 +421,7 @@ int s5p_dsim_dcs_rd_data(void *ptr, u8 addr, u16 count, u8 *buf)
 	}
 
 	mutex_lock(&dsim_rd_wr_mutex);
-	INIT_COMPLETION(dsim_rd_comp);
+	reinit_completion(&dsim_rd_comp);
 
 	switch (count) {
 	case 1:

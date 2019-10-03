@@ -97,7 +97,7 @@ static u32 tegra_apb_readl_using_dma(unsigned long offset)
 	req.req_sel = TEGRA_DMA_REQ_SEL_CNTR;
 	req.size = 4;
 
-	INIT_COMPLETION(tegra_apb_wait);
+	reinit_completion(&tegra_apb_wait);
 
 	tegra_dma_enqueue_req(tegra_apb_dma, &req);
 
@@ -136,7 +136,7 @@ static void tegra_apb_writel_using_dma(u32 value, unsigned long offset)
 	req.req_sel = TEGRA_DMA_REQ_SEL_CNTR;
 	req.size = 4;
 
-	INIT_COMPLETION(tegra_apb_wait);
+	reinit_completion(&tegra_apb_wait);
 
 	tegra_dma_enqueue_req(tegra_apb_dma, &req);
 

@@ -177,7 +177,7 @@ bool link_pm_set_active(struct usb_link_device *usb_ld)
 
 	if (has_hub(usb_ld)) {
 		if (pm_data->hub_status != HUB_STATE_ACTIVE) {
-			INIT_COMPLETION(pm_data->hub_active);
+			reinit_completion(&pm_data->hub_active);
 			SET_SLAVE_WAKEUP(usb_ld->pdata, 1);
 			ret = wait_for_completion_timeout(&pm_data->hub_active,
 				msecs_to_jiffies(2000));

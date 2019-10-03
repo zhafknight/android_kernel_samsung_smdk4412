@@ -244,7 +244,7 @@ static void mdm_silent_reset(void)
 		if (mdm_drv->pdata->sfr_query)
 			queue_work(mdm_sfr_queue, &sfr_reason_work);
 	}
-	INIT_COMPLETION(mdm_boot);
+	reinit_completion(&mdm_boot);
 }
 
 long mdm_modem_ioctl(struct file *filp, unsigned int cmd,
@@ -315,7 +315,7 @@ long mdm_modem_ioctl(struct file *filp, unsigned int cmd,
 		pr_debug("%s: wait for mdm error\n", __func__);
 		#if 0
 		ret = wait_for_completion_interruptible(&mdm_error);
-		INIT_COMPLETION(mdm_error);
+		reinit_completion(&mdm_error);
 		#endif
 		break;
 
@@ -326,7 +326,7 @@ long mdm_modem_ioctl(struct file *filp, unsigned int cmd,
 		if (!ret)
 			put_user(mdm_drv->boot_type,
 					 (unsigned long __user *) arg);
-		INIT_COMPLETION(mdm_needs_reload);
+		reinit_completion(&mdm_needs_reload);
 		break;
 
 	case SILENT_RESET_CONTROL:
@@ -706,7 +706,7 @@ static int mdm_subsys_powerup(const struct subsys_data *crashed_subsys)
 		if (mdm_drv->pdata->sfr_query)
 			queue_work(mdm_sfr_queue, &sfr_reason_work);
 	}
-	INIT_COMPLETION(mdm_boot);
+	reinit_completion(&mdm_boot);
 	return mdm_drv->mdm_boot_status;
 }
 
@@ -729,7 +729,7 @@ static int mdm_subsys_ramdumps(int want_dumps,
 					__func__);
 			mdm_drv->mdm_ram_dump_status = 0;
 		}
-		INIT_COMPLETION(mdm_ram_dumps);
+		reinit_completion(&mdm_ram_dumps);
 		if (!mdm_drv->pdata->no_powerdown_after_ramdumps)
 			mdm_drv->ops->power_down_mdm_cb(mdm_drv);
 	}

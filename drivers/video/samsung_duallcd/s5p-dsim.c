@@ -235,7 +235,7 @@ unsigned char s5p_dsim_wr_data(void *ptr,
 	{
 		u32 uCnt = 0;
 		u32* pWordPtr = (u32 *)data0;
-		INIT_COMPLETION(dsim_wr_comp);
+		reinit_completion(&dsim_wr_comp);
 
 		do {
 			s5p_dsim_wr_tx_data(dsim_base, pWordPtr[uCnt]);
@@ -285,7 +285,7 @@ int s5p_dsim_rd_data(void *ptr, u8 addr, u16 count, u8 *buf)
 	}
 
 	mutex_lock(&dsim_rd_wr_mutex);
-	INIT_COMPLETION(dsim_rd_comp);
+	reinit_completion(&dsim_rd_comp);
 
 	switch (count) {
 	case 1:
