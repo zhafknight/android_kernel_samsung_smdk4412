@@ -225,8 +225,6 @@ static int genl_validate_assign_mc_groups(struct genl_family *family)
 
 		if (WARN_ON(grp->name[0] == '\0'))
 			return -EINVAL;
-		if (WARN_ON(memchr(grp->name, '\0', GENL_NAMSIZ) == NULL))
-			return -EINVAL;
 	}
 
 	/* special-case our own group and hacks */
