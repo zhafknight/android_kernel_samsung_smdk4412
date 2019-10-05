@@ -28,10 +28,9 @@
 #include <linux/sched.h>
 #include <linux/async.h>
 #include <linux/suspend.h>
+#include <linux/timer.h>
 #include <trace/events/power.h>
 #include <linux/cpuidle.h>
-#include <linux/timer.h>
-
 #include "../base.h"
 #include "power.h"
 
@@ -56,6 +55,12 @@ static LIST_HEAD(dpm_noirq_list);
 struct suspend_stats suspend_stats;
 static DEFINE_MUTEX(dpm_list_mtx);
 static pm_message_t pm_transition;
+
+static void dpm_drv_timeout(unsigned long data);
+struct dpm_drv_wd_data {
+	struct device *dev;
+	struct task_struct *tsk;
+};
 
 static int async_error;
 
@@ -392,71 +397,6 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
 	return error;
 }
 
-#ifdef CONFIG_DPM_WATCHDOG
-struct dpm_watchdog {
-	struct device		*dev;
-	struct task_struct	*tsk;
-	struct timer_list	timer;
-};
-
-#define DECLARE_DPM_WATCHDOG_ON_STACK(wd) \
-	struct dpm_watchdog wd
-
-/**
- * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
- * @data: Watchdog object address.
- *
- * Called when a driver has timed out suspending or resuming.
- * There's not much we can do here to recover so panic() to
- * capture a crash-dump in pstore.
- */
-static void dpm_watchdog_handler(unsigned long data)
-{
-	struct dpm_watchdog *wd = (void *)data;
-
-	dev_emerg(wd->dev, "**** DPM device timeout ****\n");
-	show_stack(wd->tsk, NULL);
-	panic("%s %s: unrecoverable failure\n",
-		dev_driver_string(wd->dev), dev_name(wd->dev));
-}
-
-/**
- * dpm_watchdog_set - Enable pm watchdog for given device.
- * @wd: Watchdog. Must be allocated on the stack.
- * @dev: Device to handle.
- */
-static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
-{
-	struct timer_list *timer = &wd->timer;
-
-	wd->dev = dev;
-	wd->tsk = current;
-
-	init_timer_on_stack(timer);
-	/* use same timeout value for both suspend and resume */
-	timer->expires = jiffies + HZ * CONFIG_DPM_WATCHDOG_TIMEOUT;
-	timer->function = dpm_watchdog_handler;
-	timer->data = (unsigned long)wd;
-	add_timer(timer);
-}
-
-/**
- * dpm_watchdog_clear - Disable suspend/resume watchdog.
- * @wd: Watchdog to disable.
- */
-static void dpm_watchdog_clear(struct dpm_watchdog *wd)
-{
-	struct timer_list *timer = &wd->timer;
-
-	del_timer_sync(timer);
-	destroy_timer_on_stack(timer);
-}
-#else
-#define DECLARE_DPM_WATCHDOG_ON_STACK(wd)
-#define dpm_watchdog_set(x, y)
-#define dpm_watchdog_clear(x)
-#endif
-
 /*------------------------- Resume routines -------------------------*/
 
 /**
@@ -472,6 +412,16 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
 	pm_callback_t callback = NULL;
 	char *info = NULL;
 	int error = 0;
+	struct timer_list timer;
+	struct dpm_drv_wd_data data;
+
+	data.dev = dev;
+	data.tsk = get_current();
+	init_timer_on_stack(&timer);
+	timer.expires = jiffies + HZ * 12;
+	timer.function = dpm_drv_timeout;
+	timer.data = (unsigned long)&data;
+	add_timer(&timer);
 
 	TRACE_DEVICE(dev);
 	TRACE_RESUME(0);
@@ -497,6 +447,9 @@ static int device_resume_noirq(struct device *dev, pm_message_t state)
 		info = "noirq driver ";
 		callback = pm_noirq_op(dev->driver->pm, state);
 	}
+
+	del_timer_sync(&timer);
+	destroy_timer_on_stack(&timer);
 
 	error = dpm_run_callback(callback, dev, state, info);
 
@@ -643,7 +596,8 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
 	pm_callback_t callback = NULL;
 	char *info = NULL;
 	int error = 0;
-	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
+	struct timer_list timer;
+	struct dpm_drv_wd_data data;
 
 	TRACE_DEVICE(dev);
 	TRACE_RESUME(0);
@@ -652,7 +606,15 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
 		goto Complete;
 
 	dpm_wait(dev->parent, async);
-	dpm_watchdog_set(&wd, dev);
+
+	data.dev = dev;
+	data.tsk = get_current();
+	init_timer_on_stack(&timer);
+	timer.expires = jiffies + HZ * 12;
+	timer.function = dpm_drv_timeout;
+	timer.data = (unsigned long)&data;
+	add_timer(&timer);
+
 	device_lock(dev);
 
 	/*
@@ -711,9 +673,11 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
 
  Unlock:
 	device_unlock(dev);
-	dpm_watchdog_clear(&wd);
 
  Complete:
+	del_timer_sync(&timer);
+	destroy_timer_on_stack(&timer);
+
 	complete_all(&dev->power.completion);
 
 	TRACE_RESUME(error);
@@ -736,6 +700,30 @@ static bool is_async(struct device *dev)
 {
 	return dev->power.async_suspend && pm_async_enabled
 		&& !pm_trace_is_enabled();
+}
+
+/**
+ *	dpm_drv_timeout - Driver suspend / resume watchdog handler
+ *	@data: struct device which timed out
+ *
+ * 	Called when a driver has timed out suspending or resuming.
+ * 	There's not much we can do here to recover so
+ * 	BUG() out for a crash-dump
+ *
+ */
+static void dpm_drv_timeout(unsigned long data)
+{
+	struct dpm_drv_wd_data *wd_data = (void *)data;
+	struct device *dev = wd_data->dev;
+	struct task_struct *tsk = wd_data->tsk;
+
+	printk(KERN_EMERG "**** DPM device timeout: %s (%s)\n", dev_name(dev),
+	       (dev->driver ? dev->driver->name : "no driver"));
+
+	printk(KERN_EMERG "dpm suspend stack:\n");
+	show_stack(tsk, NULL);
+
+	BUG();
 }
 
 /**
@@ -917,6 +905,16 @@ static int device_suspend_noirq(struct device *dev, pm_message_t state)
 {
 	pm_callback_t callback = NULL;
 	char *info = NULL;
+	struct timer_list timer;
+	struct dpm_drv_wd_data data;
+
+	data.dev = dev;
+	data.tsk = get_current();
+	init_timer_on_stack(&timer);
+	timer.expires = jiffies + HZ * 12;
+	timer.function = dpm_drv_timeout;
+	timer.data = (unsigned long)&data;
+	add_timer(&timer);
 
 	if (dev->power.syscore)
 		return 0;
@@ -924,21 +922,35 @@ static int device_suspend_noirq(struct device *dev, pm_message_t state)
 	if (dev->pm_domain) {
 		info = "noirq power domain ";
 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
+		if (callback)
+			goto callback;
 	} else if (dev->type && dev->type->pm) {
 		info = "noirq type ";
 		callback = pm_noirq_op(dev->type->pm, state);
+		if (callback)
+			goto callback;
 	} else if (dev->class && dev->class->pm) {
 		info = "noirq class ";
 		callback = pm_noirq_op(dev->class->pm, state);
+		if (callback)
+			goto callback;
 	} else if (dev->bus && dev->bus->pm) {
 		info = "noirq bus ";
 		callback = pm_noirq_op(dev->bus->pm, state);
+		if (callback)
+			goto callback;
 	}
 
 	if (!callback && dev->driver && dev->driver->pm) {
 		info = "noirq driver ";
 		callback = pm_noirq_op(dev->driver->pm, state);
+		if (callback)
+			goto callback;
 	}
+
+callback:
+	del_timer_sync(&timer);
+	destroy_timer_on_stack(&timer);
 
 	return dpm_run_callback(callback, dev, state, info);
 }
@@ -1130,9 +1142,18 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
 	pm_callback_t callback = NULL;
 	char *info = NULL;
 	int error = 0;
-	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
+	struct timer_list timer;
+	struct dpm_drv_wd_data data;
 
 	dpm_wait_for_children(dev, async);
+
+	data.dev = dev;
+	data.tsk = get_current();
+	init_timer_on_stack(&timer);
+	timer.expires = jiffies + HZ * 12;
+	timer.function = dpm_drv_timeout;
+	timer.data = (unsigned long)&data;
+	add_timer(&timer);
 
 	if (async_error)
 		goto Complete;
@@ -1154,7 +1175,6 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
 	if (dev->power.syscore)
 		goto Complete;
 
-	dpm_watchdog_set(&wd, dev);
 	device_lock(dev);
 
 	if (dev->pm_domain) {
@@ -1211,9 +1231,11 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
 	}
 
 	device_unlock(dev);
-	dpm_watchdog_clear(&wd);
 
  Complete:
+	del_timer_sync(&timer);
+	destroy_timer_on_stack(&timer);
+
 	complete_all(&dev->power.completion);
 	if (error)
 		async_error = error;
@@ -1252,6 +1274,9 @@ static int device_suspend(struct device *dev)
  * dpm_suspend - Execute "suspend" callbacks for all non-sysdev devices.
  * @state: PM transition of the system being carried out.
  */
+#ifdef CONFIG_FAST_BOOT
+extern bool fake_shut_down;
+#endif
 int dpm_suspend(pm_message_t state)
 {
 	ktime_t starttime = ktime_get();
@@ -1274,8 +1299,18 @@ int dpm_suspend(pm_message_t state)
 		if (error) {
 			pm_dev_err(dev, state, "", error);
 			dpm_save_failed_dev(dev_name(dev));
+#ifdef CONFIG_FAST_BOOT
+			if (fake_shut_down) {
+				pr_info("%s: fake shut down\n", __func__);
+				error = 0;
+			} else {
+				put_device(dev);
+				break;
+			}
+#else
 			put_device(dev);
 			break;
+#endif
 		}
 		if (!list_empty(&dev->power.entry))
 			list_move(&dev->power.entry, &dpm_suspended_list);

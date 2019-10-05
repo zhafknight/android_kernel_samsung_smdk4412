@@ -258,8 +258,7 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
  * Check if the device's runtime PM status allows it to be suspended.  If
  * another idle notification has been started earlier, return immediately.  If
  * the RPM_ASYNC flag is set then queue an idle-notification request; otherwise
- * run the ->runtime_idle() callback directly. If the ->runtime_idle callback
- * doesn't exist or if it returns 0, call rpm_suspend with the RPM_AUTO flag.
+ * run the ->runtime_idle() callback directly.
  *
  * This function must be called under dev->power.lock with interrupts disabled.
  */
@@ -332,7 +331,7 @@ static int rpm_idle(struct device *dev, int rpmflags)
 
  out:
 	trace_rpm_return_int(dev, _THIS_IP_, retval);
-	return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
+	return retval ? retval : rpm_suspend(dev, rpmflags);
 }
 
 /**
@@ -1107,6 +1106,9 @@ int pm_runtime_barrier(struct device *dev)
 {
 	int retval = 0;
 
+#ifdef CONFIG_MDM_HSIC_PM
+	wake_up_all(&dev->power.wait_queue);
+#endif
 	pm_runtime_get_noresume(dev);
 	spin_lock_irq(&dev->power.lock);
 
@@ -1141,6 +1143,7 @@ EXPORT_SYMBOL_GPL(pm_runtime_barrier);
  */
 void __pm_runtime_disable(struct device *dev, bool check_resume)
 {
+	might_sleep();
 	spin_lock_irq(&dev->power.lock);
 
 	if (dev->power.disable_depth > 0) {
@@ -1346,6 +1349,8 @@ EXPORT_SYMBOL_GPL(pm_runtime_set_autosuspend_delay);
 void __pm_runtime_use_autosuspend(struct device *dev, bool use)
 {
 	int old_delay, old_use;
+
+	might_sleep();
 
 	spin_lock_irq(&dev->power.lock);
 	old_delay = dev->power.autosuspend_delay;
