@@ -99,7 +99,7 @@ void ion_carveout_heap_unmap_dma(struct ion_heap *heap,
 void *ion_carveout_heap_map_kernel(struct ion_heap *heap,
 				   struct ion_buffer *buffer)
 {
-	int mtype = MT_MEMORY_NONCACHED;
+	int mtype = MT_MEMORY_RWX_NONCACHED;
 
 	return __arm_ioremap(buffer->priv_phys, buffer->size,
 			      mtype);
