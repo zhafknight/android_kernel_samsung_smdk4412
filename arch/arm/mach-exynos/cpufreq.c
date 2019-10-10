@@ -725,6 +725,8 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 
 	policy->cur = policy->min = policy->max = exynos_getspeed(policy->cpu);
 
+	cpufreq_frequency_table_get_attr(exynos_info->freq_table, policy->cpu);
+
 	/* set the transition latency value */
 	policy->cpuinfo.transition_latency = 100000;
 
@@ -741,7 +743,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 		cpumask_setall(policy->cpus);
 	}
 
-	retval = cpufreq_table_validate_and_show(policy, exynos_info->freq_table);
+	retval = cpufreq_frequency_table_cpuinfo(policy, exynos_info->freq_table);
 
 	/* Keep stock frq. as default startup frq. */
 	policy->max = 1400000;
