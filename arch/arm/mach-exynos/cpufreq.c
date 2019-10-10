@@ -632,134 +632,6 @@ static int exynos_cpufreq_resume(struct cpufreq_policy *policy)
 }
 #endif
 
-static void exynos_save_gov_freq(void)
-{
-	unsigned int cpu = 0;
-
-	exynos_info->gov_support_freq = exynos_getspeed(cpu);
-	pr_debug("cur_freq[%d] saved to freq[%d]\n", exynos_getspeed(0),
-			exynos_info->gov_support_freq);
-}
-
-static void exynos_restore_gov_freq(struct cpufreq_policy *policy)
-{
-	unsigned int cpu = 0;
-
-	if (exynos_getspeed(cpu) != exynos_info->gov_support_freq)
-		exynos_target(policy, exynos_info->gov_support_freq,
-				CPUFREQ_RELATION_H);
-
-	pr_debug("freq[%d] restored to cur_freq[%d]\n",
-			exynos_info->gov_support_freq, exynos_getspeed(cpu));
-}
-
-static int exynos_cpufreq_notifier_event(struct notifier_block *this,
-		unsigned long event, void *ptr)
-{
-	int ret = 0;
-	unsigned int cpu = 0;
-	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-
-	switch (event) {
-	case PM_SUSPEND_PREPARE:
-	case PM_HIBERNATION_PREPARE:
-	case PM_RESTORE_PREPARE:
-		/* If current governor is userspace or performance or powersave,
-		 * save the current cpufreq before sleep.
-		 */
-		if (exynos_cpufreq_lock_disable)
-			exynos_save_gov_freq();
-
-		ret = exynos_cpufreq_lock(DVFS_LOCK_ID_PM,
-					   exynos_info->pm_lock_idx);
-		if (ret < 0)
-			return NOTIFY_BAD;
-#if defined(CONFIG_CPU_EXYNOS4210) || defined(CONFIG_SLP)
-		ret = exynos_cpufreq_upper_limit(DVFS_LOCK_ID_PM,
-						exynos_info->pm_lock_idx);
-		if (ret < 0)
-			return NOTIFY_BAD;
-#elif defined(CONFIG_ARCH_EXYNOS4)
-		if (soc_is_exynos4212()) {
-			ret = exynos_cpufreq_upper_limit(DVFS_LOCK_ID_PM,
-					exynos_info->pm_lock_idx);
-			if (ret < 0)
-				return NOTIFY_BAD;
-		}
-#endif
-		exynos_cpufreq_disable = true;
-
-#ifdef CONFIG_SLP
-		/*
-		 * Safe Voltage for Suspend/Wakeup: Falling back to the
-		 * default value of bootloaders.
-		 * Note that at suspended state, this 'high' voltage does
-		 * not incur higher power consumption because it is OFF.
-		 * This is for the stability during suspend/wakeup process.
-		 */
-		regulator_set_voltage(arm_regulator, 120000, 120000 + 25000);
-#endif
-
-		pr_debug("PM_SUSPEND_PREPARE for CPUFREQ\n");
-		return NOTIFY_OK;
-	case PM_POST_RESTORE:
-	case PM_POST_HIBERNATION:
-	case PM_POST_SUSPEND:
-		pr_debug("PM_POST_SUSPEND for CPUFREQ: %d\n", ret);
-		exynos_cpufreq_lock_free(DVFS_LOCK_ID_PM);
-#if defined(CONFIG_CPU_EXYNOS4210) || defined(CONFIG_SLP)
-		exynos_cpufreq_upper_limit_free(DVFS_LOCK_ID_PM);
-#elif defined(CONFIG_ARCH_EXYNOS4)
-		if (soc_is_exynos4212())
-			exynos_cpufreq_upper_limit_free(DVFS_LOCK_ID_PM);
-#endif
-		exynos_cpufreq_disable = false;
-		/* If current governor is userspace or performance or powersave,
-		 * restore the saved cpufreq after waekup.
-		 */
-		if (exynos_cpufreq_lock_disable)
-			exynos_restore_gov_freq(policy);
-
-
-		return NOTIFY_OK;
-	}
-	return NOTIFY_DONE;
-}
-
-static struct notifier_block exynos_cpufreq_notifier = {
-	.notifier_call = exynos_cpufreq_notifier_event,
-};
-
-static int exynos_cpufreq_policy_notifier_call(struct notifier_block *this,
-				unsigned long code, void *data)
-{
-	struct cpufreq_policy *policy = data;
-
-	switch (code) {
-	case CPUFREQ_ADJUST:
-		if ((!strnicmp(policy->governor->name, "powersave", CPUFREQ_NAME_LEN))
-		|| (!strnicmp(policy->governor->name, "performance", CPUFREQ_NAME_LEN))
-		|| (!strnicmp(policy->governor->name, "userspace", CPUFREQ_NAME_LEN))) {
-			printk(KERN_DEBUG "cpufreq governor is changed to %s\n",
-							policy->governor->name);
-			exynos_cpufreq_lock_disable = true;
-		} else
-			exynos_cpufreq_lock_disable = false;
-
-	case CPUFREQ_INCOMPATIBLE:
-	case CPUFREQ_NOTIFY:
-	default:
-		break;
-	}
-
-	return NOTIFY_DONE;
-}
-
-static struct notifier_block exynos_cpufreq_policy_notifier = {
-	.notifier_call = exynos_cpufreq_policy_notifier_call,
-};
-
-
 static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 {
 	int retval;
@@ -772,23 +644,6 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 
 	return retval;
 }
-
-static int exynos_cpufreq_reboot_notifier_call(struct notifier_block *this,
-				   unsigned long code, void *_cmd)
-{
-	int ret = 0;
-
-	ret = exynos_cpufreq_lock(DVFS_LOCK_ID_PM, exynos_info->pm_lock_idx);
-	if (ret < 0)
-		return NOTIFY_BAD;
-
-	printk(KERN_INFO "REBOOT Notifier for CPUFREQ\n");
-	return NOTIFY_DONE;
-}
-
-static struct notifier_block exynos_cpufreq_reboot_notifier = {
-	.notifier_call = exynos_cpufreq_reboot_notifier_call,
-};
 
 /**
  * exynos_cpufreq_pm_notifier - block CPUFREQ's activities in suspend-resume
@@ -886,11 +741,6 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
 
 	exynos_cpufreq_disable = false;
 
-	register_pm_notifier(&exynos_cpufreq_notifier);
-	register_reboot_notifier(&exynos_cpufreq_reboot_notifier);
-	cpufreq_register_notifier(&exynos_cpufreq_policy_notifier,
-						CPUFREQ_POLICY_NOTIFIER);
-
 	exynos_cpufreq_init_done = true;
 
 	for (i = 0; i < DVFS_LOCK_ID_END; i++) {
@@ -918,9 +768,6 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
 
 	return 0;
 err_cpufreq:
-	unregister_reboot_notifier(&exynos_cpufreq_reboot_notifier);
-	unregister_pm_notifier(&exynos_cpufreq_notifier);
-
 	if (!IS_ERR(arm_regulator))
 		regulator_put(arm_regulator);
 err_vdd_arm:
