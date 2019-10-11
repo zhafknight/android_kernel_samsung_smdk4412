@@ -857,7 +857,7 @@ int gether_setup_name(struct usb_gadget *g, u8 ethaddr[ETH_ALEN],
 
 	net->netdev_ops = &eth_netdev_ops;
 
-	SET_ETHTOOL_OPS(net, &ops);
+	net->ethtool_ops = &ops;
 
 	/* two kinds of host-initiated state changes:
 	 *  - iff DATA transfer is active, carrier is "on"
