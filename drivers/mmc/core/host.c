@@ -218,8 +218,8 @@ void mmc_host_clk_release(struct mmc_host *host)
 #ifdef CONFIG_WIMAX_CMC
 		schedule_work(&host->clk_gate_work);
 #else
-		queue_delayed_work(system_nrt_wq, &host->clk_gate_work,
-				msecs_to_jiffies(host->clkgate_delay));
+		schedule_delayed_work(&host->clk_gate_work,
+				      msecs_to_jiffies(host->clkgate_delay));
 #endif
 	spin_unlock_irqrestore(&host->clk_lock, flags);
 }
