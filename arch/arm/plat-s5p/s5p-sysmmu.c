@@ -522,11 +522,7 @@ static int s5p_sysmmu_probe(struct platform_device *pdev)
 
 	data->owner = dev_get_platdata(dev);
 
-	ret = dev_set_drvdata(dev, data);
-	if (ret) {
-		dev_err(dev, "Unable to set driver's private data.\n");
-		goto err_init;
-	}
+	dev_set_drvdata(dev, data);
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {

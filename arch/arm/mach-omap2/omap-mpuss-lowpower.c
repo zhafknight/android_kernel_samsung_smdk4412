@@ -192,7 +192,7 @@ static void __init save_l2x0_context(void)
 	writel_relaxed(l2x0_saved_regs.aux_ctrl,
 		     sar_base + L2X0_AUXCTRL_OFFSET);
 	writel_relaxed(l2x0_saved_regs.prefetch_ctrl,
-		     sar_base + L2X0_PREFETCH_CTRL_OFFSET);
+		     sar_base + L310_PREFETCH_CTRL_OFFSET);
 }
 #else
 static void __init save_l2x0_context(void)
