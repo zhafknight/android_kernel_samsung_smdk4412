@@ -15,7 +15,7 @@
 #include <linux/init.h>
 #include <linux/io.h>
 
-#include <asm/system.h>
+#include <asm/system_misc.h>
 
 #include <mach/map.h>
 #include <plat/cpu.h>
