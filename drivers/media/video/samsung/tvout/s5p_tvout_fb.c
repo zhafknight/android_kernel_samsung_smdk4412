@@ -123,7 +123,7 @@ static struct s5ptvfb_lcd lcd = {
 
 static int s5p_tvout_fb_wait_for_vsync(void)
 {
-	sleep_on_timeout(&s5ptv_wq, HZ / 10);
+	wait_event_timeout(s5ptv_wq, false, HZ / 10);
 
 	return 0;
 }
