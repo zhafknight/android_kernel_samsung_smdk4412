@@ -388,7 +388,6 @@ config SAMSUNG_DEV_BACKLIGHT
 
 config S3C24XX_PWM
 	bool "PWM device support"
-	select HAVE_PWM
 	help
 	  Support for exporting the PWM timer blocks via the pwm device
 	  system
