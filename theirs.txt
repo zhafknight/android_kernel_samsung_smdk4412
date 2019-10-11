@@ -11,6 +11,7 @@ arch/hexagon
 arch/ia64
 arch/m32r
 arch/m68k
+arch/metag
 arch/microblaze
 arch/mips
 arch/mn10300
