@@ -424,16 +424,6 @@ out:
 	return IRQ_HANDLED;
 }
 
-static void gpio_keys_quiesce_key(void *data)
-{
-	struct gpio_button_data *bdata = data;
-
-	if (bdata->timer_debounce)
-		del_timer_sync(&bdata->timer);
-
-	cancel_work_sync(&bdata->work);
-}
-
 static int gpio_keys_setup_key(struct platform_device *pdev,
 				struct input_dev *input,
 				struct gpio_button_data *bdata,
@@ -443,8 +433,7 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 	struct device *dev = &pdev->dev;
 	irq_handler_t isr;
 	unsigned long irqflags;
-	int irq;
-	int error;
+	int irq, error;
 
 	bdata->input = input;
 	bdata->button = button;
@@ -452,8 +441,7 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 
 	if (gpio_is_valid(button->gpio)) {
 
-		error = devm_gpio_request_one(&pdev->dev, button->gpio,
-					      GPIOF_IN, desc);
+		error = gpio_request_one(button->gpio, GPIOF_IN, desc);
 		if (error < 0) {
 			dev_err(dev, "Failed to request GPIO %d, error %d\n",
 				button->gpio, error);
@@ -475,7 +463,7 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 			dev_err(dev,
 				"Unable to get irq number for GPIO %d, error %d\n",
 				button->gpio, error);
-			return error;
+			goto fail;
 		}
 		bdata->irq = irq;
 
@@ -509,33 +497,26 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 	input_set_capability(input, button->type ?: EV_KEY, button->code);
 
 	/*
-	 * Install custom action to cancel debounce timer and
-	 * workqueue item.
-	 */
-	error = devm_add_action(&pdev->dev, gpio_keys_quiesce_key, bdata);
-	if (error) {
-		dev_err(&pdev->dev,
-			"failed to register quiesce action, error: %d\n",
-			error);
-		return error;
-	}
-
-	/*
 	 * If platform has specified that the button can be disabled,
 	 * we don't want it to share the interrupt line.
 	 */
 	if (!button->can_disable)
 		irqflags |= IRQF_SHARED;
 
-	error = devm_request_any_context_irq(&pdev->dev, bdata->irq,
-					     isr, irqflags, desc, bdata);
+	error = request_any_context_irq(bdata->irq, isr, irqflags, desc, bdata);
 	if (error < 0) {
 		dev_err(dev, "Unable to claim irq %d; error %d\n",
 			bdata->irq, error);
-		return error;
+		goto fail;
 	}
 
 	return 0;
+
+fail:
+	if (gpio_is_valid(button->gpio))
+		gpio_free(button->gpio);
+
+	return error;
 }
 
 static void gpio_keys_report_state(struct gpio_keys_drvdata *ddata)
@@ -681,6 +662,16 @@ gpio_keys_get_devtree_pdata(struct device *dev)
 
 #endif
 
+static void gpio_remove_key(struct gpio_button_data *bdata)
+{
+	free_irq(bdata->irq, bdata);
+	if (bdata->timer_debounce)
+		del_timer_sync(&bdata->timer);
+	cancel_work_sync(&bdata->work);
+	if (gpio_is_valid(bdata->button->gpio))
+		gpio_free(bdata->button->gpio);
+}
+
 static int gpio_keys_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -739,7 +730,7 @@ static int gpio_keys_probe(struct platform_device *pdev)
 
 		error = gpio_keys_setup_key(pdev, input, bdata, button);
 		if (error)
-			return error;
+			goto fail2;
 
 		if (button->wakeup)
 			wakeup = 1;
@@ -749,30 +740,40 @@ static int gpio_keys_probe(struct platform_device *pdev)
 	if (error) {
 		dev_err(dev, "Unable to export keys/switches, error: %d\n",
 			error);
-		return error;
+		goto fail2;
 	}
 
 	error = input_register_device(input);
 	if (error) {
 		dev_err(dev, "Unable to register input device, error: %d\n",
 			error);
-		goto err_remove_group;
+		goto fail3;
 	}
 
 	device_init_wakeup(&pdev->dev, wakeup);
 
 	return 0;
 
-err_remove_group:
+ fail3:
 	sysfs_remove_group(&pdev->dev.kobj, &gpio_keys_attr_group);
+ fail2:
+	while (--i >= 0)
+		gpio_remove_key(&ddata->data[i]);
+
 	return error;
 }
 
 static int gpio_keys_remove(struct platform_device *pdev)
 {
+	struct gpio_keys_drvdata *ddata = platform_get_drvdata(pdev);
+	int i;
+
 	sysfs_remove_group(&pdev->dev.kobj, &gpio_keys_attr_group);
 
 	device_init_wakeup(&pdev->dev, 0);
+
+	for (i = 0; i < ddata->pdata->nbuttons; i++)
+		gpio_remove_key(&ddata->data[i]);
 
 	return 0;
 }
