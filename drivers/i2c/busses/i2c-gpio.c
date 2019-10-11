@@ -147,22 +147,24 @@ static int i2c_gpio_probe(struct platform_device *pdev)
 		scl_pin = pdata->scl_pin;
 	}
 
-	ret = devm_gpio_request(&pdev->dev, sda_pin, "sda");
+	ret = gpio_request(sda_pin, "sda");
 	if (ret) {
 		if (ret == -EINVAL)
 			ret = -EPROBE_DEFER;	/* Try again later */
-		return ret;
+		goto err_request_sda;
 	}
-	ret = devm_gpio_request(&pdev->dev, scl_pin, "scl");
+	ret = gpio_request(scl_pin, "scl");
 	if (ret) {
 		if (ret == -EINVAL)
 			ret = -EPROBE_DEFER;	/* Try again later */
-		return ret;
+		goto err_request_scl;
 	}
 
 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
-		return -ENOMEM;
+	if (!priv) {
+		ret = -ENOMEM;
+		goto err_add_bus;
+	}
 	adap = &priv->adap;
 	bit_data = &priv->bit_data;
 	pdata = &priv->pdata;
@@ -223,7 +225,7 @@ static int i2c_gpio_probe(struct platform_device *pdev)
 	adap->nr = pdev->id;
 	ret = i2c_bit_add_numbered_bus(adap);
 	if (ret)
-		return ret;
+		goto err_add_bus;
 
 	platform_set_drvdata(pdev, priv);
 
@@ -233,6 +235,13 @@ static int i2c_gpio_probe(struct platform_device *pdev)
 		 ? ", no clock stretching" : "");
 
 	return 0;
+
+err_add_bus:
+	gpio_free(scl_pin);
+err_request_scl:
+	gpio_free(sda_pin);
+err_request_sda:
+	return ret;
 }
 
 static int i2c_gpio_remove(struct platform_device *pdev)
@@ -246,6 +255,8 @@ static int i2c_gpio_remove(struct platform_device *pdev)
 	pdata = &priv->pdata;
 
 	i2c_del_adapter(adap);
+	gpio_free(pdata->scl_pin);
+	gpio_free(pdata->sda_pin);
 
 	return 0;
 }
