@@ -341,7 +341,8 @@ static u32 mpc_i2c_get_sec_cfg_8xxx(void)
 			iounmap(reg);
 		}
 	}
-	of_node_put(node);
+	if (node)
+		of_node_put(node);
 
 	return val;
 }
