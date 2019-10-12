@@ -35,6 +35,7 @@ include/linux/video*
 include/media
 include/sound
 include/uapi/sound
+include/trace/events/asoc.h
 sound
 drivers/leds
 include/linux/leds.h
