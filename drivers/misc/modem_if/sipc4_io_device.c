@@ -1510,10 +1510,9 @@ int sipc4_init_io_device(struct io_device *iod)
 	case IODEV_NET:
 		skb_queue_head_init(&iod->sk_rx_q);
 		if (iod->use_handover)
-			iod->ndev = alloc_netdev(0, iod->name,
-						vnet_setup_ether);
+			iod->ndev = alloc_netdev(0, iod->name, NET_NAME_UNKNOWN, vnet_setup_ether);
 		else
-			iod->ndev = alloc_netdev(0, iod->name, vnet_setup);
+			iod->ndev = alloc_netdev(0, iod->name, NET_NAME_UNKNOWN, vnet_setup);
 
 		if (!iod->ndev) {
 			mif_err("failed to alloc netdev\n");
