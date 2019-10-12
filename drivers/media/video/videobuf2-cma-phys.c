@@ -383,7 +383,7 @@ static int vb2_cma_phys_export_dmabuf(void *alloc_ctx, void *buf_priv,
 	unsigned int flags = O_RDWR;
 
 	buf->export_dma_buf = dma_buf_export(buf, &cma_phys_dmabuf_ops,
-						buf->size, 0600);
+						buf->size, 0600, NULL);
 	if (!buf->export_dma_buf)
 		return PTR_ERR(buf->export_dma_buf);
 
