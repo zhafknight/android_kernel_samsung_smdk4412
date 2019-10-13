@@ -7,6 +7,7 @@ net/rfkill/rfkill-gpio.c
 include/asm-generic/gpio.h
 include/linux/gpio.h
 drivers/i2c
+include/linux/i2c*
 drivers/irqchip/exynos-combiner.c
 drivers/media
 drivers/mfd/Makefile
