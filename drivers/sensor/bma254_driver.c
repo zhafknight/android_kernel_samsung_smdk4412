@@ -551,7 +551,7 @@ static ssize_t bma254_range_store(struct device *dev,
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bma254_data *bma254 = i2c_get_clientdata(client);
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 
@@ -584,7 +584,7 @@ static ssize_t bma254_bandwidth_store(struct device *dev,
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bma254_data *bma254 = i2c_get_clientdata(client);
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 	if (bma254_set_bandwidth(bma254->bma254_client,
@@ -616,7 +616,7 @@ static ssize_t bma254_mode_store(struct device *dev,
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bma254_data *bma254 = i2c_get_clientdata(client);
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 	if (bma254_set_mode(bma254->bma254_client, (unsigned char) data) < 0)
@@ -660,7 +660,7 @@ static ssize_t bma254_delay_store(struct device *dev,
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bma254_data *bma254 = i2c_get_clientdata(client);
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 
@@ -718,7 +718,7 @@ static ssize_t bma254_enable_store(struct device *dev,
 	unsigned long data;
 	int error;
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 	if ((data == 0) || (data == 1))
@@ -846,7 +846,7 @@ static ssize_t bma254_selftest_store(struct device *dev,
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bma254_data *bma254 = i2c_get_clientdata(client);
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 
@@ -1061,7 +1061,7 @@ static ssize_t bma254_fast_calibration_x_store(struct device *dev,
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bma254_data *bma254 = i2c_get_clientdata(client);
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 
@@ -1117,7 +1117,7 @@ static ssize_t bma254_fast_calibration_y_store(struct device *dev,
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bma254_data *bma254 = i2c_get_clientdata(client);
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 
@@ -1173,7 +1173,7 @@ static ssize_t bma254_fast_calibration_z_store(struct device *dev,
 	struct i2c_client *client = to_i2c_client(dev);
 	struct bma254_data *bma254 = i2c_get_clientdata(client);
 
-	error = strict_strtoul(buf, 10, &data);
+	error = kstrtoul(buf, 10, &data);
 	if (error)
 		return error;
 

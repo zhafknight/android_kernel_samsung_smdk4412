@@ -3670,9 +3670,9 @@ static ssize_t cyttsp_drv_rw_regid_store(struct device *dev,
 	unsigned long value;
 
 	mutex_lock(&ts->data_lock);
-	retval = strict_strtoul(buf, 10, &value);
+	retval = kstrtoul(buf, 10, &value);
 	if (retval < 0) {
-		retval = strict_strtoul(buf, 16, &value);
+		retval = kstrtoul(buf, 16, &value);
 		if (retval < 0) {
 			dev_err(ts->dev,
 			"%s: Failed to convert value\n",
@@ -3727,9 +3727,9 @@ static ssize_t cyttsp_drv_rw_reg_data_store(struct device *dev,
 	unsigned long value;
 	u8 reg_data = 0;
 
-	retval = strict_strtoul(buf, 10, &value);
+	retval = kstrtoul(buf, 10, &value);
 	if (retval < 0) {
-		retval = strict_strtoul(buf, 16, &value);
+		retval = kstrtoul(buf, 16, &value);
 		if (retval < 0) {
 			dev_err(ts->dev,
 			"%s: Failed to convert value\n",

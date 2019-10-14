@@ -820,7 +820,7 @@ device_attribute *attr, const char *buf, size_t size)
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, (unsigned int)0, (unsigned long *)&value);
+	rc = kstrtoul(buf, (unsigned int)0, (unsigned long *)&value);
 	if (rc < 0)
 		return rc;
 	else {
@@ -916,7 +916,7 @@ static ssize_t ld9040_sysfs_store_gamma_mode(struct device *dev,
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, 0, (unsigned long *)&value);
+	rc = kstrtoul(buf, 0, (unsigned long *)&value);
 
 	if (rc < 0)
 		return rc;
@@ -962,7 +962,7 @@ static ssize_t auto_brightness_store(struct device *dev,
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, (unsigned int)0, (unsigned long *)&value);
+	rc = kstrtoul(buf, (unsigned int)0, (unsigned long *)&value);
 	if (rc < 0)
 		return rc;
 	else {

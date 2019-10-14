@@ -601,7 +601,7 @@ static ssize_t ab5500_bank_write(struct file *file,
 		return -EFAULT;
 	buf[buf_size] = 0;
 
-	err = strict_strtoul(buf, 0, &user_bank);
+	err = kstrtoul(buf, 0, &user_bank);
 	if (err)
 		return -EINVAL;
 
@@ -645,7 +645,7 @@ static ssize_t ab5500_address_write(struct file *file,
 		return -EFAULT;
 	buf[buf_size] = 0;
 
-	err = strict_strtoul(buf, 0, &user_address);
+	err = kstrtoul(buf, 0, &user_address);
 	if (err)
 		return -EINVAL;
 	if (user_address > 0xff) {
@@ -698,7 +698,7 @@ static ssize_t ab5500_val_write(struct file *file,
 		return -EFAULT;
 	buf[buf_size] = 0;
 
-	err = strict_strtoul(buf, 0, &user_val);
+	err = kstrtoul(buf, 0, &user_val);
 	if (err)
 		return -EINVAL;
 	if (user_val > 0xff) {

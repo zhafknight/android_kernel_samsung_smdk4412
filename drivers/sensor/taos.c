@@ -501,7 +501,7 @@ static ssize_t poll_delay_store(struct device *dev,
 	int64_t new_delay;
 	int err;
 
-	err = strict_strtoll(buf, 10, &new_delay);
+	err = kstrtoll(buf, 10, &new_delay);
 	if (err < 0)
 		return err;
 #if TAOS_DEBUG

@@ -213,7 +213,7 @@ static ssize_t store_waketime(struct device *d,
 	if (!svnet_dev)
 		return count;
 
-	r = strict_strtoul(buf, 10, &msec);
+	r = kstrtoul(buf, 10, &msec);
 	if (r)
 		return count;
 

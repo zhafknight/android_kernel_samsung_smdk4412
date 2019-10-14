@@ -304,7 +304,7 @@ sensor_delay_store(struct device *dev,
 	long value;
 	int error;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -362,7 +362,7 @@ sensor_enable_store(struct device *dev,
 	unsigned long value;
 	int error;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -439,7 +439,7 @@ sensor_debug_suspend_store(struct device *dev,
 	unsigned long suspend;
 	int error;
 
-	error = strict_strtoul(buf, 10, &suspend);
+	error = kstrtoul(buf, 10, &suspend);
 	if (unlikely(error))
 		return error;
 

@@ -604,7 +604,7 @@ static ssize_t ads7846_disable_store(struct device *dev,
 	struct ads7846 *ts = dev_get_drvdata(dev);
 	unsigned long i;
 
-	if (strict_strtoul(buf, 10, &i))
+	if (kstrtoul(buf, 10, &i))
 		return -EINVAL;
 
 	if (i)

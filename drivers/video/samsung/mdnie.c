@@ -652,7 +652,7 @@ static ssize_t auto_brightness_store(struct device *dev,
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, (unsigned int)0, (unsigned long *)&value);
+	rc = kstrtoul(buf, (unsigned int)0, (unsigned long *)&value);
 	if (rc < 0)
 		return rc;
 	else {
@@ -871,7 +871,7 @@ static ssize_t store_##name (struct device *dev, \
 	u8 value; \
 	int ret; \
 \
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value); \
+	ret = kstrtoul(buf, 0, (unsigned long *)&value); \
 \
 	if (value == 0) /* never allow turning a colour off completely */ \
 		value = 1; \
@@ -904,7 +904,7 @@ static ssize_t rgb_adj_enable_store(struct device *dev,
 	struct mdnie_info *mdnie = dev_get_drvdata(dev);
 	int value, ret;
 
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value);
+	ret = kstrtoul(buf, 0, (unsigned long *)&value);
 
 	mdnie->rgb_adj_enable = (value != 0);
 	mdnie_update(mdnie);

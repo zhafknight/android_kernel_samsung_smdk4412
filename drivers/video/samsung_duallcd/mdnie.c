@@ -438,7 +438,7 @@ static ssize_t mode_store(struct device *dev,
 	unsigned int value;
 	int ret;
 
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value);
+	ret = kstrtoul(buf, 0, (unsigned long *)&value);
 
 	dev_info(dev, "%s :: value=%d\n", __func__, value);
 
@@ -476,7 +476,7 @@ static ssize_t scenario_store(struct device *dev,
 	unsigned int value;
 	int ret;
 
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value);
+	ret = kstrtoul(buf, 0, (unsigned long *)&value);
 
 	dev_info(dev, "%s :: value=%d\n", __func__, value);
 
@@ -517,7 +517,7 @@ static ssize_t outdoor_store(struct device *dev,
 	unsigned int value;
 	int ret;
 
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value);
+	ret = kstrtoul(buf, 0, (unsigned long *)&value);
 
 	dev_info(dev, "%s :: value=%d\n", __func__, value);
 
@@ -552,7 +552,7 @@ static ssize_t cabc_store(struct device *dev,
 	unsigned int value;
 	int ret;
 
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value);
+	ret = kstrtoul(buf, 0, (unsigned long *)&value);
 
 	dev_info(dev, "%s :: value=%d\n", __func__, value);
 
@@ -629,7 +629,7 @@ static ssize_t negative_store(struct device *dev,
 	unsigned int value;
 	int ret;
 
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value);
+	ret = kstrtoul(buf, 0, (unsigned long *)&value);
 	dev_info(dev, "%s :: value=%d\n", __func__, value);
 
 	if (ret < 0)

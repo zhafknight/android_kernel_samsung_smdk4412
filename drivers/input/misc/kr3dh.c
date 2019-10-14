@@ -850,7 +850,7 @@ static ssize_t kr3dh_store_##name(struct device *dev,			\
 									\
 	if (!count)							\
 		return -EINVAL;						\
-	ret = strict_strtoul(buf, 10, &val);				\
+	ret = kstrtoul(buf, 10, &val);				\
 	if (ret) {							\
 		dev_err(dev, "fail: conversion %s 5o number\n", buf);	\
 		return count;						\

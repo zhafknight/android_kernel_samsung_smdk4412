@@ -521,13 +521,13 @@ static ssize_t ab3100_get_set_reg(struct file *file,
 	/*
 	 * Advance pointer to end of string then terminate
 	 * the register string. This is needed to satisfy
-	 * the strict_strtoul() function.
+	 * the kstrtoul() function.
 	 */
 	while ((i < buf_size) && (buf[i] != ' '))
 		i++;
 	buf[i] = '\0';
 
-	err = strict_strtoul(&buf[regp], 16, &user_reg);
+	err = kstrtoul(&buf[regp], 16, &user_reg);
 	if (err)
 		return err;
 	if (user_reg > 0xff)
@@ -564,7 +564,7 @@ static ssize_t ab3100_get_set_reg(struct file *file,
 			i++;
 		buf[i] = '\0';
 
-		err = strict_strtoul(&buf[valp], 16, &user_value);
+		err = kstrtoul(&buf[valp], 16, &user_value);
 		if (err)
 			return err;
 		if (user_reg > 0xff)

@@ -112,7 +112,7 @@ static ssize_t bl_dimming_store(struct device *dev,
 	struct backlight_device *bd = to_backlight_device(dev);
 	unsigned long dimming;
 
-	rc = strict_strtoul(buf, 0, &dimming);
+	rc = kstrtoul(buf, 0, &dimming);
 	if (rc)
 		return rc;
 
@@ -159,7 +159,7 @@ static ssize_t bl_power_store(struct device *dev, struct device_attribute *attr,
 	struct backlight_device *bd = to_backlight_device(dev);
 	unsigned long power;
 
-	rc = strict_strtoul(buf, 0, &power);
+	rc = kstrtoul(buf, 0, &power);
 	if (rc)
 		return rc;
 
@@ -194,7 +194,7 @@ static ssize_t brightness_store(struct device *dev,
 	struct backlight_device *bd = to_backlight_device(dev);
 	unsigned long brightness;
 
-	rc = strict_strtoul(buf, 0, &brightness);
+	rc = kstrtoul(buf, 0, &brightness);
 	if (rc)
 		return rc;
 

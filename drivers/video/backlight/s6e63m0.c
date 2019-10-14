@@ -689,7 +689,7 @@ static ssize_t s6e63m0_sysfs_store_gamma_mode(struct device *dev,
 	struct backlight_device *bd = NULL;
 	int brightness, rc;
 
-	rc = strict_strtoul(buf, 0, (unsigned long *)&lcd->gamma_mode);
+	rc = kstrtoul(buf, 0, (unsigned long *)&lcd->gamma_mode);
 	if (rc < 0)
 		return rc;
 

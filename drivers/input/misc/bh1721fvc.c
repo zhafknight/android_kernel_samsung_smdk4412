@@ -169,7 +169,7 @@ static ssize_t bh1721fvc_poll_delay_store(struct device *dev,
 	int64_t new_delay;
 	struct bh1721fvc_data *bh1721fvc = dev_get_drvdata(dev);
 
-	err = strict_strtoll(buf, 10, &new_delay);
+	err = kstrtoll(buf, 10, &new_delay);
 	if (err < 0)
 		return err;
 

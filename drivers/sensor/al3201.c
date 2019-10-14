@@ -398,7 +398,7 @@ static ssize_t al3201_poll_delay_store(struct device *dev,
 	int64_t new_delay;
 	struct al3201_data *data = dev_get_drvdata(dev);
 
-	err = strict_strtoll(buf, 10, &new_delay);
+	err = kstrtoll(buf, 10, &new_delay);
 	if (err < 0)
 		return err;
 

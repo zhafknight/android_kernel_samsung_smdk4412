@@ -924,7 +924,7 @@ static ssize_t lps331ap_set_press_ref(struct device *dev,
 	struct lps331ap_prs_data *prs = dev_get_drvdata(dev);
 	long val = 0;
 
-	if (strict_strtol(buf, 10, &val))
+	if (kstrtol(buf, 10, &val))
 		return -EINVAL;
 
 	if (val < PR_ABS_MIN || val > PR_ABS_MAX)
@@ -962,7 +962,7 @@ static ssize_t lps331ap_set_temperature_ref(struct device *dev,
 	struct lps331ap_prs_data *prs = dev_get_drvdata(dev);
 	long val = 0;
 
-	if (strict_strtol(buf, 10, &val))
+	if (kstrtol(buf, 10, &val))
 		return -EINVAL;
 
 
@@ -986,7 +986,7 @@ static ssize_t lps331ap_set_autozero(struct device *dev,
 	struct lps331ap_prs_data *prs = dev_get_drvdata(dev);
 	unsigned long val;
 
-	if (strict_strtoul(buf, 10, &val))
+	if (kstrtoul(buf, 10, &val))
 		return -EINVAL;
 
 	mutex_lock(&prs->lock);
@@ -1028,7 +1028,7 @@ static ssize_t lps331ap_reg_set(struct device *dev,\
 	u8 x[2];
 	unsigned long val;
 
-	if (strict_strtoul(buf, 16, &val))
+	if (kstrtoul(buf, 16, &val))
 		return -EINVAL;
 	mutex_lock(&prs->lock);
 	x[0] = prs->reg_addr;
@@ -1073,7 +1073,7 @@ static ssize_t lps331ap_addr_set(struct device *dev, \
 {
 	struct lps331ap_prs_data *prs = dev_get_drvdata(dev);
 	unsigned long val;
-	if (strict_strtoul(buf, 16, &val))
+	if (kstrtoul(buf, 16, &val))
 		return -EINVAL;
 	mutex_lock(&prs->lock);
 	prs->reg_addr = val;
@@ -1130,7 +1130,7 @@ static ssize_t lps331ap_set_poll_delay(struct device *dev,
 	unsigned long delay_ms = 0;
 	unsigned int delay_min = DELAY_MINIMUM;
 
-	if (strict_strtoul(buf, 10, &delay_ms))
+	if (kstrtoul(buf, 10, &delay_ms))
 		return -EINVAL;
 	if (!delay_ms)
 		return -EINVAL;
@@ -1164,7 +1164,7 @@ static ssize_t lps331ap_set_enable(struct device *dev,
 	unsigned long val;
 
 	printk(KERN_INFO "%s\n", __func__);
-	if (strict_strtoul(buf, 10, &val))
+	if (kstrtoul(buf, 10, &val))
 		return -EINVAL;
 
 	if (val)

@@ -121,7 +121,7 @@ static ssize_t gp_gpx_counter_srcx_write(struct file *filp, const char __user *u
 
 	buf[cnt] = 0;
 
-	ret = strict_strtol(buf, 10, &val);
+	ret = kstrtol(buf, 10, &val);
 	if (ret < 0)
 	{
 		return ret;
@@ -172,7 +172,7 @@ static ssize_t gp_all_counter_srcx_write(struct file *filp, const char __user *u
 
 	buf[cnt] = 0;
 
-	ret = strict_strtol(buf, 10, &val);
+	ret = kstrtol(buf, 10, &val);
 	if (ret < 0)
 	{
 		return ret;
@@ -325,7 +325,7 @@ static ssize_t pp_ppx_counter_srcx_write(struct file *filp, const char __user *u
 
 	buf[cnt] = 0;
 
-	ret = strict_strtol(buf, 10, &val);
+	ret = kstrtol(buf, 10, &val);
 	if (ret < 0)
 	{
 		return ret;
@@ -376,7 +376,7 @@ static ssize_t pp_all_counter_srcx_write(struct file *filp, const char __user *u
 
 	buf[cnt] = 0;
 
-	ret = strict_strtol(buf, 10, &val);
+	ret = kstrtol(buf, 10, &val);
 	if (ret < 0)
 	{
 		return ret;
@@ -534,7 +534,7 @@ static ssize_t l2_l2x_counter_srcx_write(struct file *filp, const char __user *u
 
 	buf[cnt] = 0;
 
-	ret = strict_strtol(buf, 10, &val);
+	ret = kstrtol(buf, 10, &val);
 	if (ret < 0)
 	{
 		return ret;
@@ -585,7 +585,7 @@ static ssize_t l2_all_counter_srcx_write(struct file *filp, const char __user *u
 
 	buf[cnt] = 0;
 
-	ret = strict_strtol(buf, 10, &val);
+	ret = kstrtol(buf, 10, &val);
 	if (ret < 0)
 	{
 		return ret;
@@ -812,7 +812,7 @@ static ssize_t profiling_record_write(struct file *filp, const char __user *ubuf
 
 	buf[cnt] = 0;
 
-	ret = strict_strtoul(buf, 10, &val);
+	ret = kstrtoul(buf, 10, &val);
 	if (ret < 0)
 	{
 		return ret;
@@ -987,7 +987,7 @@ static ssize_t user_settings_write(struct file *filp, const char __user *ubuf, s
 	}
 	buf[cnt] = '\0';
 
-	ret = strict_strtoul(buf, 10, &val);
+	ret = kstrtoul(buf, 10, &val);
 	if (0 != ret)
 	{
 		return ret;

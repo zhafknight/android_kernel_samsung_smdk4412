@@ -535,7 +535,7 @@ geomagnetic_delay_store(struct device *dev,
 	unsigned long value;
 	int error;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -544,7 +544,7 @@ geomagnetic_delay_store(struct device *dev,
 
 	geomagnetic_multi_lock();
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 	if (hwdep_driver.set_delay(value) == 0)
@@ -575,7 +575,7 @@ geomagnetic_enable_store(struct device *dev,
 	unsigned long value;
 	int error;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 	value = !(!value);
@@ -628,7 +628,7 @@ geomagnetic_filter_enable_store(struct device *dev,
 	if (hwdep_driver.set_filter_enable == NULL)
 		return -ENOTTY;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -674,7 +674,7 @@ geomagnetic_filter_len_store(struct device *dev,
 	if (hwdep_driver.get_filter == NULL || hwdep_driver.set_filter == NULL)
 		return -ENOTTY;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -766,7 +766,7 @@ geomagnetic_filter_threshold_store(struct device *dev,
 	if (hwdep_driver.get_filter == NULL || hwdep_driver.set_filter == NULL)
 		return -ENOTTY;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -800,7 +800,7 @@ geomagnetic_position_store(struct device *dev,
 	unsigned long value;
 	int error;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -918,7 +918,7 @@ geomagnetic_debug_suspend_store(struct device *dev,
 	unsigned long suspend;
 	int error;
 
-	error = strict_strtoul(buf, 10, &suspend);
+	error = kstrtoul(buf, 10, &suspend);
 	if (unlikely(error))
 		return error;
 
@@ -1009,7 +1009,7 @@ geomagnetic_raw_threshold_store(struct device *dev,
 	unsigned long value;
 	int error;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -1112,7 +1112,7 @@ geomagnetic_raw_shape_store(struct device *dev,
 	unsigned long value;
 	int error;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 
@@ -1348,7 +1348,7 @@ geomagnetic_raw_ellipsoid_mode_store(struct device *dev,
 	unsigned long value;
 	int error;
 
-	error = strict_strtoul(buf, 10, &value);
+	error = kstrtoul(buf, 10, &value);
 	if (unlikely(error))
 		return error;
 	value = !(!value);

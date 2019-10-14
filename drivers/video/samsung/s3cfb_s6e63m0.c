@@ -730,7 +730,7 @@ static ssize_t power_reduce_store(struct device *dev,
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, (unsigned int)0,
+	rc = kstrtoul(buf, (unsigned int)0,
 				(unsigned long *)&value);
 	if (rc < 0)
 		return rc;
@@ -803,7 +803,7 @@ static ssize_t auto_brightness_store(struct device *dev,
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, (unsigned int)0, (unsigned long *)&value);
+	rc = kstrtoul(buf, (unsigned int)0, (unsigned long *)&value);
 	if (rc < 0)
 		return rc;
 	else {

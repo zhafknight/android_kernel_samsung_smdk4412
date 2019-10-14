@@ -567,7 +567,7 @@ static ssize_t cabc_store(struct device *dev,
 		return -EINVAL;
 #endif
 
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value);
+	ret = kstrtoul(buf, 0, (unsigned long *)&value);
 
 	dev_info(dev, "%s :: value=%d\n", __func__, value);
 
@@ -609,7 +609,7 @@ static ssize_t auto_brightness_store(struct device *dev,
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, (unsigned int)0, (unsigned long *)&value);
+	rc = kstrtoul(buf, (unsigned int)0, (unsigned long *)&value);
 	if (rc < 0)
 		return rc;
 	else {
@@ -879,7 +879,7 @@ static ssize_t ebook_store(struct device *dev,
 	unsigned int value;
 	int ret;
 
-	ret = strict_strtoul(buf, 0, (unsigned long *)&value);
+	ret = kstrtoul(buf, 0, (unsigned long *)&value);
 
 	dev_info(dev, "%s :: value=%d\n", __func__, value);
 

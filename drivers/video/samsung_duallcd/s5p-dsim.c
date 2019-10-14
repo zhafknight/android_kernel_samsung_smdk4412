@@ -1337,7 +1337,7 @@ static int hs_toggle_store(struct device *dev,
 	int rc;
 	struct dsim_global *dsim = container_of(dev, struct dsim_global, panel);
 
-	rc = strict_strtoul(buf, (unsigned int)0, (unsigned long *)&value);
+	rc = kstrtoul(buf, (unsigned int)0, (unsigned long *)&value);
 	if (rc < 0)
 		return rc;
 	else {

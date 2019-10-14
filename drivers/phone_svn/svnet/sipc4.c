@@ -1971,7 +1971,7 @@ static ssize_t store_act(struct device *d,
 	if (!ndev)
 		return count;
 
-	r = strict_strtoul(buf, 10, &chan);
+	r = kstrtoul(buf, 10, &chan);
 	if (!r)
 		r = pdp_activate(ndev, chan);
 
@@ -1996,7 +1996,7 @@ static ssize_t store_deact(struct device *d,
 	if (!ndev)
 		return count;
 
-	r = strict_strtoul(buf, 10, &chan);
+	r = kstrtoul(buf, 10, &chan);
 	if (!r)
 		r = pdp_deactivate(chan);
 
@@ -2032,7 +2032,7 @@ static ssize_t store_suspend(struct device *d,
 	unsigned long chan;
 	int id;
 
-	r = strict_strtoul(buf, 10, &chan);
+	r = kstrtoul(buf, 10, &chan);
 	if (r)
 		return count;
 
@@ -2060,7 +2060,7 @@ static ssize_t store_resume(struct device *d,
 	unsigned long chan;
 	int id;
 
-	r = strict_strtoul(buf, 10, &chan);
+	r = kstrtoul(buf, 10, &chan);
 	if (r)
 		return count;
 

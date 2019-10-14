@@ -476,7 +476,7 @@ static ssize_t store_an30259a_led_br_lev(struct device *dev,
 	struct an30259a_data *data = dev_get_drvdata(dev);
 	client = b_client;
 
-	retval = strict_strtoul(buf, 16, &brightness_lev);
+	retval = kstrtoul(buf, 16, &brightness_lev);
 	if (retval != 0) {
 		dev_err(&data->client->dev, "fail to get led_br_lev.\n");
 		return count;
@@ -495,7 +495,7 @@ static ssize_t store_an30259a_led_pattern(struct device *dev,
 	unsigned long mode;
 	struct an30259a_data *data = dev_get_drvdata(dev);
 
-	retval = strict_strtoul(buf, 16, &mode);
+	retval = kstrtoul(buf, 16, &mode);
 	if (retval != 0) {
 		dev_err(&data->client->dev, "fail to get led_pattern mode.\n");
 		return count;
@@ -695,7 +695,7 @@ static ssize_t led_delay_on_store(struct device *dev,
 	struct an30259a_led *led = cdev_to_led(led_cdev);
 	unsigned long time;
 
-	if (strict_strtoul(buf, 0, &time))
+	if (kstrtoul(buf, 0, &time))
 		return -EINVAL;
 
 	led->delay_on_time_ms = (int)time;
@@ -719,7 +719,7 @@ static ssize_t led_delay_off_store(struct device *dev,
 	struct an30259a_led *led = cdev_to_led(led_cdev);
 	unsigned long time;
 
-	if (strict_strtoul(buf, 0, &time))
+	if (kstrtoul(buf, 0, &time))
 		return -EINVAL;
 
 	led->delay_off_time_ms = (int)time;
@@ -735,7 +735,7 @@ static ssize_t led_blink_store(struct device *dev,
 	struct an30259a_led *led = cdev_to_led(led_cdev);
 	unsigned long blink_set;
 
-	if (strict_strtoul(buf, 0, &blink_set))
+	if (kstrtoul(buf, 0, &blink_set))
 		return -EINVAL;
 
 	if (!blink_set) {

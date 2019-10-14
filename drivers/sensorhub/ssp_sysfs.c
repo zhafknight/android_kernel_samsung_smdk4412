@@ -189,7 +189,7 @@ static ssize_t set_sensors_enable(struct device *dev,
 	struct ssp_data *data = dev_get_drvdata(dev);
 	int iRet;
 
-	if (strict_strtoll(buf, 10, &dTemp) < 0)
+	if (kstrtoll(buf, 10, &dTemp) < 0)
 		return -1;
 
 	uNewEnable = (unsigned int)dTemp;
@@ -243,7 +243,7 @@ static ssize_t set_acc_delay(struct device *dev,
 	int64_t dNewDelay;
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	if (strict_strtoll(buf, 10, &dNewDelay) < 0)
+	if (kstrtoll(buf, 10, &dNewDelay) < 0)
 		return -1;
 
 	if ((atomic_read(&data->aSensorEnable) & (1 << ORIENTATION_SENSOR)) &&
@@ -269,7 +269,7 @@ static ssize_t set_ori_delay(struct device *dev,
 	int64_t dNewDelay;
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	if (strict_strtoll(buf, 10, &dNewDelay) < 0)
+	if (kstrtoll(buf, 10, &dNewDelay) < 0)
 		return -1;
 
 	if (data->aiCheckStatus[ACCELEROMETER_SENSOR] == NO_SENSOR_STATE) {
@@ -300,7 +300,7 @@ static ssize_t set_gyro_delay(struct device *dev,
 	int64_t dNewDelay;
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	if (strict_strtoll(buf, 10, &dNewDelay) < 0)
+	if (kstrtoll(buf, 10, &dNewDelay) < 0)
 		return -1;
 
 	change_sensor_delay(data, GYROSCOPE_SENSOR, dNewDelay);
@@ -321,7 +321,7 @@ static ssize_t set_mag_delay(struct device *dev,
 	int64_t dNewDelay;
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	if (strict_strtoll(buf, 10, &dNewDelay) < 0)
+	if (kstrtoll(buf, 10, &dNewDelay) < 0)
 		return -1;
 
 	change_sensor_delay(data, GEOMAGNETIC_SENSOR, dNewDelay);
@@ -343,7 +343,7 @@ static ssize_t set_pressure_delay(struct device *dev,
 	int64_t dNewDelay;
 	struct ssp_data *data  = dev_get_drvdata(dev);
 
-	if (strict_strtoll(buf, 10, &dNewDelay) < 0)
+	if (kstrtoll(buf, 10, &dNewDelay) < 0)
 		return -1;
 
 	change_sensor_delay(data, PRESSURE_SENSOR, dNewDelay);
@@ -364,7 +364,7 @@ static ssize_t set_light_delay(struct device *dev,
 	int64_t dNewDelay;
 	struct ssp_data *data  = dev_get_drvdata(dev);
 
-	if (strict_strtoll(buf, 10, &dNewDelay) < 0)
+	if (kstrtoll(buf, 10, &dNewDelay) < 0)
 		return -1;
 
 	change_sensor_delay(data, LIGHT_SENSOR, dNewDelay);
@@ -385,7 +385,7 @@ static ssize_t set_prox_delay(struct device *dev,
 	int64_t dNewDelay;
 	struct ssp_data *data  = dev_get_drvdata(dev);
 
-	if (strict_strtoll(buf, 10, &dNewDelay) < 0)
+	if (kstrtoll(buf, 10, &dNewDelay) < 0)
 		return -1;
 
 	change_sensor_delay(data, PROXIMITY_SENSOR, dNewDelay);

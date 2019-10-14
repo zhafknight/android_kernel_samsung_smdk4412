@@ -115,7 +115,7 @@ static ssize_t k3g_store_watermark_level(struct device *dev,
 	if (!count)
 		return -EINVAL;
 
-	ret = strict_strtoul(buf, 10, &val);
+	ret = kstrtoul(buf, 10, &val);
 	if (ret)
 		return -EINVAL;
 

@@ -91,7 +91,7 @@ static ssize_t store_waketime(struct device *dev,
 	struct io_device *iod = container_of(miscdev, struct io_device,
 			miscdev);
 
-	ret = strict_strtoul(buf, 10, &msec);
+	ret = kstrtoul(buf, 10, &msec);
 	if (ret)
 		return count;
 

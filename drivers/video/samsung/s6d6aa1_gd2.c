@@ -591,7 +591,7 @@ static ssize_t auto_brightness_store(struct device *dev,
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, (unsigned int)0, (unsigned long *)&value);
+	rc = kstrtoul(buf, (unsigned int)0, (unsigned long *)&value);
 	if (rc < 0)
 		return rc;
 	else {
@@ -621,7 +621,7 @@ static ssize_t outdoor_store(struct device *dev,
 	int value;
 	int rc;
 
-	rc = strict_strtoul(buf, (unsigned int)0, (unsigned long *)&value);
+	rc = kstrtoul(buf, (unsigned int)0, (unsigned long *)&value);
 	if (rc < 0)
 		return rc;
 	else {

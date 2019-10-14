@@ -63,7 +63,7 @@ static ssize_t btmrvl_hscfgcmd_write(struct file *file,
 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
 		return -EFAULT;
 
-	ret = strict_strtol(buf, 10, &result);
+	ret = kstrtol(buf, 10, &result);
 	if (ret)
 		return ret;
 
@@ -109,7 +109,7 @@ static ssize_t btmrvl_psmode_write(struct file *file, const char __user *ubuf,
 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
 		return -EFAULT;
 
-	ret = strict_strtol(buf, 10, &result);
+	ret = kstrtol(buf, 10, &result);
 	if (ret)
 		return ret;
 
@@ -150,7 +150,7 @@ static ssize_t btmrvl_pscmd_write(struct file *file, const char __user *ubuf,
 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
 		return -EFAULT;
 
-	ret = strict_strtol(buf, 10, &result);
+	ret = kstrtol(buf, 10, &result);
 	if (ret)
 		return ret;
 
@@ -196,7 +196,7 @@ static ssize_t btmrvl_gpiogap_write(struct file *file, const char __user *ubuf,
 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
 		return -EFAULT;
 
-	ret = strict_strtol(buf, 16, &result);
+	ret = kstrtol(buf, 16, &result);
 	if (ret)
 		return ret;
 
@@ -237,7 +237,7 @@ static ssize_t btmrvl_hscmd_write(struct file *file, const char __user *ubuf,
 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
 		return -EFAULT;
 
-	ret = strict_strtol(buf, 10, &result);
+	ret = kstrtol(buf, 10, &result);
 	if (ret)
 		return ret;
 
@@ -281,7 +281,7 @@ static ssize_t btmrvl_hsmode_write(struct file *file, const char __user *ubuf,
 	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
 		return -EFAULT;
 
-	ret = strict_strtol(buf, 10, &result);
+	ret = kstrtol(buf, 10, &result);
 	if (ret)
 		return ret;
 

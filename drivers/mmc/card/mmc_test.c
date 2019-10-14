@@ -2827,7 +2827,7 @@ static ssize_t mtf_test_write(struct file *file, const char __user *buf,
 		return -EFAULT;
 	lbuf[count] = '\0';
 
-	if (strict_strtol(lbuf, 10, &testcase))
+	if (kstrtol(lbuf, 10, &testcase))
 		return -EINVAL;
 
 	test = kzalloc(sizeof(struct mmc_test_card), GFP_KERNEL);

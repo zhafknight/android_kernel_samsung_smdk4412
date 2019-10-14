@@ -491,7 +491,7 @@ static ssize_t k3g_set_delay(struct device *dev,
 	u64 delay_ns;
 	u8 ctrl;
 
-	res = strict_strtoll(buf, 10, &delay_ns);
+	res = kstrtoll(buf, 10, &delay_ns);
 	if (res < 0)
 		return res;
 

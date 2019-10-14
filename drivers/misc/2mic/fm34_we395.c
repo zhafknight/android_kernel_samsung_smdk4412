@@ -114,7 +114,7 @@ static ssize_t fm34_mode_store(struct device *dev,
 	long mode;
 	ssize_t status;
 
-	status = strict_strtol(buf, 0, &mode);
+	status = kstrtol(buf, 0, &mode);
 	if (status == 0) {
 		dev_info(fm34->dev, "%s mode = %ld\n", __func__, mode);
 		fm34_set_mode(fm34, mode);

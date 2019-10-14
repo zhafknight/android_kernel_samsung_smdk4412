@@ -998,7 +998,7 @@ static ssize_t debug_lpm_write(struct file *file, const char __user *user_buf,
 		buf[len - 1] = '\0';
 
 	if (strncmp(buf, "enable", 5) == 0) {
-		if (strict_strtoul(buf + 7, 10, &port))
+		if (kstrtoul(buf + 7, 10, &port))
 			return -EINVAL;
 		params = ehci_readl(ehci, &ehci->caps->hcs_params);
 		if (port > HCS_N_PORTS(params)) {
@@ -1016,7 +1016,7 @@ static ssize_t debug_lpm_write(struct file *file, const char __user *user_buf,
 		printk(KERN_INFO "force enable LPM for port %lu\n", port);
 	} else if (strncmp(buf, "hird=", 5) == 0) {
 		unsigned long hird;
-		if (strict_strtoul(buf + 5, 16, &hird))
+		if (kstrtoul(buf + 5, 16, &hird))
 			return -EINVAL;
 		printk(KERN_INFO "setting hird %s %lu\n", buf + 6, hird);
 		temp = ehci_readl(ehci, &ehci->regs->command);
@@ -1024,7 +1024,7 @@ static ssize_t debug_lpm_write(struct file *file, const char __user *user_buf,
 		temp |= hird << 24;
 		ehci_writel(ehci, temp, &ehci->regs->command);
 	} else if (strncmp(buf, "disable", 7) == 0) {
-		if (strict_strtoul(buf + 8, 10, &port))
+		if (kstrtoul(buf + 8, 10, &port))
 			return -EINVAL;
 		params = ehci_readl(ehci, &ehci->caps->hcs_params);
 		if (port > HCS_N_PORTS(params)) {

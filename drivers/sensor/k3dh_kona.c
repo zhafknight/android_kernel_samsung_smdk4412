@@ -516,7 +516,7 @@ static ssize_t k3dh_enable_store(struct device *dev,
 	unsigned long enable = 0;
 	int err;
 
-	if (strict_strtoul(buf, 10, &enable))
+	if (kstrtoul(buf, 10, &enable))
 		return -EINVAL;
 	k3dh_open_calibration(data);
 
@@ -557,7 +557,7 @@ static ssize_t k3dh_delay_store(struct device *dev,
 	struct input_dev *input = to_input_dev(dev);
 	struct k3dh_data *data = input_get_drvdata(input);
 	unsigned long delay = 0;
-	if (strict_strtoul(buf, 10, &delay))
+	if (kstrtoul(buf, 10, &delay))
 		return -EINVAL;
 
 	if (delay > MAX_DELAY)

@@ -822,7 +822,7 @@ static ssize_t lsm330dlc_accel_delay_store(struct device *dev,
 	u64 delay_ns = 0;
 	struct lsm330dlc_accel_data *data = dev_get_drvdata(dev);
 
-	err = strict_strtoll(buf, 10, &delay_ns);
+	err = kstrtoll(buf, 10, &delay_ns);
 
 	if (err < 0)
 		return err;

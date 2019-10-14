@@ -749,7 +749,7 @@ static ssize_t lsm330dlc_gyro_set_delay(struct device *dev,
 	struct lsm330dlc_gyro_data *data  = dev_get_drvdata(dev);
 	u64 delay_ns;
 
-	res = strict_strtoll(buf, 10, &delay_ns);
+	res = kstrtoll(buf, 10, &delay_ns);
 	if (res < 0)
 		return res;
 

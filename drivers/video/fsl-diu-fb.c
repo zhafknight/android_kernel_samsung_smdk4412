@@ -1444,7 +1444,7 @@ static ssize_t store_monitor(struct device *device,
 	struct fsl_diu_data *machine_data =
 		container_of(attr, struct fsl_diu_data, dev_attr);
 
-	if (strict_strtoul(buf, 10, &val))
+	if (kstrtoul(buf, 10, &val))
 		return 0;
 
 	old_monitor_port = machine_data->monitor_port;
@@ -1692,10 +1692,10 @@ static int __init fsl_diu_setup(char *options)
 		if (!*opt)
 			continue;
 		if (!strncmp(opt, "monitor=", 8)) {
-			if (!strict_strtoul(opt + 8, 10, &val) && (val <= 2))
+			if (!kstrtoul(opt + 8, 10, &val) && (val <= 2))
 				monitor_port = val;
 		} else if (!strncmp(opt, "bpp=", 4)) {
-			if (!strict_strtoul(opt + 4, 10, &val))
+			if (!kstrtoul(opt + 4, 10, &val))
 				default_bpp = val;
 		} else
 			fb_mode = opt;

@@ -154,7 +154,7 @@ static ssize_t k3g_store_##name(struct device *dev,			\
 	if (!count)							\
 		return -EINVAL;						\
 									\
-	ret = strict_strtoul(buf, 10, &val);				\
+	ret = kstrtoul(buf, 10, &val);				\
 	if (ret)							\
 		return -EINVAL;						\
 									\
@@ -190,7 +190,7 @@ static ssize_t k3g_store_##name(struct device *dev,			\
 	if (!count)							\
 		return -EINVAL;						\
 									\
-	ret = strict_strtoul(buf, 10, &val);				\
+	ret = kstrtoul(buf, 10, &val);				\
 	if (ret)							\
 		return -EINVAL;						\
 									\
@@ -405,7 +405,7 @@ static ssize_t k3g_store_int2_src(struct device *dev,
 	if (!count)
 		return -EINVAL;
 
-	ret = strict_strtoul(buf, 10, &val);
+	ret = kstrtoul(buf, 10, &val);
 	if (ret)
 		return -EINVAL;
 
@@ -453,7 +453,7 @@ static ssize_t k3g_store_fifo_mode(struct device *dev,
 	if (!count)
 		return -EINVAL;
 
-	ret = strict_strtoul(buf, 10, &val);
+	ret = kstrtoul(buf, 10, &val);
 	if (ret)
 		return -EINVAL;
 

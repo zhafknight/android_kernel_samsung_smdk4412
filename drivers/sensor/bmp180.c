@@ -408,7 +408,7 @@ static ssize_t bmp180_poll_delay_store(struct device *dev,
 	int64_t new_delay;
 	struct bmp180_data *barom = dev_get_drvdata(dev);
 
-	err = strict_strtoll(buf, 10, &new_delay);
+	err = kstrtoll(buf, 10, &new_delay);
 	if (err < 0)
 		return err;
 
@@ -482,7 +482,7 @@ static ssize_t bmp180_oversampling_store(struct device *dev,
 	struct bmp180_data *barom = dev_get_drvdata(dev);
 
 	unsigned long oversampling;
-	int success = strict_strtoul(buf, 10, &oversampling);
+	int success = kstrtoul(buf, 10, &oversampling);
 	if (success == 0) {
 		if (oversampling > 3)
 			oversampling = 3;

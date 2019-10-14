@@ -68,7 +68,7 @@ static ssize_t proximity_avg_store(struct device *dev,
 	int64_t dEnable;
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	iRet = strict_strtoll(buf, 10, &dEnable);
+	iRet = kstrtoll(buf, 10, &dEnable);
 	if (iRet < 0)
 		return iRet;
 
@@ -331,7 +331,7 @@ static ssize_t barcode_emul_enable_store(struct device *dev,
 	int64_t dEnable;
 	struct ssp_data *data = dev_get_drvdata(dev);
 
-	iRet = strict_strtoll(buf, 10, &dEnable);
+	iRet = kstrtoll(buf, 10, &dEnable);
 	if (iRet < 0)
 		return iRet;
 
