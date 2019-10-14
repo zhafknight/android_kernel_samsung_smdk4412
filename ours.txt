@@ -53,5 +53,4 @@ include/linux/mfd
 drivers/tty/serial/samsung
 drivers/power
 include/linux/power
-drivers/input/evdev.c
 drivers/input/keyboard/samsung-keypad.c
