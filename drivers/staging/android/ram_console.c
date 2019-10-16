@@ -35,7 +35,7 @@
 #endif
 
 static unsigned long long mem_address = 0x46000000;
-module_param_hw(mem_address, ullong, other, 0400);
+module_param(mem_address, ullong, 0400);
 MODULE_PARM_DESC(mem_address,
 		"start of reserved RAM used to store oops/panic logs");
 
