@@ -415,19 +415,6 @@ static int ram_console_driver_probe(struct platform_device *pdev)
 
 	pr_err("%s: init\n", __func__);
 
-	pr_err("%s: dev_of_node(dev)=%d, (!pdata)=%d\n", __func__, !!dev_of_node(dev), (int)(!pdata));
-
-	if (dev_of_node(dev) && !pdata) {
-		pdata = &pdata_local;
-		memset(pdata, 0, sizeof(*pdata));
-
-		err = ramoops_parse_dt(pdev, pdata);
-		if (err < 0) {
-			pr_err("%s: ramoops_parse_dt returned %d\n", __func__, err);
-			return err;
-		}
-	}
-
 	/* Make sure we didn't get bogus platform data pointer. */
 	if (!pdata) {
 		pr_err("%s: NULL platform data\n", __func__);
