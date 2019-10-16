@@ -54,7 +54,7 @@
 #include <linux/v4l2-mediabus.h>
 #include <linux/memblock.h>
 #include <linux/delay.h>
-#include <linux/bootmem.h>
+#include <linux/memblock.h>
 
 #ifdef CONFIG_DMA_CMA
 #include <linux/dma-contiguous.h>
@@ -1494,7 +1494,7 @@ static int __init sec_log_setup(char *str)
 	    || kstrtoul(str + 1, 0, &base))
 		goto out;
 
-	if (reserve_bootmem(base - 8, size + 8, BOOTMEM_EXCLUSIVE)) {
+	if (memblock_reserve(base - 8, size + 8)) {
 		pr_err("%s: failed reserving size %d + 8 "
 		       "at base 0x%lx - 8\n", __func__, size, base);
 		goto out;
