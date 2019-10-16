@@ -3131,6 +3131,7 @@ CONFIG_RTC_DRV_S3C=y
 # Microsoft Hyper-V guest support
 #
 CONFIG_STAGING=y
+CONFIG_ANDROID_RAM_CONSOLE=y
 # CONFIG_USBIP_CORE is not set
 # CONFIG_W35UND is not set
 # CONFIG_PRISM2_USB is not set
