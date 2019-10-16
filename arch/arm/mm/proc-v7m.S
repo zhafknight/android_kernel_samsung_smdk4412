@@ -16,11 +16,11 @@
 #include "proc-macros.S"
 
 ENTRY(cpu_v7m_proc_init)
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7m_proc_init)
 
 ENTRY(cpu_v7m_proc_fin)
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7m_proc_fin)
 
 /*
@@ -34,7 +34,7 @@ ENDPROC(cpu_v7m_proc_fin)
  */
 	.align	5
 ENTRY(cpu_v7m_reset)
-	ret	r0
+	mov	pc, r0
 ENDPROC(cpu_v7m_reset)
 
 /*
@@ -46,18 +46,18 @@ ENDPROC(cpu_v7m_reset)
  */
 ENTRY(cpu_v7m_do_idle)
 	wfi
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7m_do_idle)
 
 ENTRY(cpu_v7m_dcache_clean_area)
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7m_dcache_clean_area)
 
 /*
  * There is no MMU, so here is nothing to do.
  */
 ENTRY(cpu_v7m_switch_mm)
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7m_switch_mm)
 
 .globl	cpu_v7m_suspend_size
@@ -65,11 +65,11 @@ ENDPROC(cpu_v7m_switch_mm)
 
 #ifdef CONFIG_ARM_CPU_SUSPEND
 ENTRY(cpu_v7m_do_suspend)
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7m_do_suspend)
 
 ENTRY(cpu_v7m_do_resume)
-	ret	lr
+	mov	pc, lr
 ENDPROC(cpu_v7m_do_resume)
 #endif
 
@@ -120,7 +120,7 @@ __v7m_setup:
 	ldr	r12, [r0, V7M_SCB_CCR]	@ system control register
 	orr	r12, #V7M_SCB_CCR_STKALIGN
 	str	r12, [r0, V7M_SCB_CCR]
-	ret	lr
+	mov	pc, lr
 ENDPROC(__v7m_setup)
 
 	.align 2

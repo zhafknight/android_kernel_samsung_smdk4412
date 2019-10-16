@@ -10,7 +10,6 @@
  */
 
 #include <linux/linkage.h>
-#include <asm/assembler.h>
 #include <asm/asm-offsets.h>
 #include <asm/hardware/cache-l2x0.h>
 #include "hardware.h"
@@ -304,7 +303,7 @@ rbc_loop:
 	resume_mmdc
 
 	/* return to suspend finish */
-	ret	lr
+	mov	pc, lr
 
 resume:
 	/* invalidate L1 I-cache first */
@@ -328,7 +327,7 @@ resume:
 	mov	r5, #0x1
 	resume_mmdc
 
-	ret	lr
+	mov	pc, lr
 ENDPROC(imx6_suspend)
 
 /*
