@@ -4,6 +4,10 @@
 #
 # Licensed under GPLv2
 
+config HAVE_PWM
+	bool
+	default y
+
 config PLAT_SAMSUNG
 	bool
 	depends on PLAT_S3C24XX || ARCH_S3C64XX || PLAT_S5P
