@@ -41,11 +41,6 @@ config ASHMEM
 	  POSIX SHM but with different behavior and sporting a simpler
 	  file-based API.
 
-config ANDROID_RAM_CONSOLE
-	bool "Android RAM buffer console"
-	depends on !S390 && !UML
-	default n
-
 config ANDROID_LOGGER
 	tristate "Android log driver"
 	default n
@@ -117,5 +112,10 @@ config ANDROID_INTF_ALARM_DEV
 	  Also exports the alarm interface to user-space.
 
 endif # if ANDROID
+
+config ANDROID_RAM_CONSOLE
+	bool "Android RAM buffer console"
+	depends on !S390 && !UML
+	default n
 
 endmenu
