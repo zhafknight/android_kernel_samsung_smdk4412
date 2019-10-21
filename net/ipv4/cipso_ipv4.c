@@ -165,7 +165,8 @@ static int cipso_v4_bitmap_walk(const unsigned char *bitmap,
 		    (state == 0 && (byte & bitmask) == 0))
 			return bit_spot;
 
-		bit_spot++;
+		if (++bit_spot >= bitmap_len)
+			return -1;
 		bitmask >>= 1;
 		if (bitmask == 0) {
 			byte = bitmap[++byte_offset];
@@ -376,20 +377,18 @@ static int cipso_v4_cache_check(const unsigned char *key,
  * negative values on failure.
  *
  */
-int cipso_v4_cache_add(const struct sk_buff *skb,
+int cipso_v4_cache_add(const unsigned char *cipso_ptr,
 		       const struct netlbl_lsm_secattr *secattr)
 {
 	int ret_val = -EPERM;
 	u32 bkt;
 	struct cipso_v4_map_cache_entry *entry = NULL;
 	struct cipso_v4_map_cache_entry *old_entry = NULL;
-	unsigned char *cipso_ptr;
 	u32 cipso_ptr_len;
 
 	if (!cipso_v4_cache_enabled || cipso_v4_cache_bucketsize <= 0)
 		return 0;
 
-	cipso_ptr = CIPSO_V4_OPTPTR(skb);
 	cipso_ptr_len = cipso_ptr[1];
 
 	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
@@ -737,7 +736,8 @@ static int cipso_v4_map_lvl_valid(const struct cipso_v4_doi *doi_def, u8 level)
 	case CIPSO_V4_MAP_PASS:
 		return 0;
 	case CIPSO_V4_MAP_TRANS:
-		if (doi_def->map.std->lvl.cipso[level] < CIPSO_V4_INV_LVL)
+		if ((level < doi_def->map.std->lvl.cipso_size) &&
+		    (doi_def->map.std->lvl.cipso[level] < CIPSO_V4_INV_LVL))
 			return 0;
 		break;
 	}
@@ -1577,6 +1577,44 @@ static int cipso_v4_parsetag_loc(const struct cipso_v4_doi *doi_def,
 }
 
 /**
+ * cipso_v4_optptr - Find the CIPSO option in the packet
+ * @skb: the packet
+ *
+ * Description:
+ * Parse the packet's IP header looking for a CIPSO option.  Returns a pointer
+ * to the start of the CIPSO option on success, NULL if one is not found.
+ *
+ */
+unsigned char *cipso_v4_optptr(const struct sk_buff *skb)
+{
+	const struct iphdr *iph = ip_hdr(skb);
+	unsigned char *optptr = (unsigned char *)&(ip_hdr(skb)[1]);
+	int optlen;
+	int taglen;
+
+	for (optlen = iph->ihl*4 - sizeof(struct iphdr); optlen > 1; ) {
+		switch (optptr[0]) {
+		case IPOPT_END:
+			return NULL;
+		case IPOPT_NOOP:
+			taglen = 1;
+			break;
+		default:
+			taglen = optptr[1];
+		}
+		if (!taglen || taglen > optlen)
+			return NULL;
+		if (optptr[0] == IPOPT_CIPSO)
+			return optptr;
+
+		optlen -= taglen;
+		optptr += taglen;
+	}
+
+	return NULL;
+}
+
+/**
  * cipso_v4_validate - Validate a CIPSO option
  * @option: the start of the option, on error it is set to point to the error
  *
@@ -1630,6 +1668,10 @@ int cipso_v4_validate(const struct sk_buff *skb, unsigned char **option)
 				goto validate_return_locked;
 			}
 
+		if (opt_iter + 1 == opt_len) {
+			err_offset = opt_iter;
+			goto validate_return_locked;
+		}
 		tag_len = tag[1];
 		if (tag_len > (opt_len - opt_iter)) {
 			err_offset = opt_iter + 1;
@@ -1763,13 +1805,26 @@ validate_return:
  */
 void cipso_v4_error(struct sk_buff *skb, int error, u32 gateway)
 {
+	unsigned char optbuf[sizeof(struct ip_options) + 40];
+	struct ip_options *opt = (struct ip_options *)optbuf;
+
 	if (ip_hdr(skb)->protocol == IPPROTO_ICMP || error != -EACCES)
 		return;
 
+	/*
+	 * We might be called above the IP layer,
+	 * so we can not use icmp_send and IPCB here.
+	 */
+
+	memset(opt, 0, sizeof(struct ip_options));
+	opt->optlen = ip_hdr(skb)->ihl*4 - sizeof(struct iphdr);
+	if (__ip_options_compile(dev_net(skb->dev), opt, skb, NULL))
+		return;
+
 	if (gateway)
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_ANO, 0);
+		__icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_ANO, 0, opt);
 	else
-		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_ANO, 0);
+		__icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_ANO, 0, opt);
 }
 
 /**
@@ -2117,8 +2172,8 @@ void cipso_v4_req_delattr(struct request_sock *req)
  * on success and negative values on failure.
  *
  */
-static int cipso_v4_getattr(const unsigned char *cipso,
-			    struct netlbl_lsm_secattr *secattr)
+int cipso_v4_getattr(const unsigned char *cipso,
+		     struct netlbl_lsm_secattr *secattr)
 {
 	int ret_val = -ENOMSG;
 	u32 doi;
@@ -2301,22 +2356,6 @@ int cipso_v4_skbuff_delattr(struct sk_buff *skb)
 	ip_send_check(iph);
 
 	return 0;
-}
-
-/**
- * cipso_v4_skbuff_getattr - Get the security attributes from the CIPSO option
- * @skb: the packet
- * @secattr: the security attributes
- *
- * Description:
- * Parse the given packet's CIPSO option and return the security attributes.
- * Returns zero on success and negative values on failure.
- *
- */
-int cipso_v4_skbuff_getattr(const struct sk_buff *skb,
-			    struct netlbl_lsm_secattr *secattr)
-{
-	return cipso_v4_getattr(CIPSO_V4_OPTPTR(skb), secattr);
 }
 
 /*

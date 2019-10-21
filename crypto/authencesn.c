@@ -86,6 +86,7 @@ static int crypto_authenc_esn_setkey(struct crypto_aead *authenc_esn, const u8 *
 					   CRYPTO_TFM_RES_MASK);
 
 out:
+	memzero_explicit(&keys, sizeof(keys));
 	return err;
 
 badkey:
@@ -814,3 +815,4 @@ module_exit(crypto_authenc_esn_module_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Steffen Klassert <steffen.klassert@secunet.com>");
 MODULE_DESCRIPTION("AEAD wrapper for IPsec with extended sequence numbers");
+MODULE_ALIAS_CRYPTO("authencesn");

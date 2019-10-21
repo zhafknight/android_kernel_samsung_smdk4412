@@ -366,6 +366,7 @@ int dm_create(int minor, struct mapped_device **md);
  */
 struct mapped_device *dm_get_md(dev_t dev);
 void dm_get(struct mapped_device *md);
+int dm_hold(struct mapped_device *md);
 void dm_put(struct mapped_device *md);
 
 /*
@@ -373,6 +374,12 @@ void dm_put(struct mapped_device *md);
  */
 void dm_set_mdptr(struct mapped_device *md, void *ptr);
 void *dm_get_mdptr(struct mapped_device *md);
+
+/*
+ * Export the device via the ioctl interface (uses mdptr).
+ */
+int dm_ioctl_export(struct mapped_device *md, const char *name,
+		    const char *uuid);
 
 /*
  * A device can still be used while suspended, but I/O is deferred.

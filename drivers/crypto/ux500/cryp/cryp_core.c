@@ -555,7 +555,7 @@ static int cryp_set_dma_transfer(struct cryp_ctx *ctx,
 		desc = dmaengine_prep_slave_sg(channel,
 				ctx->device->dma.sg_src,
 				ctx->device->dma.sg_src_len,
-				direction, DMA_CTRL_ACK);
+				DMA_MEM_TO_DEV, DMA_CTRL_ACK);
 		break;
 
 	case DMA_FROM_DEVICE:
@@ -579,7 +579,7 @@ static int cryp_set_dma_transfer(struct cryp_ctx *ctx,
 		desc = dmaengine_prep_slave_sg(channel,
 				ctx->device->dma.sg_dst,
 				ctx->device->dma.sg_dst_len,
-				direction,
+				DMA_DEV_TO_MEM,
 				DMA_CTRL_ACK |
 				DMA_PREP_INTERRUPT);
 
@@ -1810,7 +1810,7 @@ module_exit(ux500_cryp_mod_fini);
 module_param(cryp_mode, int, 0);
 
 MODULE_DESCRIPTION("Driver for ST-Ericsson UX500 CRYP crypto engine.");
-MODULE_ALIAS("aes-all");
-MODULE_ALIAS("des-all");
+MODULE_ALIAS_CRYPTO("aes-all");
+MODULE_ALIAS_CRYPTO("des-all");
 
 MODULE_LICENSE("GPL");

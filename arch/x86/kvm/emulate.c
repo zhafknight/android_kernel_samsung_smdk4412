@@ -658,7 +658,7 @@ static int __linearize(struct x86_emulate_ctxt *ctxt,
 	*max_size = 0;
 	switch (ctxt->mode) {
 	case X86EMUL_MODE_PROT64:
-		if (((signed long)la << 16) >> 16 != la)
+		if (is_noncanonical_address(la))
 			return emulate_gp(ctxt, 0);
 
 		*max_size = min_t(u64, ~0u, (1ull << 48) - la);
@@ -2128,7 +2128,7 @@ static int em_ret_far(struct x86_emulate_ctxt *ctxt)
 	/* Outer-privilege level return is not implemented */
 	if (ctxt->mode >= X86EMUL_MODE_PROT16 && (cs & 3) > cpl)
 		return X86EMUL_UNHANDLEABLE;
-	rc = __load_segment_descriptor(ctxt, (u16)cs, VCPU_SREG_CS, 0, false,
+	rc = __load_segment_descriptor(ctxt, (u16)cs, VCPU_SREG_CS, cpl, false,
 				       &new_desc);
 	if (rc != X86EMUL_CONTINUE)
 		return rc;
@@ -2345,7 +2345,7 @@ static int em_sysenter(struct x86_emulate_ctxt *ctxt)
 	 * Not recognized on AMD in compat mode (but is recognized in legacy
 	 * mode).
 	 */
-	if ((ctxt->mode == X86EMUL_MODE_PROT32) && (efer & EFER_LMA)
+	if ((ctxt->mode != X86EMUL_MODE_PROT64) && (efer & EFER_LMA)
 	    && !vendor_intel(ctxt))
 		return emulate_ud(ctxt);
 
@@ -2358,25 +2358,13 @@ static int em_sysenter(struct x86_emulate_ctxt *ctxt)
 	setup_syscalls_segments(ctxt, &cs, &ss);
 
 	ops->get_msr(ctxt, MSR_IA32_SYSENTER_CS, &msr_data);
-	switch (ctxt->mode) {
-	case X86EMUL_MODE_PROT32:
-		if ((msr_data & 0xfffc) == 0x0)
-			return emulate_gp(ctxt, 0);
-		break;
-	case X86EMUL_MODE_PROT64:
-		if (msr_data == 0x0)
-			return emulate_gp(ctxt, 0);
-		break;
-	default:
-		break;
-	}
+	if ((msr_data & 0xfffc) == 0x0)
+		return emulate_gp(ctxt, 0);
 
 	ctxt->eflags &= ~(EFLG_VM | EFLG_IF);
-	cs_sel = (u16)msr_data;
-	cs_sel &= ~SELECTOR_RPL_MASK;
+	cs_sel = (u16)msr_data & ~SELECTOR_RPL_MASK;
 	ss_sel = cs_sel + 8;
-	ss_sel &= ~SELECTOR_RPL_MASK;
-	if (ctxt->mode == X86EMUL_MODE_PROT64 || (efer & EFER_LMA)) {
+	if (efer & EFER_LMA) {
 		cs.d = 0;
 		cs.l = 1;
 	}
@@ -2385,10 +2373,11 @@ static int em_sysenter(struct x86_emulate_ctxt *ctxt)
 	ops->set_segment(ctxt, ss_sel, &ss, 0, VCPU_SREG_SS);
 
 	ops->get_msr(ctxt, MSR_IA32_SYSENTER_EIP, &msr_data);
-	ctxt->_eip = msr_data;
+	ctxt->_eip = (efer & EFER_LMA) ? msr_data : (u32)msr_data;
 
 	ops->get_msr(ctxt, MSR_IA32_SYSENTER_ESP, &msr_data);
-	*reg_write(ctxt, VCPU_REGS_RSP) = msr_data;
+	*reg_write(ctxt, VCPU_REGS_RSP) = (efer & EFER_LMA) ? msr_data :
+							      (u32)msr_data;
 
 	return X86EMUL_CONTINUE;
 }
@@ -3788,8 +3777,8 @@ static const struct opcode group5[] = {
 };
 
 static const struct opcode group6[] = {
-	DI(Prot,	sldt),
-	DI(Prot,	str),
+	DI(Prot | DstMem,	sldt),
+	DI(Prot | DstMem,	str),
 	II(Prot | Priv | SrcMem16, em_lldt, lldt),
 	II(Prot | Priv | SrcMem16, em_ltr, ltr),
 	N, N, N, N,
@@ -4396,6 +4385,8 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 	bool op_prefix = false;
 	bool has_seg_override = false;
 	struct opcode opcode;
+	u16 dummy;
+	struct desc_struct desc;
 
 	ctxt->memop.type = OP_NONE;
 	ctxt->memopp = NULL;
@@ -4414,6 +4405,11 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len)
 	switch (mode) {
 	case X86EMUL_MODE_REAL:
 	case X86EMUL_MODE_VM86:
+		def_op_bytes = def_ad_bytes = 2;
+		ctxt->ops->get_segment(ctxt, &dummy, &desc, NULL, VCPU_SREG_CS);
+		if (desc.d)
+			def_op_bytes = def_ad_bytes = 4;
+		break;
 	case X86EMUL_MODE_PROT16:
 		def_op_bytes = def_ad_bytes = 2;
 		break;
@@ -4634,6 +4630,8 @@ done_prefixes:
 		ctxt->memopp->addr.mem.ea += ctxt->_eip;
 
 done:
+	if (rc == X86EMUL_PROPAGATE_FAULT)
+		ctxt->have_exception = true;
 	return (rc != X86EMUL_CONTINUE) ? EMULATION_FAILED : EMULATION_OK;
 }
 
@@ -4840,7 +4838,8 @@ int x86_emulate_insn(struct x86_emulate_ctxt *ctxt)
 		if (rc != X86EMUL_CONTINUE)
 			goto done;
 	}
-	ctxt->dst.orig_val = ctxt->dst.val;
+	/* Copy full 64-bit value for CMPXCHG8B.  */
+	ctxt->dst.orig_val64 = ctxt->dst.val64;
 
 special_insn:
 

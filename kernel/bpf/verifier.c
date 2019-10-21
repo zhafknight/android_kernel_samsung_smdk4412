@@ -763,13 +763,16 @@ static int check_func_arg(struct verifier_env *env, u32 regno,
 	enum bpf_reg_type expected_type;
 	int err = 0;
 
-	if (arg_type == ARG_ANYTHING)
+	if (arg_type == ARG_DONTCARE)
 		return 0;
 
 	if (reg->type == NOT_INIT) {
 		verbose("R%d !read_ok\n", regno);
 		return -EACCES;
 	}
+
+	if (arg_type == ARG_ANYTHING)
+		return 0;
 
 	if (arg_type == ARG_PTR_TO_STACK || arg_type == ARG_PTR_TO_MAP_KEY ||
 	    arg_type == ARG_PTR_TO_MAP_VALUE) {
@@ -929,7 +932,8 @@ static int check_alu_op(struct reg_state *regs, struct bpf_insn *insn)
 			}
 		} else {
 			if (insn->src_reg != BPF_REG_0 || insn->off != 0 ||
-			    (insn->imm != 16 && insn->imm != 32 && insn->imm != 64)) {
+			    (insn->imm != 16 && insn->imm != 32 && insn->imm != 64) ||
+			    BPF_CLASS(insn->code) == BPF_ALU64) {
 				verbose("BPF_END uses reserved fields\n");
 				return -EINVAL;
 			}
@@ -1020,6 +1024,16 @@ static int check_alu_op(struct reg_state *regs, struct bpf_insn *insn)
 		    BPF_SRC(insn->code) == BPF_K && insn->imm == 0) {
 			verbose("div by zero\n");
 			return -EINVAL;
+		}
+
+		if ((opcode == BPF_LSH || opcode == BPF_RSH ||
+		     opcode == BPF_ARSH) && BPF_SRC(insn->code) == BPF_K) {
+			int size = BPF_CLASS(insn->code) == BPF_ALU64 ? 64 : 32;
+
+			if (insn->imm < 0 || insn->imm >= size) {
+				verbose("invalid shift %d\n", insn->imm);
+				return -EINVAL;
+			}
 		}
 
 		/* pattern match 'bpf_add Rx, imm' instruction */
@@ -1324,7 +1338,8 @@ peek_stack:
 			/* tell verifier to check for equivalent states
 			 * after every call and jump
 			 */
-			env->explored_states[t + 1] = STATE_LIST_MARK;
+			if (t + 1 < insn_cnt)
+				env->explored_states[t + 1] = STATE_LIST_MARK;
 		} else {
 			/* conditional jump with two edges */
 			ret = push_insn(t, t + 1, FALLTHROUGH, env);
@@ -1723,7 +1738,6 @@ static int replace_map_fd_with_map_ptr(struct verifier_env *env)
 			if (IS_ERR(map)) {
 				verbose("fd %d is not pointing to valid bpf_map\n",
 					insn->imm);
-				fdput(f);
 				return PTR_ERR(map);
 			}
 
@@ -1749,7 +1763,7 @@ static int replace_map_fd_with_map_ptr(struct verifier_env *env)
 			/* hold the map. If the program is rejected by verifier,
 			 * the map will be released by release_maps() or it
 			 * will be used by the valid program until it's unloaded
-			 * and all maps are released in free_bpf_prog_info()
+			 * and all maps are released in free_used_maps()
 			 */
 			atomic_inc(&map->refcnt);
 
@@ -1915,7 +1929,7 @@ free_log_buf:
 free_env:
 	if (!prog->aux->used_maps)
 		/* if we didn't copy map pointers into bpf_prog_info, release
-		 * them now. Otherwise free_bpf_prog_info() will release them.
+		 * them now. Otherwise free_used_maps() will release them.
 		 */
 		release_maps(env);
 	kfree(env);

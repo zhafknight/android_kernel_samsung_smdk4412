@@ -355,7 +355,8 @@ out:
 	return result;
 }
 
-static struct rpc_clnt *rpcb_create(struct net *net, const char *hostname,
+static struct rpc_clnt *rpcb_create(struct net *net, const char *nodename,
+				    const char *hostname,
 				    struct sockaddr *srvaddr, size_t salen,
 				    int proto, u32 version)
 {
@@ -365,6 +366,7 @@ static struct rpc_clnt *rpcb_create(struct net *net, const char *hostname,
 		.address	= srvaddr,
 		.addrsize	= salen,
 		.servername	= hostname,
+		.nodename	= nodename,
 		.program	= &rpcb_program,
 		.version	= version,
 		.authflavor	= RPC_AUTH_UNIX,
@@ -740,7 +742,9 @@ void rpcb_getport_async(struct rpc_task *task)
 	dprintk("RPC: %5u %s: trying rpcbind version %u\n",
 		task->tk_pid, __func__, bind_version);
 
-	rpcb_clnt = rpcb_create(xprt->xprt_net, xprt->servername, sap, salen,
+	rpcb_clnt = rpcb_create(xprt->xprt_net,
+				clnt->cl_nodename,
+				xprt->servername, sap, salen,
 				xprt->prot, bind_version);
 	if (IS_ERR(rpcb_clnt)) {
 		status = PTR_ERR(rpcb_clnt);
@@ -768,6 +772,12 @@ void rpcb_getport_async(struct rpc_task *task)
 	case RPCBVERS_3:
 		map->r_netid = xprt->address_strings[RPC_DISPLAY_NETID];
 		map->r_addr = rpc_sockaddr2uaddr(sap, GFP_ATOMIC);
+		if (!map->r_addr) {
+			status = -ENOMEM;
+			dprintk("RPC: %5u %s: no memory available\n",
+				task->tk_pid, __func__);
+			goto bailout_free_args;
+		}
 		map->r_owner = "";
 		break;
 	case RPCBVERS_2:
@@ -790,6 +800,8 @@ void rpcb_getport_async(struct rpc_task *task)
 	rpc_put_task(child);
 	return;
 
+bailout_free_args:
+	kfree(map);
 bailout_release_client:
 	rpc_release_client(rpcb_clnt);
 bailout_nofree:

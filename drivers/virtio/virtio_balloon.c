@@ -28,6 +28,7 @@
 #include <linux/slab.h>
 #include <linux/module.h>
 #include <linux/balloon_compaction.h>
+#include <linux/wait.h>
 
 /*
  * Balloon device works in 4K page units.  So each page is pointed to by
@@ -177,6 +178,8 @@ static void leak_balloon(struct virtio_balloon *vb, size_t num)
 	num = min(num, ARRAY_SIZE(vb->pfns));
 
 	mutex_lock(&vb->balloon_lock);
+	/* We can't release more pages than taken */
+	num = min(num, (size_t)vb->num_pages);
 	for (vb->num_pfns = 0; vb->num_pfns < num;
 	     vb->num_pfns += VIRTIO_BALLOON_PAGES_PER_PAGE) {
 		page = balloon_page_dequeue(vb_dev_info);
@@ -290,17 +293,25 @@ static void update_balloon_size(struct virtio_balloon *vb)
 static int balloon(void *_vballoon)
 {
 	struct virtio_balloon *vb = _vballoon;
+	DEFINE_WAIT_FUNC(wait, woken_wake_function);
 
 	set_freezable();
 	while (!kthread_should_stop()) {
 		s64 diff;
 
 		try_to_freeze();
-		wait_event_interruptible(vb->config_change,
-					 (diff = towards_target(vb)) != 0
-					 || vb->need_stats_update
-					 || kthread_should_stop()
-					 || freezing(current));
+
+		add_wait_queue(&vb->config_change, &wait);
+		for (;;) {
+			if ((diff = towards_target(vb)) != 0 ||
+			    vb->need_stats_update ||
+			    kthread_should_stop() ||
+			    freezing(current))
+				break;
+			wait_woken(&wait, TASK_INTERRUPTIBLE, MAX_SCHEDULE_TIMEOUT);
+		}
+		remove_wait_queue(&vb->config_change, &wait);
+
 		if (vb->need_stats_update)
 			stats_handle_request(vb);
 		if (diff > 0)
@@ -344,6 +355,8 @@ static int init_vqs(struct virtio_balloon *vb)
 		 * Prime this virtqueue with one buffer so the hypervisor can
 		 * use it to signal us later (it can't be broken yet!).
 		 */
+		update_balloon_stats(vb);
+
 		sg_init_one(&sg, vb->stats, sizeof vb->stats);
 		if (virtqueue_add_outbuf(vb->stats_vq, &sg, 1, vb, GFP_KERNEL)
 		    < 0)
@@ -403,7 +416,9 @@ static int virtballoon_migratepage(struct balloon_dev_info *vb_dev_info,
 	tell_host(vb, vb->inflate_vq);
 
 	/* balloon's page migration 2nd step -- deflate "page" */
+	spin_lock_irqsave(&vb_dev_info->pages_lock, flags);
 	balloon_page_delete(page);
+	spin_unlock_irqrestore(&vb_dev_info->pages_lock, flags);
 	vb->num_pfns = VIRTIO_BALLOON_PAGES_PER_PAGE;
 	set_page_pfns(vb->pfns, page);
 	tell_host(vb, vb->deflate_vq);
@@ -442,6 +457,8 @@ static int virtballoon_probe(struct virtio_device *vdev)
 	err = init_vqs(vb);
 	if (err)
 		goto out_free_vb;
+
+	virtio_device_ready(vdev);
 
 	vb->thread = kthread_run(balloon, vb, "vballoon");
 	if (IS_ERR(vb->thread)) {

@@ -1410,6 +1410,7 @@ get_old_root(struct btrfs_root *root, u64 time_seq)
 	struct tree_mod_elem *tm;
 	struct extent_buffer *eb = NULL;
 	struct extent_buffer *eb_root;
+	u64 eb_root_owner = 0;
 	struct extent_buffer *old;
 	struct tree_mod_root *old_root = NULL;
 	u64 old_generation = 0;
@@ -1442,6 +1443,7 @@ get_old_root(struct btrfs_root *root, u64 time_seq)
 			free_extent_buffer(old);
 		}
 	} else if (old_root) {
+		eb_root_owner = btrfs_header_owner(eb_root);
 		btrfs_tree_read_unlock(eb_root);
 		free_extent_buffer(eb_root);
 		eb = alloc_dummy_extent_buffer(logical, root->nodesize);
@@ -1459,7 +1461,7 @@ get_old_root(struct btrfs_root *root, u64 time_seq)
 	if (old_root) {
 		btrfs_set_header_bytenr(eb, eb->start);
 		btrfs_set_header_backref_rev(eb, BTRFS_MIXED_BACKREF_REV);
-		btrfs_set_header_owner(eb, btrfs_header_owner(eb_root));
+		btrfs_set_header_owner(eb, eb_root_owner);
 		btrfs_set_header_level(eb, old_root->level);
 		btrfs_set_header_generation(eb, old_generation);
 	}
@@ -1542,6 +1544,7 @@ noinline int btrfs_cow_block(struct btrfs_trans_handle *trans,
 		       trans->transid, root->fs_info->generation);
 
 	if (!should_cow_block(trans, root, buf)) {
+		trans->dirty = true;
 		*cow_ret = buf;
 		return 0;
 	}
@@ -2609,32 +2612,23 @@ static int key_search(struct extent_buffer *b, struct btrfs_key *key,
 	return 0;
 }
 
-int btrfs_find_item(struct btrfs_root *fs_root, struct btrfs_path *found_path,
+int btrfs_find_item(struct btrfs_root *fs_root, struct btrfs_path *path,
 		u64 iobjectid, u64 ioff, u8 key_type,
 		struct btrfs_key *found_key)
 {
 	int ret;
 	struct btrfs_key key;
 	struct extent_buffer *eb;
-	struct btrfs_path *path;
+
+	ASSERT(path);
 
 	key.type = key_type;
 	key.objectid = iobjectid;
 	key.offset = ioff;
 
-	if (found_path == NULL) {
-		path = btrfs_alloc_path();
-		if (!path)
-			return -ENOMEM;
-	} else
-		path = found_path;
-
 	ret = btrfs_search_slot(NULL, fs_root, &key, path, 0, 0);
-	if ((ret < 0) || (found_key == NULL)) {
-		if (path != found_path)
-			btrfs_free_path(path);
+	if ((ret < 0) || (found_key == NULL))
 		return ret;
-	}
 
 	eb = path->nodes[0];
 	if (ret && path->slots[0] >= btrfs_header_nritems(eb)) {
@@ -2766,13 +2760,17 @@ again:
 		 * contention with the cow code
 		 */
 		if (cow) {
+			bool last_level = (level == (BTRFS_MAX_LEVEL - 1));
+
 			/*
 			 * if we don't really need to cow this block
 			 * then we don't want to set the path blocking,
 			 * so we test it here
 			 */
-			if (!should_cow_block(trans, root, b))
+			if (!should_cow_block(trans, root, b)) {
+				trans->dirty = true;
 				goto cow_done;
+			}
 
 			/*
 			 * must have write locks on this node and the
@@ -2788,9 +2786,13 @@ again:
 			}
 
 			btrfs_set_path_blocking(p);
-			err = btrfs_cow_block(trans, root, b,
-					      p->nodes[level + 1],
-					      p->slots[level + 1], &b);
+			if (last_level)
+				err = btrfs_cow_block(trans, root, b, NULL, 0,
+						      &b);
+			else
+				err = btrfs_cow_block(trans, root, b,
+						      p->nodes[level + 1],
+						      p->slots[level + 1], &b);
 			if (err) {
 				ret = err;
 				goto done;
@@ -2929,7 +2931,7 @@ done:
 	 */
 	if (!p->leave_spinning)
 		btrfs_set_path_blocking(p);
-	if (ret < 0)
+	if (ret < 0 && !p->skip_release_on_error)
 		btrfs_release_path(p);
 	return ret;
 }
@@ -5431,6 +5433,7 @@ int btrfs_compare_trees(struct btrfs_root *left_root,
 	advance_left = advance_right = 0;
 
 	while (1) {
+		cond_resched();
 		if (advance_left && !left_end_reached) {
 			ret = tree_advance(left_root, left_path, &left_level,
 					left_root_level,

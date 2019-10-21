@@ -512,7 +512,7 @@ EXPORT_SYMBOL_GPL(xdr_commit_encode);
 static __be32 *xdr_get_next_encode_buffer(struct xdr_stream *xdr,
 		size_t nbytes)
 {
-	static __be32 *p;
+	__be32 *p;
 	int space_left;
 	int frag1bytes, frag2bytes;
 
@@ -606,7 +606,7 @@ void xdr_truncate_encode(struct xdr_stream *xdr, size_t len)
 	struct kvec *head = buf->head;
 	struct kvec *tail = buf->tail;
 	int fraglen;
-	int new, old;
+	int new;
 
 	if (len > buf->len) {
 		WARN_ON_ONCE(1);
@@ -628,8 +628,8 @@ void xdr_truncate_encode(struct xdr_stream *xdr, size_t len)
 	buf->len -= fraglen;
 
 	new = buf->page_base + buf->page_len;
-	old = new + fraglen;
-	xdr->page_ptr -= (old >> PAGE_SHIFT) - (new >> PAGE_SHIFT);
+
+	xdr->page_ptr = buf->pages + (new >> PAGE_SHIFT);
 
 	if (buf->page_len && buf->len == len) {
 		xdr->p = page_address(*xdr->page_ptr);
@@ -638,11 +638,10 @@ void xdr_truncate_encode(struct xdr_stream *xdr, size_t len)
 		/* xdr->iov should already be NULL */
 		return;
 	}
-	if (fraglen) {
+	if (fraglen)
 		xdr->end = head->iov_base + head->iov_len;
-		xdr->page_ptr--;
-	}
 	/* (otherwise assume xdr->end is already set) */
+	xdr->page_ptr--;
 	head->iov_len = len;
 	buf->len = len;
 	xdr->p = head->iov_base + head->iov_len;

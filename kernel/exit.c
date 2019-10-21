@@ -54,6 +54,8 @@
 #include <linux/writeback.h>
 #include <linux/shm.h>
 
+#include "sched/tune.h"
+
 #include <asm/uaccess.h>
 #include <asm/unistd.h>
 #include <asm/pgtable.h>
@@ -713,6 +715,9 @@ void do_exit(long code)
 	}
 
 	exit_signals(tsk);  /* sets PF_EXITING */
+
+	schedtune_exit_task(tsk);
+
 	/*
 	 * tsk->flags are checked in the futex code to protect against
 	 * an exiting task cleaning up the robust pi futexes.
@@ -930,17 +935,28 @@ static int eligible_pid(struct wait_opts *wo, struct task_struct *p)
 		task_pid_type(p, wo->wo_type) == wo->wo_pid;
 }
 
-static int eligible_child(struct wait_opts *wo, struct task_struct *p)
+static int
+eligible_child(struct wait_opts *wo, bool ptrace, struct task_struct *p)
 {
 	if (!eligible_pid(wo, p))
 		return 0;
-	/* Wait for all children (clone and not) if __WALL is set;
-	 * otherwise, wait for clone children *only* if __WCLONE is
-	 * set; otherwise, wait for non-clone children *only*.  (Note:
-	 * A "clone" child here is one that reports to its parent
-	 * using a signal other than SIGCHLD.) */
-	if (((p->exit_signal != SIGCHLD) ^ !!(wo->wo_flags & __WCLONE))
-	    && !(wo->wo_flags & __WALL))
+
+	/*
+	 * Wait for all children (clone and not) if __WALL is set or
+	 * if it is traced by us.
+	 */
+	if (ptrace || (wo->wo_flags & __WALL))
+		return 1;
+
+	/*
+	 * Otherwise, wait for clone children *only* if __WCLONE is set;
+	 * otherwise, wait for non-clone children *only*.
+	 *
+	 * Note: a "clone" child here is one that reports to its parent
+	 * using a signal other than SIGCHLD, or a non-leader thread which
+	 * we can only see if it is traced by us.
+	 */
+	if ((p->exit_signal != SIGCHLD) ^ !!(wo->wo_flags & __WCLONE))
 		return 0;
 
 	return 1;
@@ -1302,12 +1318,18 @@ static int wait_task_continued(struct wait_opts *wo, struct task_struct *p)
 static int wait_consider_task(struct wait_opts *wo, int ptrace,
 				struct task_struct *p)
 {
+	/*
+	 * We can race with wait_task_zombie() from another thread.
+	 * Ensure that EXIT_ZOMBIE -> EXIT_DEAD/EXIT_TRACE transition
+	 * can't confuse the checks below.
+	 */
+	int exit_state = ACCESS_ONCE(p->exit_state);
 	int ret;
 
-	if (unlikely(p->exit_state == EXIT_DEAD))
+	if (unlikely(exit_state == EXIT_DEAD))
 		return 0;
 
-	ret = eligible_child(wo, p);
+	ret = eligible_child(wo, ptrace, p);
 	if (!ret)
 		return ret;
 
@@ -1325,7 +1347,7 @@ static int wait_consider_task(struct wait_opts *wo, int ptrace,
 		return 0;
 	}
 
-	if (unlikely(p->exit_state == EXIT_TRACE)) {
+	if (unlikely(exit_state == EXIT_TRACE)) {
 		/*
 		 * ptrace == 0 means we are the natural parent. In this case
 		 * we should clear notask_error, debugger will notify us.
@@ -1352,7 +1374,7 @@ static int wait_consider_task(struct wait_opts *wo, int ptrace,
 	}
 
 	/* slay zombie? */
-	if (p->exit_state == EXIT_ZOMBIE) {
+	if (exit_state == EXIT_ZOMBIE) {
 		/* we don't reap group leaders with subthreads */
 		if (!delay_group_leader(p)) {
 			/*
@@ -1602,6 +1624,10 @@ SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
 	if (options & ~(WNOHANG|WUNTRACED|WCONTINUED|
 			__WNOTHREAD|__WCLONE|__WALL))
 		return -EINVAL;
+
+	/* -INT_MIN is not defined */
+	if (upid == INT_MIN)
+		return -ESRCH;
 
 	if (upid == -1)
 		type = PIDTYPE_MAX;

@@ -275,9 +275,6 @@
 #include <net/tcp.h>
 #include <net/xfrm.h>
 #include <net/ip.h>
-#include <net/ip6_route.h>
-#include <net/ipv6.h>
-#include <net/transp_v6.h>
 #include <net/sock.h>
 
 #include <asm/uaccess.h>
@@ -779,6 +776,12 @@ ssize_t tcp_splice_read(struct socket *sock, loff_t *ppos,
 				ret = -EAGAIN;
 				break;
 			}
+			/* if __tcp_splice_read() got nothing while we have
+			 * an skb in receive queue, we do not want to loop.
+			 * This might happen with URG data.
+			 */
+			if (!skb_queue_empty(&sk->sk_receive_queue))
+				break;
 			sk_wait_data(sk, &timeo);
 			if (signal_pending(current)) {
 				ret = sock_intr_errno(timeo);
@@ -943,7 +946,7 @@ new_segment:
 
 		i = skb_shinfo(skb)->nr_frags;
 		can_coalesce = skb_can_coalesce(skb, i, page, offset);
-		if (!can_coalesce && i >= MAX_SKB_FRAGS) {
+		if (!can_coalesce && i >= sysctl_max_skb_frags) {
 			tcp_mark_push(tp, skb);
 			goto new_segment;
 		}
@@ -1064,9 +1067,12 @@ static int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 				int *copied, size_t size)
 {
 	struct tcp_sock *tp = tcp_sk(sk);
+	struct sockaddr *uaddr = msg->msg_name;
 	int err, flags;
 
-	if (!(sysctl_tcp_fastopen & TFO_CLIENT_ENABLE))
+	if (!(sysctl_tcp_fastopen & TFO_CLIENT_ENABLE) ||
+	    (uaddr && msg->msg_namelen >= sizeof(uaddr->sa_family) &&
+	     uaddr->sa_family == AF_UNSPEC))
 		return -EOPNOTSUPP;
 	if (tp->fastopen_req != NULL)
 		return -EALREADY; /* Another Fast Open is in progress */
@@ -1079,7 +1085,7 @@ static int tcp_sendmsg_fastopen(struct sock *sk, struct msghdr *msg,
 	tp->fastopen_req->size = size;
 
 	flags = (msg->msg_flags & MSG_DONTWAIT) ? O_NONBLOCK : 0;
-	err = __inet_stream_connect(sk->sk_socket, msg->msg_name,
+	err = __inet_stream_connect(sk->sk_socket, uaddr,
 				    msg->msg_namelen, flags);
 	*copied = tp->fastopen_req->copied;
 	tcp_free_fastopen_req(tp);
@@ -1100,7 +1106,7 @@ int tcp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	lock_sock(sk);
 
 	flags = msg->msg_flags;
-	if (flags & MSG_FASTOPEN) {
+	if ((flags & MSG_FASTOPEN) && !tp->repair) {
 		err = tcp_sendmsg_fastopen(sk, msg, &copied_syn, size);
 		if (err == -EINPROGRESS && copied_syn > 0)
 			goto out;
@@ -1229,7 +1235,7 @@ new_segment:
 
 				if (!skb_can_coalesce(skb, i, pfrag->page,
 						      pfrag->offset)) {
-					if (i == MAX_SKB_FRAGS || !sg) {
+					if (i == sysctl_max_skb_frags || !sg) {
 						tcp_mark_push(tp, skb);
 						goto new_segment;
 					}
@@ -1303,6 +1309,9 @@ out:
 out_nopush:
 	release_sock(sk);
 
+	if (copied + copied_syn)
+		uid_stat_tcp_snd(from_kuid(&init_user_ns, current_uid()),
+				 copied + copied_syn);
 	return copied + copied_syn;
 
 do_fault:
@@ -1574,6 +1583,8 @@ int tcp_read_sock(struct sock *sk, read_descriptor_t *desc,
 	if (copied > 0) {
 		tcp_recv_skb(sk, seq, &offset);
 		tcp_cleanup_rbuf(sk, copied);
+		uid_stat_tcp_rcv(from_kuid(&init_user_ns, current_uid()),
+				 copied);
 	}
 	return copied;
 }
@@ -1664,7 +1675,7 @@ int tcp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			 * shouldn't happen.
 			 */
 			if (WARN(before(*seq, TCP_SKB_CB(skb)->seq),
-				 "recvmsg bug: copied %X seq %X rcvnxt %X fl %X\n",
+				 "TCP recvmsg seq # bug: copied %X, seq %X, rcvnxt %X, fl %X\n",
 				 *seq, TCP_SKB_CB(skb)->seq, tp->rcv_nxt,
 				 flags))
 				break;
@@ -1677,7 +1688,7 @@ int tcp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			if (TCP_SKB_CB(skb)->tcp_flags & TCPHDR_FIN)
 				goto found_fin_ok;
 			WARN(!(flags & MSG_PEEK),
-			     "recvmsg bug 2: copied %X seq %X rcvnxt %X fl %X\n",
+			     "TCP recvmsg seq # bug 2: copied %X, seq %X, rcvnxt %X, fl %X\n",
 			     *seq, TCP_SKB_CB(skb)->seq, tp->rcv_nxt, flags);
 		}
 
@@ -1903,6 +1914,10 @@ skip_copy:
 	tcp_cleanup_rbuf(sk, copied);
 
 	release_sock(sk);
+
+	if (copied > 0)
+		uid_stat_tcp_rcv(from_kuid(&init_user_ns, current_uid()),
+				 copied);
 	return copied;
 
 out:
@@ -1911,6 +1926,9 @@ out:
 
 recv_urg:
 	err = tcp_recv_urg(sk, msg, len, flags);
+	if (err > 0)
+		uid_stat_tcp_rcv(from_kuid(&init_user_ns, current_uid()),
+				 err);
 	goto out;
 
 recv_sndq:
@@ -2178,6 +2196,9 @@ adjudge_to_death:
 			tcp_send_active_reset(sk, GFP_ATOMIC);
 			NET_INC_STATS_BH(sock_net(sk),
 					LINUX_MIB_TCPABORTONMEMORY);
+		} else if (!check_net(sock_net(sk))) {
+			/* Not possible to send reset; just close */
+			tcp_set_state(sk, TCP_CLOSE);
 		}
 	}
 
@@ -2251,7 +2272,6 @@ int tcp_disconnect(struct sock *sk, int flags)
 	tp->srtt_us = 0;
 	if ((tp->write_seq += tp->max_window + 2) == 0)
 		tp->write_seq = 1;
-	icsk->icsk_backoff = 0;
 	tp->snd_cwnd = 2;
 	icsk->icsk_probes_out = 0;
 	tp->packets_out = 0;
@@ -2261,11 +2281,23 @@ int tcp_disconnect(struct sock *sk, int flags)
 	tcp_set_ca_state(sk, TCP_CA_Open);
 	tcp_clear_retrans(tp);
 	inet_csk_delack_init(sk);
+	/* Initialize rcv_mss to TCP_MIN_MSS to avoid division by 0
+	 * issue in __tcp_select_window()
+	 */
+	icsk->icsk_ack.rcv_mss = TCP_MIN_MSS;
 	tcp_init_send_head(sk);
 	memset(&tp->rx_opt, 0, sizeof(tp->rx_opt));
 	__sk_dst_reset(sk);
+	dst_release(sk->sk_rx_dst);
+	sk->sk_rx_dst = NULL;
 
 	WARN_ON(inet->inet_num && !icsk->icsk_bind_hash);
+
+	if (sk->sk_frag.page) {
+		put_page(sk->sk_frag.page);
+		sk->sk_frag.page = NULL;
+		sk->sk_frag.offset = 0;
+	}
 
 	sk->sk_error_report(sk);
 	return err;
@@ -2442,7 +2474,7 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 	case TCP_REPAIR_QUEUE:
 		if (!tp->repair)
 			err = -EPERM;
-		else if (val < TCP_QUEUES_NR)
+		else if ((unsigned int)val < TCP_QUEUES_NR)
 			tp->repair_queue = val;
 		else
 			err = -EINVAL;
@@ -2574,8 +2606,10 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 
 #ifdef CONFIG_TCP_MD5SIG
 	case TCP_MD5SIG:
-		/* Read the IP->Key mappings from userspace */
-		err = tp->af_specific->md5_parse(sk, optval, optlen);
+		if ((1 << sk->sk_state) & (TCPF_CLOSE | TCPF_LISTEN))
+			err = tp->af_specific->md5_parse(sk, optval, optlen);
+		else
+			err = -EINVAL;
 		break;
 #endif
 	case TCP_USER_TIMEOUT:
@@ -2590,10 +2624,13 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
 
 	case TCP_FASTOPEN:
 		if (val >= 0 && ((1 << sk->sk_state) & (TCPF_CLOSE |
-		    TCPF_LISTEN)))
+		    TCPF_LISTEN))) {
+			tcp_fastopen_init_key_once(true);
+
 			err = fastopen_init_queue(sk, val);
-		else
+		} else {
 			err = -EINVAL;
+		}
 		break;
 	case TCP_TIMESTAMP:
 		if (!tp->repair)
@@ -2644,6 +2681,7 @@ void tcp_get_info(const struct sock *sk, struct tcp_info *info)
 	const struct tcp_sock *tp = tcp_sk(sk);
 	const struct inet_connection_sock *icsk = inet_csk(sk);
 	u32 now = tcp_time_stamp;
+	u32 rate;
 
 	memset(info, 0, sizeof(*info));
 
@@ -2704,10 +2742,11 @@ void tcp_get_info(const struct sock *sk, struct tcp_info *info)
 
 	info->tcpi_total_retrans = tp->total_retrans;
 
-	info->tcpi_pacing_rate = sk->sk_pacing_rate != ~0U ?
-					sk->sk_pacing_rate : ~0ULL;
-	info->tcpi_max_pacing_rate = sk->sk_max_pacing_rate != ~0U ?
-					sk->sk_max_pacing_rate : ~0ULL;
+	rate = READ_ONCE(sk->sk_pacing_rate);
+	info->tcpi_pacing_rate = rate != ~0U ? rate : ~0ULL;
+
+	rate = READ_ONCE(sk->sk_max_pacing_rate);
+	info->tcpi_max_pacing_rate = rate != ~0U ? rate : ~0ULL;
 }
 EXPORT_SYMBOL_GPL(tcp_get_info);
 
@@ -3021,6 +3060,43 @@ void tcp_done(struct sock *sk)
 }
 EXPORT_SYMBOL_GPL(tcp_done);
 
+int tcp_abort(struct sock *sk, int err)
+{
+	if (!sk_fullsock(sk)) {
+		sock_gen_put(sk);
+		return -EOPNOTSUPP;
+	}
+
+	/* Don't race with userspace socket closes such as tcp_close. */
+	lock_sock(sk);
+
+	if (sk->sk_state == TCP_LISTEN) {
+		tcp_set_state(sk, TCP_CLOSE);
+		inet_csk_listen_stop(sk);
+	}
+
+	/* Don't race with BH socket closes such as inet_csk_listen_stop. */
+	local_bh_disable();
+	bh_lock_sock(sk);
+
+	if (!sock_flag(sk, SOCK_DEAD)) {
+		sk->sk_err = err;
+		/* This barrier is coupled with smp_rmb() in tcp_poll() */
+		smp_wmb();
+		sk->sk_error_report(sk);
+		if (tcp_need_reset(sk->sk_state))
+			tcp_send_active_reset(sk, GFP_ATOMIC);
+		tcp_done(sk);
+	}
+
+	bh_unlock_sock(sk);
+	local_bh_enable();
+	release_sock(sk);
+	sock_put(sk);
+	return 0;
+}
+EXPORT_SYMBOL_GPL(tcp_abort);
+
 extern struct tcp_congestion_ops tcp_reno;
 
 static __initdata unsigned long thash_entries;
@@ -3055,6 +3131,7 @@ void __init tcp_init(void)
 	int max_rshare, max_wshare, cnt;
 	unsigned int i;
 
+	BUILD_BUG_ON(TCP_MIN_SND_MSS <= MAX_TCP_OPTION_SPACE);
 	BUILD_BUG_ON(sizeof(struct tcp_skb_cb) > sizeof(skb->cb));
 
 	percpu_counter_init(&tcp_sockets_allocated, 0, GFP_KERNEL);

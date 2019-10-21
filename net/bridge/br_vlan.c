@@ -199,8 +199,8 @@ bool br_allowed_ingress(struct net_bridge *br, struct net_port_vlans *v,
 		if (skb->vlan_proto != proto) {
 			/* Protocol-mismatch, empty out vlan_tci for new tag */
 			skb_push(skb, ETH_HLEN);
-			skb = __vlan_put_tag(skb, skb->vlan_proto,
-					     vlan_tx_tag_get(skb));
+			skb = vlan_insert_tag_set_proto(skb, skb->vlan_proto,
+							vlan_tx_tag_get(skb));
 			if (unlikely(!skb))
 				return false;
 
@@ -360,6 +360,12 @@ void br_vlan_flush(struct net_bridge *br)
 	struct net_port_vlans *pv;
 
 	ASSERT_RTNL();
+
+	/* delete auto-added default pvid local fdb before flushing vlans
+	 * otherwise it will be leaked on bridge device init failure
+	 */
+	br_fdb_delete_by_port(br, NULL, 1);
+
 	pv = rtnl_dereference(br->vlan_info);
 	if (!pv)
 		return;

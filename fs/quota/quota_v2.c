@@ -117,12 +117,16 @@ static int v2_read_file_info(struct super_block *sb, int type)
 	qinfo = info->dqi_priv;
 	if (version == 0) {
 		/* limits are stored as unsigned 32-bit data */
-		info->dqi_maxblimit = 0xffffffff;
-		info->dqi_maxilimit = 0xffffffff;
+		info->dqi_max_spc_limit = 0xffffffffLL << QUOTABLOCK_BITS;
+		info->dqi_max_ino_limit = 0xffffffff;
 	} else {
-		/* used space is stored as unsigned 64-bit value */
-		info->dqi_maxblimit = 0xffffffffffffffffULL;	/* 2^64-1 */
-		info->dqi_maxilimit = 0xffffffffffffffffULL;
+		/*
+		 * Used space is stored as unsigned 64-bit value in bytes but
+		 * quota core supports only signed 64-bit values so use that
+		 * as a limit
+		 */
+		info->dqi_max_spc_limit = 0x7fffffffffffffffLL; /* 2^63-1 */
+		info->dqi_max_ino_limit = 0x7fffffffffffffffLL;
 	}
 	info->dqi_bgrace = le32_to_cpu(dinfo.dqi_bgrace);
 	info->dqi_igrace = le32_to_cpu(dinfo.dqi_igrace);

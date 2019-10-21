@@ -106,8 +106,6 @@ int vmw_getparam_ioctl(struct drm_device *dev, void *data,
 		param->value = dev_priv->max_mob_size;
 		break;
 	default:
-		DRM_ERROR("Illegal vmwgfx get param request: %d\n",
-			  param->param);
 		return -EINVAL;
 	}
 
@@ -135,13 +133,13 @@ static int vmw_fill_compat_cap(struct vmw_private *dev_priv, void *bounce,
 		(pair_offset + max_size * sizeof(SVGA3dCapPair)) / sizeof(u32);
 	compat_cap->header.type = SVGA3DCAPS_RECORD_DEVCAPS;
 
-	mutex_lock(&dev_priv->hw_mutex);
+	spin_lock(&dev_priv->cap_lock);
 	for (i = 0; i < max_size; ++i) {
 		vmw_write(dev_priv, SVGA_REG_DEV_CAP, i);
 		compat_cap->pairs[i][0] = i;
 		compat_cap->pairs[i][1] = vmw_read(dev_priv, SVGA_REG_DEV_CAP);
 	}
-	mutex_unlock(&dev_priv->hw_mutex);
+	spin_unlock(&dev_priv->cap_lock);
 
 	return 0;
 }
@@ -161,7 +159,7 @@ int vmw_get_cap_3d_ioctl(struct drm_device *dev, void *data,
 	bool gb_objects = !!(dev_priv->capabilities & SVGA_CAP_GBOBJECTS);
 	struct vmw_fpriv *vmw_fp = vmw_fpriv(file_priv);
 
-	if (unlikely(arg->pad64 != 0)) {
+	if (unlikely(arg->pad64 != 0 || arg->max_size == 0)) {
 		DRM_ERROR("Illegal GET_3D_CAP argument.\n");
 		return -EINVAL;
 	}
@@ -191,12 +189,12 @@ int vmw_get_cap_3d_ioctl(struct drm_device *dev, void *data,
 		if (num > SVGA3D_DEVCAP_MAX)
 			num = SVGA3D_DEVCAP_MAX;
 
-		mutex_lock(&dev_priv->hw_mutex);
+		spin_lock(&dev_priv->cap_lock);
 		for (i = 0; i < num; ++i) {
 			vmw_write(dev_priv, SVGA_REG_DEV_CAP, i);
 			*bounce32++ = vmw_read(dev_priv, SVGA_REG_DEV_CAP);
 		}
-		mutex_unlock(&dev_priv->hw_mutex);
+		spin_unlock(&dev_priv->cap_lock);
 	} else if (gb_objects) {
 		ret = vmw_fill_compat_cap(dev_priv, bounce, size);
 		if (unlikely(ret != 0))

@@ -1221,8 +1221,7 @@ static int mlx4_ib_mcg_attach(struct ib_qp *ibqp, union ib_gid *gid, u16 lid)
 	struct mlx4_ib_qp *mqp = to_mqp(ibqp);
 	u64 reg_id;
 	struct mlx4_ib_steering *ib_steering = NULL;
-	enum mlx4_protocol prot = (gid->raw[1] == 0x0e) ?
-		MLX4_PROT_IB_IPV4 : MLX4_PROT_IB_IPV6;
+	enum mlx4_protocol prot = MLX4_PROT_IB_IPV6;
 
 	if (mdev->dev->caps.steering_mode ==
 	    MLX4_STEERING_MODE_DEVICE_MANAGED) {
@@ -1235,8 +1234,10 @@ static int mlx4_ib_mcg_attach(struct ib_qp *ibqp, union ib_gid *gid, u16 lid)
 				    !!(mqp->flags &
 				       MLX4_IB_QP_BLOCK_MULTICAST_LOOPBACK),
 				    prot, &reg_id);
-	if (err)
+	if (err) {
+		pr_err("multicast attach op failed, err %d\n", err);
 		goto err_malloc;
+	}
 
 	err = add_gid_entry(ibqp, gid);
 	if (err)
@@ -1284,8 +1285,7 @@ static int mlx4_ib_mcg_detach(struct ib_qp *ibqp, union ib_gid *gid, u16 lid)
 	struct net_device *ndev;
 	struct mlx4_ib_gid_entry *ge;
 	u64 reg_id = 0;
-	enum mlx4_protocol prot = (gid->raw[1] == 0x0e) ?
-		MLX4_PROT_IB_IPV4 : MLX4_PROT_IB_IPV6;
+	enum mlx4_protocol prot =  MLX4_PROT_IB_IPV6;
 
 	if (mdev->dev->caps.steering_mode ==
 	    MLX4_STEERING_MODE_DEVICE_MANAGED) {
@@ -2348,15 +2348,15 @@ err_steer_free_bitmap:
 	kfree(ibdev->ib_uc_qpns_bitmap);
 
 err_steer_qp_release:
-	if (ibdev->steering_support == MLX4_STEERING_MODE_DEVICE_MANAGED)
-		mlx4_qp_release_range(dev, ibdev->steer_qpn_base,
-				      ibdev->steer_qpn_count);
+	mlx4_qp_release_range(dev, ibdev->steer_qpn_base,
+			      ibdev->steer_qpn_count);
 err_counter:
 	for (; i; --i)
 		if (ibdev->counters[i - 1] != -1)
 			mlx4_counter_free(ibdev->dev, ibdev->counters[i - 1]);
 
 err_map:
+	mlx4_ib_free_eqs(dev, ibdev);
 	iounmap(ibdev->uar_map);
 
 err_uar:
@@ -2451,11 +2451,9 @@ static void mlx4_ib_remove(struct mlx4_dev *dev, void *ibdev_ptr)
 		ibdev->iboe.nb.notifier_call = NULL;
 	}
 
-	if (ibdev->steering_support == MLX4_STEERING_MODE_DEVICE_MANAGED) {
-		mlx4_qp_release_range(dev, ibdev->steer_qpn_base,
-				      ibdev->steer_qpn_count);
-		kfree(ibdev->ib_uc_qpns_bitmap);
-	}
+	mlx4_qp_release_range(dev, ibdev->steer_qpn_base,
+			      ibdev->steer_qpn_count);
+	kfree(ibdev->ib_uc_qpns_bitmap);
 
 	if (ibdev->iboe.nb_inet.notifier_call) {
 		if (unregister_inetaddr_notifier(&ibdev->iboe.nb_inet))

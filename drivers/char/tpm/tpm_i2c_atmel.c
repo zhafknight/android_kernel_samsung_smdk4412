@@ -65,7 +65,15 @@ static int i2c_atmel_send(struct tpm_chip *chip, u8 *buf, size_t len)
 	dev_dbg(chip->dev,
 		"%s(buf=%*ph len=%0zx) -> sts=%d\n", __func__,
 		(int)min_t(size_t, 64, len), buf, len, status);
-	return status;
+
+	if (status < 0)
+		return status;
+
+	/* The upper layer does not support incomplete sends. */
+	if (status != len)
+		return -E2BIG;
+
+	return 0;
 }
 
 static int i2c_atmel_recv(struct tpm_chip *chip, u8 *buf, size_t count)
@@ -168,6 +176,10 @@ static int i2c_atmel_probe(struct i2c_client *client,
 
 	chip->vendor.priv = devm_kzalloc(dev, sizeof(struct priv_data),
 					 GFP_KERNEL);
+	if (!chip->vendor.priv) {
+		rc = -ENOMEM;
+		goto out_err;
+	}
 
 	/* Default timeouts */
 	chip->vendor.timeout_a = msecs_to_jiffies(TPM_I2C_SHORT_TIMEOUT);

@@ -3219,13 +3219,6 @@ again:
 		goto again;
 	}
 
-	/* We've already setup this transaction, go ahead and exit */
-	if (block_group->cache_generation == trans->transid &&
-	    i_size_read(inode)) {
-		dcs = BTRFS_DC_SETUP;
-		goto out_put;
-	}
-
 	/*
 	 * We want to set the generation to 0, that way if anything goes wrong
 	 * from here on out we know not to trust this cache when we load up next
@@ -3234,6 +3227,13 @@ again:
 	BTRFS_I(inode)->generation = 0;
 	ret = btrfs_update_inode(trans, root, inode);
 	WARN_ON(ret);
+
+	/* We've already setup this transaction, go ahead and exit */
+	if (block_group->cache_generation == trans->transid &&
+	    i_size_read(inode)) {
+		dcs = BTRFS_DC_SETUP;
+		goto out_put;
+	}
 
 	if (i_size_read(inode) > 0) {
 		ret = btrfs_check_trunc_cache_free_space(root,
@@ -3509,6 +3509,7 @@ static int update_space_info(struct btrfs_fs_info *info, u64 flags,
 				    info->space_info_kobj, "%s",
 				    alloc_name(found->flags));
 	if (ret) {
+		percpu_counter_destroy(&found->total_bytes_pinned);
 		kfree(found);
 		return ret;
 	}
@@ -3945,6 +3946,7 @@ again:
 	if (wait_for_alloc) {
 		mutex_unlock(&fs_info->chunk_mutex);
 		wait_for_alloc = 0;
+		cond_resched();
 		goto again;
 	}
 
@@ -4279,7 +4281,7 @@ static int flush_space(struct btrfs_root *root,
 		break;
 	}
 
-	return ret;
+	return 0;
 }
 
 static inline u64
@@ -5715,7 +5717,8 @@ void btrfs_prepare_extent_commit(struct btrfs_trans_handle *trans,
 	update_global_block_rsv(fs_info);
 }
 
-static int unpin_extent_range(struct btrfs_root *root, u64 start, u64 end)
+static int unpin_extent_range(struct btrfs_root *root, u64 start, u64 end,
+			      const bool return_free_space)
 {
 	struct btrfs_fs_info *fs_info = root->fs_info;
 	struct btrfs_block_group_cache *cache = NULL;
@@ -5739,7 +5742,8 @@ static int unpin_extent_range(struct btrfs_root *root, u64 start, u64 end)
 
 		if (start < cache->last_byte_to_unpin) {
 			len = min(len, cache->last_byte_to_unpin - start);
-			btrfs_add_free_space(cache, start, len);
+			if (return_free_space)
+				btrfs_add_free_space(cache, start, len);
 		}
 
 		start += len;
@@ -5803,7 +5807,7 @@ int btrfs_finish_extent_commit(struct btrfs_trans_handle *trans,
 						   end + 1 - start, NULL);
 
 		clear_extent_dirty(unpin, start, end, GFP_NOFS);
-		unpin_extent_range(root, start, end);
+		unpin_extent_range(root, start, end, true);
 		cond_resched();
 	}
 
@@ -6953,12 +6957,11 @@ static int __btrfs_free_reserved_extent(struct btrfs_root *root,
 		return -ENOSPC;
 	}
 
-	if (btrfs_test_opt(root, DISCARD))
-		ret = btrfs_discard_extent(root, start, len, NULL);
-
 	if (pin)
 		pin_down_extent(root, cache, start, len, 1);
 	else {
+		if (btrfs_test_opt(root, DISCARD))
+			ret = btrfs_discard_extent(root, start, len, NULL);
 		btrfs_add_free_space(cache, start, len);
 		btrfs_update_reserved_bytes(cache, len, RESERVE_FREE, delalloc);
 	}
@@ -7236,7 +7239,7 @@ btrfs_init_new_buffer(struct btrfs_trans_handle *trans, struct btrfs_root *root,
 		set_extent_dirty(&trans->transaction->dirty_pages, buf->start,
 			 buf->start + buf->len - 1, GFP_NOFS);
 	}
-	trans->blocks_used++;
+	trans->dirty = true;
 	/* this returns a buffer locked for blocking */
 	return buf;
 }
@@ -9195,9 +9198,8 @@ void btrfs_create_pending_block_groups(struct btrfs_trans_handle *trans,
 	int ret = 0;
 
 	list_for_each_entry_safe(block_group, tmp, &trans->new_bgs, bg_list) {
-		list_del_init(&block_group->bg_list);
 		if (ret)
-			continue;
+			goto next;
 
 		spin_lock(&block_group->lock);
 		memcpy(&item, &block_group->item, sizeof(item));
@@ -9212,6 +9214,8 @@ void btrfs_create_pending_block_groups(struct btrfs_trans_handle *trans,
 					       key.objectid, key.offset);
 		if (ret)
 			btrfs_abort_transaction(trans, extent_root, ret);
+next:
+		list_del_init(&block_group->bg_list);
 	}
 }
 
@@ -9483,7 +9487,7 @@ void btrfs_delete_unused_bgs(struct btrfs_fs_info *fs_info)
 		/* Don't want to race with allocators so take the groups_sem */
 		down_write(&space_info->groups_sem);
 		spin_lock(&block_group->lock);
-		if (block_group->reserved ||
+		if (block_group->reserved || block_group->pinned ||
 		    btrfs_block_group_used(&block_group->item) ||
 		    block_group->ro) {
 			/*
@@ -9585,7 +9589,7 @@ out:
 
 int btrfs_error_unpin_extent_range(struct btrfs_root *root, u64 start, u64 end)
 {
-	return unpin_extent_range(root, start, end);
+	return unpin_extent_range(root, start, end, false);
 }
 
 int btrfs_error_discard_extent(struct btrfs_root *root, u64 bytenr,

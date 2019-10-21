@@ -108,8 +108,14 @@ struct perf_session *perf_session__new(struct perf_data_file *file,
 			if (perf_session__open(session) < 0)
 				goto out_close;
 
-			perf_session__set_id_hdr_size(session);
-			perf_session__set_comm_exec(session);
+			/*
+			 * set session attributes that are present in perf.data
+			 * but not in pipe-mode.
+			 */
+			if (!file->is_pipe) {
+				perf_session__set_id_hdr_size(session);
+				perf_session__set_comm_exec(session);
+			}
 		}
 	}
 
@@ -122,7 +128,11 @@ struct perf_session *perf_session__new(struct perf_data_file *file,
 			pr_warning("Cannot read kernel map\n");
 	}
 
-	if (tool && tool->ordering_requires_timestamps &&
+	/*
+	 * In pipe-mode, evlist is empty until PERF_RECORD_HEADER_ATTR is
+	 * processed, so perf_evlist__sample_id_all is not meaningful here.
+	 */
+	if ((!file || !file->is_pipe) && tool && tool->ordering_requires_timestamps &&
 	    tool->ordered_events && !perf_evlist__sample_id_all(session->evlist)) {
 		dump_printf("WARNING: No sample_id_all support, falling back to unordered processing\n");
 		tool->ordered_events = false;
@@ -521,15 +531,11 @@ int perf_session_queue_event(struct perf_session *s, union perf_event *event,
 		return -ETIME;
 
 	if (timestamp < oe->last_flush) {
-		WARN_ONCE(1, "Timestamp below last timeslice flush\n");
-
-		pr_oe_time(timestamp,      "out of order event");
+		pr_oe_time(timestamp,      "out of order event\n");
 		pr_oe_time(oe->last_flush, "last flush, last_flush_type %d\n",
 			   oe->last_flush_type);
 
-		/* We could get out of order messages after forced flush. */
-		if (oe->last_flush_type != OE_FLUSH__HALF)
-			return -EINVAL;
+		s->stats.nr_unordered_events++;
 	}
 
 	new = ordered_events__new(oe, timestamp, event);
@@ -1057,6 +1063,9 @@ static void perf_session__warn_about_errors(const struct perf_session *session,
 			    "Do you have a KVM guest running and not using 'perf kvm'?\n",
 			    session->stats.nr_unprocessable_samples);
 	}
+
+	if (session->stats.nr_unordered_events != 0)
+		ui__warning("%u out of order events recorded.\n", session->stats.nr_unordered_events);
 }
 
 volatile int session_done;
@@ -1064,6 +1073,7 @@ volatile int session_done;
 static int __perf_session__process_pipe_events(struct perf_session *session,
 					       struct perf_tool *tool)
 {
+	struct ordered_events *oe = &session->ordered_events;
 	int fd = perf_data_file__fd(session->file);
 	union perf_event *event;
 	uint32_t size, cur_size = 0;
@@ -1081,6 +1091,7 @@ static int __perf_session__process_pipe_events(struct perf_session *session,
 	buf = malloc(cur_size);
 	if (!buf)
 		return -errno;
+	ordered_events__set_copy_on_queue(oe, true);
 more:
 	event = buf;
 	err = readn(fd, event, sizeof(struct perf_event_header));

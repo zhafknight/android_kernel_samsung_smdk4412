@@ -508,7 +508,7 @@ struct neighbour *__neigh_create(struct neigh_table *tbl, const void *pkey,
 	if (atomic_read(&tbl->entries) > (1 << nht->hash_shift))
 		nht = neigh_hash_grow(tbl, nht->hash_shift + 1);
 
-	hash_val = tbl->hash(pkey, dev, nht->hash_rnd) >> (32 - nht->hash_shift);
+	hash_val = tbl->hash(n->primary_key, dev, nht->hash_rnd) >> (32 - nht->hash_shift);
 
 	if (n->parms->dead) {
 		rc = ERR_PTR(-EINVAL);
@@ -520,7 +520,7 @@ struct neighbour *__neigh_create(struct neigh_table *tbl, const void *pkey,
 	     n1 != NULL;
 	     n1 = rcu_dereference_protected(n1->next,
 			lockdep_is_held(&tbl->lock))) {
-		if (dev == n1->dev && !memcmp(n1->primary_key, pkey, key_len)) {
+		if (dev == n1->dev && !memcmp(n1->primary_key, n->primary_key, key_len)) {
 			if (want_ref)
 				neigh_hold(n1);
 			rc = n1;
@@ -875,7 +875,8 @@ static void neigh_probe(struct neighbour *neigh)
 	if (skb)
 		skb = skb_copy(skb, GFP_ATOMIC);
 	write_unlock(&neigh->lock);
-	neigh->ops->solicit(neigh, skb);
+	if (neigh->ops->solicit)
+		neigh->ops->solicit(neigh, skb);
 	atomic_inc(&neigh->probes);
 	kfree_skb(skb);
 }
@@ -933,6 +934,7 @@ static void neigh_timer_handler(unsigned long arg)
 			neigh->nud_state = NUD_PROBE;
 			neigh->updated = jiffies;
 			atomic_set(&neigh->probes, 0);
+			notify = 1;
 			next = now + NEIGH_VAR(neigh->parms, RETRANS_TIME);
 		}
 	} else {
@@ -977,6 +979,8 @@ int __neigh_event_send(struct neighbour *neigh, struct sk_buff *skb)
 	rc = 0;
 	if (neigh->nud_state & (NUD_CONNECTED | NUD_DELAY | NUD_PROBE))
 		goto out_unlock_bh;
+	if (neigh->dead)
+		goto out_dead;
 
 	if (!(neigh->nud_state & (NUD_STALE | NUD_INCOMPLETE))) {
 		if (NEIGH_VAR(neigh->parms, MCAST_PROBES) +
@@ -985,6 +989,7 @@ int __neigh_event_send(struct neighbour *neigh, struct sk_buff *skb)
 
 			atomic_set(&neigh->probes,
 				   NEIGH_VAR(neigh->parms, UCAST_PROBES));
+			neigh_del_timer(neigh);
 			neigh->nud_state     = NUD_INCOMPLETE;
 			neigh->updated = now;
 			next = now + max(NEIGH_VAR(neigh->parms, RETRANS_TIME),
@@ -1001,6 +1006,7 @@ int __neigh_event_send(struct neighbour *neigh, struct sk_buff *skb)
 		}
 	} else if (neigh->nud_state & NUD_STALE) {
 		neigh_dbg(2, "neigh %p is delayed\n", neigh);
+		neigh_del_timer(neigh);
 		neigh->nud_state = NUD_DELAY;
 		neigh->updated = jiffies;
 		neigh_add_timer(neigh, jiffies +
@@ -1033,6 +1039,13 @@ out_unlock_bh:
 		write_unlock(&neigh->lock);
 	local_bh_enable();
 	return rc;
+
+out_dead:
+	if (neigh->nud_state & NUD_STALE)
+		goto out_unlock_bh;
+	write_unlock_bh(&neigh->lock);
+	kfree_skb(skb);
+	return 1;
 }
 EXPORT_SYMBOL(__neigh_event_send);
 
@@ -1096,6 +1109,8 @@ int neigh_update(struct neighbour *neigh, const u8 *lladdr, u8 new,
 	if (!(flags & NEIGH_UPDATE_F_ADMIN) &&
 	    (old & (NUD_NOARP | NUD_PERMANENT)))
 		goto out;
+	if (neigh->dead)
+		goto out;
 
 	if (!(new & NUD_VALID)) {
 		neigh_del_timer(neigh);
@@ -1135,9 +1150,11 @@ int neigh_update(struct neighbour *neigh, const u8 *lladdr, u8 new,
 		lladdr = neigh->ha;
 	}
 
+	/* Update confirmed timestamp for neighbour entry after we
+	 * received ARP packet even if it doesn't change IP to MAC binding.
+	 */
 	if (new & NUD_CONNECTED)
 		neigh->confirmed = jiffies;
-	neigh->updated = jiffies;
 
 	/* If entry was valid and address is not changed,
 	   do not change entry state, if new one is STALE.
@@ -1162,8 +1179,17 @@ int neigh_update(struct neighbour *neigh, const u8 *lladdr, u8 new,
 		}
 	}
 
+	/* Update timestamp only once we know we will make a change to the
+	 * neighbour entry. Otherwise we risk to move the locktime window with
+	 * noop updates and ignore relevant ARP updates.
+	 */
+	if (new != old || lladdr != neigh->ha)
+		neigh->updated = jiffies;
+
 	if (new != old) {
 		neigh_del_timer(neigh);
+		if (new & NUD_PROBE)
+			atomic_set(&neigh->probes, 0);
 		if (new & NUD_IN_TIMER)
 			neigh_add_timer(neigh, (jiffies +
 						((new & NUD_REACHABLE) ?
@@ -1245,6 +1271,8 @@ EXPORT_SYMBOL(neigh_update);
  */
 void __neigh_set_probe_once(struct neighbour *neigh)
 {
+	if (neigh->dead)
+		return;
 	neigh->updated = jiffies;
 	if (!(neigh->nud_state & NUD_FAILED))
 		return;
@@ -2250,7 +2278,7 @@ static int pneigh_fill_info(struct sk_buff *skb, struct pneigh_entry *pn,
 	ndm->ndm_pad2    = 0;
 	ndm->ndm_flags	 = pn->flags | NTF_PROXY;
 	ndm->ndm_type	 = RTN_UNICAST;
-	ndm->ndm_ifindex = pn->dev->ifindex;
+	ndm->ndm_ifindex = pn->dev ? pn->dev->ifindex : 0;
 	ndm->ndm_state	 = NUD_NONE;
 
 	if (nla_put(skb, NDA_DST, tbl->key_len, pn->key))
@@ -2324,7 +2352,7 @@ static int pneigh_dump_table(struct neigh_table *tbl, struct sk_buff *skb,
 		if (h > s_h)
 			s_idx = 0;
 		for (n = tbl->phash_buckets[h], idx = 0; n; n = n->next) {
-			if (dev_net(n->dev) != net)
+			if (pneigh_net(n) != net)
 				continue;
 			if (idx < s_idx)
 				goto next;
@@ -2628,6 +2656,7 @@ static void *neigh_get_idx_any(struct seq_file *seq, loff_t *pos)
 }
 
 void *neigh_seq_start(struct seq_file *seq, loff_t *pos, struct neigh_table *tbl, unsigned int neigh_seq_flags)
+	__acquires(tbl->lock)
 	__acquires(rcu_bh)
 {
 	struct neigh_seq_state *state = seq->private;
@@ -2638,6 +2667,7 @@ void *neigh_seq_start(struct seq_file *seq, loff_t *pos, struct neigh_table *tbl
 
 	rcu_read_lock_bh();
 	state->nht = rcu_dereference_bh(tbl->nht);
+	read_lock(&tbl->lock);
 
 	return *pos ? neigh_get_idx_any(seq, pos) : SEQ_START_TOKEN;
 }
@@ -2671,8 +2701,13 @@ out:
 EXPORT_SYMBOL(neigh_seq_next);
 
 void neigh_seq_stop(struct seq_file *seq, void *v)
+	__releases(tbl->lock)
 	__releases(rcu_bh)
 {
+	struct neigh_seq_state *state = seq->private;
+	struct neigh_table *tbl = state->tbl;
+
+	read_unlock(&tbl->lock);
 	rcu_read_unlock_bh();
 }
 EXPORT_SYMBOL(neigh_seq_stop);

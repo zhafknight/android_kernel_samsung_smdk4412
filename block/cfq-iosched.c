@@ -2728,7 +2728,8 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
 	 * for devices that support queuing, otherwise we still have a problem
 	 * with sync vs async workloads.
 	 */
-	if (blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag)
+	if (blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag &&
+		!cfqd->cfq_group_idle)
 		return;
 
 	WARN_ON(!RB_EMPTY_ROOT(&cfqq->sort_list));
@@ -3591,6 +3592,11 @@ retry:
 
 	blkcg = bio_blkcg(bio);
 	cfqg = cfq_lookup_create_cfqg(cfqd, blkcg);
+	if (!cfqg) {
+		cfqq = &cfqd->oom_cfqq;
+		goto out;
+	}
+
 	cfqq = cic_to_cfqq(cic, is_sync);
 
 	/*
@@ -3627,7 +3633,7 @@ retry:
 		} else
 			cfqq = &cfqd->oom_cfqq;
 	}
-
+out:
 	if (new_cfqq)
 		kmem_cache_free(cfq_pool, new_cfqq);
 
@@ -3657,12 +3663,17 @@ static struct cfq_queue *
 cfq_get_queue(struct cfq_data *cfqd, bool is_sync, struct cfq_io_cq *cic,
 	      struct bio *bio, gfp_t gfp_mask)
 {
-	const int ioprio_class = IOPRIO_PRIO_CLASS(cic->ioprio);
-	const int ioprio = IOPRIO_PRIO_DATA(cic->ioprio);
+	int ioprio_class = IOPRIO_PRIO_CLASS(cic->ioprio);
+	int ioprio = IOPRIO_PRIO_DATA(cic->ioprio);
 	struct cfq_queue **async_cfqq = NULL;
 	struct cfq_queue *cfqq = NULL;
 
 	if (!is_sync) {
+		if (!ioprio_valid(cic->ioprio)) {
+			struct task_struct *tsk = current;
+			ioprio = task_nice_ioprio(tsk);
+			ioprio_class = task_nice_ioclass(tsk);
+		}
 		async_cfqq = cfq_async_queue_prio(cfqd, ioprio_class, ioprio);
 		cfqq = *async_cfqq;
 	}

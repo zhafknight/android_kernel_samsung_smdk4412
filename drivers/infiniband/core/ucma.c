@@ -113,6 +113,8 @@ static DEFINE_MUTEX(mut);
 static DEFINE_IDR(ctx_idr);
 static DEFINE_IDR(multicast_idr);
 
+static const struct file_operations ucma_fops;
+
 static inline struct ucma_context *_ucma_find_context(int id,
 						      struct ucma_file *file)
 {
@@ -180,7 +182,7 @@ static struct ucma_multicast* ucma_alloc_multicast(struct ucma_context *ctx)
 		return NULL;
 
 	mutex_lock(&mut);
-	mc->id = idr_alloc(&multicast_idr, mc, 0, 0, GFP_KERNEL);
+	mc->id = idr_alloc(&multicast_idr, NULL, 0, 0, GFP_KERNEL);
 	mutex_unlock(&mut);
 	if (mc->id < 0)
 		goto error;
@@ -1124,6 +1126,9 @@ static int ucma_set_ib_path(struct ucma_context *ctx,
 	if (!optlen)
 		return -EINVAL;
 
+	memset(&sa_path, 0, sizeof(sa_path));
+	sa_path.vlan_id = 0xffff;
+
 	ib_sa_unpack_path(path_data->path_rec, &sa_path);
 	ret = rdma_set_ib_paths(ctx->cm_id, &sa_path, 1);
 	if (ret)
@@ -1258,6 +1263,10 @@ static ssize_t ucma_process_join(struct ucma_file *file,
 		ret = -EFAULT;
 		goto err3;
 	}
+
+	mutex_lock(&mut);
+	idr_replace(&multicast_idr, mc, mc->id);
+	mutex_unlock(&mut);
 
 	mutex_unlock(&file->mut);
 	ucma_put_ctx(ctx);
@@ -1409,6 +1418,10 @@ static ssize_t ucma_migrate_id(struct ucma_file *new_file,
 	f = fdget(cmd.fd);
 	if (!f.file)
 		return -ENOENT;
+	if (f.file->f_op != &ucma_fops) {
+		ret = -EINVAL;
+		goto file_put;
+	}
 
 	/* Validate current fd and prevent destruction of id. */
 	ctx = ucma_get_ctx(f.file->private_data, cmd.id);
@@ -1483,6 +1496,9 @@ static ssize_t ucma_write(struct file *filp, const char __user *buf,
 	struct ucma_file *file = filp->private_data;
 	struct rdma_ucm_cmd_hdr hdr;
 	ssize_t ret;
+
+	if (WARN_ON_ONCE(!ib_safe_file_access(filp)))
+		return -EACCES;
 
 	if (len < sizeof(hdr))
 		return -EINVAL;

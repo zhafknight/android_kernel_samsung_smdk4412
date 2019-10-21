@@ -30,7 +30,7 @@
  * SOFTWARE.
  */
 
-#include <asm-generic/kmap_types.h>
+#include <linux/highmem.h>
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/errno.h>
@@ -987,7 +987,7 @@ static int get_port_caps(struct mlx5_ib_dev *dev)
 	struct ib_device_attr *dprops = NULL;
 	struct ib_port_attr *pprops = NULL;
 	struct mlx5_general_caps *gen;
-	int err = 0;
+	int err = -ENOMEM;
 	int port;
 
 	gen = &dev->mdev->caps.gen;
@@ -1099,6 +1099,8 @@ static int create_umr_res(struct mlx5_ib_dev *dev)
 	qp->real_qp    = qp;
 	qp->uobject    = NULL;
 	qp->qp_type    = MLX5_IB_QPT_REG_UMR;
+	qp->send_cq    = init_attr->send_cq;
+	qp->recv_cq    = init_attr->recv_cq;
 
 	attr->qp_state = IB_QPS_INIT;
 	attr->port_num = 1;

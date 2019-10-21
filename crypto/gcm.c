@@ -146,10 +146,8 @@ static int crypto_gcm_setkey(struct crypto_aead *aead, const u8 *key,
 
 	err = crypto_ablkcipher_encrypt(&data->req);
 	if (err == -EINPROGRESS || err == -EBUSY) {
-		err = wait_for_completion_interruptible(
-			&data->result.completion);
-		if (!err)
-			err = data->result.err;
+		wait_for_completion(&data->result.completion);
+		err = data->result.err;
 	}
 
 	if (err)
@@ -716,7 +714,9 @@ static struct crypto_instance *crypto_gcm_alloc_common(struct rtattr **tb,
 
 	ghash_alg = crypto_find_alg(ghash_name, &crypto_ahash_type,
 				    CRYPTO_ALG_TYPE_HASH,
-				    CRYPTO_ALG_TYPE_AHASH_MASK);
+				    CRYPTO_ALG_TYPE_AHASH_MASK |
+				    crypto_requires_sync(algt->type,
+							 algt->mask));
 	if (IS_ERR(ghash_alg))
 		return ERR_CAST(ghash_alg);
 
@@ -742,11 +742,11 @@ static struct crypto_instance *crypto_gcm_alloc_common(struct rtattr **tb,
 	ctr = crypto_skcipher_spawn_alg(&ctx->ctr);
 
 	/* We only support 16-byte blocks. */
+	err = -EINVAL;
 	if (ctr->cra_ablkcipher.ivsize != 16)
 		goto out_put_ctr;
 
 	/* Not a stream cipher? */
-	err = -EINVAL;
 	if (ctr->cra_blocksize != 1)
 		goto out_put_ctr;
 
@@ -1441,6 +1441,7 @@ module_exit(crypto_gcm_module_exit);
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Galois/Counter Mode");
 MODULE_AUTHOR("Mikko Herranen <mh1@iki.fi>");
-MODULE_ALIAS("gcm_base");
-MODULE_ALIAS("rfc4106");
-MODULE_ALIAS("rfc4543");
+MODULE_ALIAS_CRYPTO("gcm_base");
+MODULE_ALIAS_CRYPTO("rfc4106");
+MODULE_ALIAS_CRYPTO("rfc4543");
+MODULE_ALIAS_CRYPTO("gcm");

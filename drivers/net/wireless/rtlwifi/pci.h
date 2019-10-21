@@ -247,6 +247,8 @@ struct rtl_pci {
 	/* MSI support */
 	bool msi_support;
 	bool using_msi;
+	/* interrupt clear before set */
+	bool int_clear;
 };
 
 struct mp_adapter {
@@ -323,6 +325,13 @@ static inline void pci_write32_async(struct rtl_priv *rtlpriv,
 				     u32 addr, u32 val)
 {
 	writel(val, (u8 __iomem *) rtlpriv->io.pci_mem_start + addr);
+}
+
+static inline u16 calc_fifo_space(u16 rp, u16 wp)
+{
+	if (rp <= wp)
+		return RTL_PCI_MAX_RX_COUNT - 1 + rp - wp;
+	return rp - wp - 1;
 }
 
 #endif

@@ -138,6 +138,9 @@ enum {
 #define MLX4_EN_TX_COAL_PKTS	16
 #define MLX4_EN_TX_COAL_TIME	0x10
 
+#define MLX4_EN_MAX_COAL_PKTS	U16_MAX
+#define MLX4_EN_MAX_COAL_TIME	U16_MAX
+
 #define MLX4_EN_RX_RATE_LOW		400000
 #define MLX4_EN_RX_COAL_TIME_LOW	0
 #define MLX4_EN_RX_RATE_HIGH		450000
@@ -280,6 +283,7 @@ struct mlx4_en_tx_ring {
 	u32			size; /* number of TXBBs */
 	u32			size_mask;
 	u16			stride;
+	u32			full_size;
 	u16			cqn;	/* index of port CQ associated with this ring */
 	u32			buf_size;
 	__be32			doorbell_qpn;
@@ -534,8 +538,8 @@ struct mlx4_en_priv {
 	u16 rx_usecs_low;
 	u32 pkt_rate_high;
 	u16 rx_usecs_high;
-	u16 sample_interval;
-	u16 adaptive_rx_coal;
+	u32 sample_interval;
+	u32 adaptive_rx_coal;
 	u32 msg_enable;
 	u32 loopback_ok;
 	u32 validate_loopback;
@@ -779,6 +783,7 @@ int mlx4_en_activate_tx_ring(struct mlx4_en_priv *priv,
 void mlx4_en_deactivate_tx_ring(struct mlx4_en_priv *priv,
 				struct mlx4_en_tx_ring *ring);
 void mlx4_en_set_num_rx_rings(struct mlx4_en_dev *mdev);
+void mlx4_en_recover_from_oom(struct mlx4_en_priv *priv);
 int mlx4_en_create_rx_ring(struct mlx4_en_priv *priv,
 			   struct mlx4_en_rx_ring **pring,
 			   u32 size, u16 stride, int node);

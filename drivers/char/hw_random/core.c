@@ -81,7 +81,7 @@ static void add_early_randomness(struct hwrng *rng)
 	unsigned char bytes[16];
 	int bytes_read;
 
-	bytes_read = rng_get_data(rng, bytes, sizeof(bytes), 1);
+	bytes_read = rng_get_data(rng, bytes, sizeof(bytes), 0);
 	if (bytes_read > 0)
 		add_device_randomness(bytes, bytes_read);
 }
@@ -365,7 +365,7 @@ static int hwrng_fillfn(void *unused)
 static void start_khwrngd(void)
 {
 	hwrng_fill = kthread_run(hwrng_fillfn, NULL, "hwrng");
-	if (hwrng_fill == ERR_PTR(-ENOMEM)) {
+	if (IS_ERR(hwrng_fill)) {
 		pr_err("hwrng_fill thread creation failed");
 		hwrng_fill = NULL;
 	}

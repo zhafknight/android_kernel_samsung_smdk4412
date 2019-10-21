@@ -713,14 +713,10 @@ static int nft_flush_table(struct nft_ctx *ctx)
 	struct nft_chain *chain, *nc;
 	struct nft_set *set, *ns;
 
-	list_for_each_entry_safe(chain, nc, &ctx->table->chains, list) {
+	list_for_each_entry(chain, &ctx->table->chains, list) {
 		ctx->chain = chain;
 
 		err = nft_delrule_by_chain(ctx);
-		if (err < 0)
-			goto out;
-
-		err = nft_delchain(ctx);
 		if (err < 0)
 			goto out;
 	}
@@ -731,6 +727,14 @@ static int nft_flush_table(struct nft_ctx *ctx)
 			continue;
 
 		err = nft_delset(ctx, set);
+		if (err < 0)
+			goto out;
+	}
+
+	list_for_each_entry_safe(chain, nc, &ctx->table->chains, list) {
+		ctx->chain = chain;
+
+		err = nft_delchain(ctx);
 		if (err < 0)
 			goto out;
 	}
@@ -1217,7 +1221,10 @@ static int nf_tables_newchain(struct sock *nlsk, struct sk_buff *skb,
 
 	if (nla[NFTA_CHAIN_POLICY]) {
 		if ((chain != NULL &&
-		    !(chain->flags & NFT_BASE_CHAIN)) ||
+		    !(chain->flags & NFT_BASE_CHAIN)))
+			return -EOPNOTSUPP;
+
+		if (chain == NULL &&
 		    nla[NFTA_CHAIN_HOOK] == NULL)
 			return -EOPNOTSUPP;
 
@@ -1862,7 +1869,7 @@ static void nf_tables_rule_destroy(const struct nft_ctx *ctx,
 	 * is called on error from nf_tables_newrule().
 	 */
 	expr = nft_expr_first(rule);
-	while (expr->ops && expr != nft_expr_last(rule)) {
+	while (expr != nft_expr_last(rule) && expr->ops) {
 		nf_tables_expr_destroy(ctx, expr);
 		expr = nft_expr_next(expr);
 	}

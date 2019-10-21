@@ -188,8 +188,10 @@ static ssize_t iio_debugfs_read_reg(struct file *file, char __user *userbuf,
 	ret = indio_dev->info->debugfs_reg_access(indio_dev,
 						  indio_dev->cached_reg_addr,
 						  0, &val);
-	if (ret)
+	if (ret) {
 		dev_err(indio_dev->dev.parent, "%s: read failed\n", __func__);
+		return ret;
+	}
 
 	len = snprintf(buf, sizeof(buf), "0x%X\n", val);
 
@@ -832,8 +834,7 @@ static int iio_device_add_channel_sysfs(struct iio_dev *indio_dev,
  * @attr_list: List of IIO device attributes
  *
  * This function frees the memory allocated for each of the IIO device
- * attributes in the list. Note: if you want to reuse the list after calling
- * this function you have to reinitialize it using INIT_LIST_HEAD().
+ * attributes in the list.
  */
 void iio_free_chan_devattr_list(struct list_head *attr_list)
 {
@@ -841,6 +842,7 @@ void iio_free_chan_devattr_list(struct list_head *attr_list)
 
 	list_for_each_entry_safe(p, n, attr_list, l) {
 		kfree(p->dev_attr.attr.name);
+		list_del(&p->l);
 		kfree(p);
 	}
 }
@@ -921,6 +923,7 @@ static void iio_device_unregister_sysfs(struct iio_dev *indio_dev)
 
 	iio_free_chan_devattr_list(&indio_dev->channel_attr_list);
 	kfree(indio_dev->chan_attr_group.attrs);
+	indio_dev->chan_attr_group.attrs = NULL;
 }
 
 static void iio_dev_release(struct device *device)

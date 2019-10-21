@@ -32,6 +32,9 @@ static struct kset *system_kset;
 
 #define to_drv_attr(_attr) container_of(_attr, struct driver_attribute, attr)
 
+#define DRIVER_ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store) \
+	struct driver_attribute driver_attr_##_name =		\
+		__ATTR_IGNORE_LOCKDEP(_name, _mode, _show, _store)
 
 static int __must_check bus_rescan_devices_helper(struct device *dev,
 						void *data);
@@ -197,7 +200,7 @@ static ssize_t unbind_store(struct device_driver *drv, const char *buf,
 	bus_put(bus);
 	return err;
 }
-static DRIVER_ATTR_WO(unbind);
+static DRIVER_ATTR_IGNORE_LOCKDEP(unbind, S_IWUSR, NULL, unbind_store);
 
 /*
  * Manually attach a device to a driver.
@@ -233,7 +236,7 @@ static ssize_t bind_store(struct device_driver *drv, const char *buf,
 	bus_put(bus);
 	return err;
 }
-static DRIVER_ATTR_WO(bind);
+static DRIVER_ATTR_IGNORE_LOCKDEP(bind, S_IWUSR, NULL, bind_store);
 
 static ssize_t show_drivers_autoprobe(struct bus_type *bus, char *buf)
 {
@@ -254,13 +257,15 @@ static ssize_t store_drivers_probe(struct bus_type *bus,
 				   const char *buf, size_t count)
 {
 	struct device *dev;
+	int err = -EINVAL;
 
 	dev = bus_find_device_by_name(bus, NULL, buf);
 	if (!dev)
 		return -ENODEV;
-	if (bus_rescan_devices_helper(dev, NULL) != 0)
-		return -EINVAL;
-	return count;
+	if (bus_rescan_devices_helper(dev, NULL) == 0)
+		err = count;
+	put_device(dev);
+	return err;
 }
 
 static struct device *next_device(struct klist_iter *i)
@@ -513,11 +518,11 @@ int bus_add_device(struct device *dev)
 			goto out_put;
 		error = device_add_groups(dev, bus->dev_groups);
 		if (error)
-			goto out_groups;
+			goto out_id;
 		error = sysfs_create_link(&bus->p->devices_kset->kobj,
 						&dev->kobj, dev_name(dev));
 		if (error)
-			goto out_id;
+			goto out_groups;
 		error = sysfs_create_link(&dev->kobj,
 				&dev->bus->p->subsys.kobj, "subsystem");
 		if (error)
@@ -720,7 +725,7 @@ int bus_add_driver(struct device_driver *drv)
 
 out_unregister:
 	kobject_put(&priv->kobj);
-	kfree(drv->p);
+	/* drv->p is freed in driver_release()  */
 	drv->p = NULL;
 out_put_bus:
 	bus_put(bus);

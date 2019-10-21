@@ -454,10 +454,13 @@ static void ip_copy_metadata(struct sk_buff *to, struct sk_buff *from)
 	to->pkt_type = from->pkt_type;
 	to->priority = from->priority;
 	to->protocol = from->protocol;
+	to->skb_iif = from->skb_iif;
 	skb_dst_drop(to);
 	skb_dst_copy(to, from);
 	to->dev = from->dev;
 	to->mark = from->mark;
+
+	skb_copy_hash(to, from);
 
 	/* Copy the flags to each fragment. */
 	IPCB(to)->flags = IPCB(from)->flags;
@@ -888,9 +891,12 @@ static int __ip_append_data(struct sock *sk,
 		csummode = CHECKSUM_PARTIAL;
 
 	cork->length += length;
-	if (((length > mtu) || (skb && skb_is_gso(skb))) &&
+	if ((skb && skb_is_gso(skb)) ||
+	    (((length + fragheaderlen) > mtu) &&
+	    (skb_queue_len(queue) <= 1) &&
 	    (sk->sk_protocol == IPPROTO_UDP) &&
-	    (rt->dst.dev->features & NETIF_F_UFO) && !rt->dst.header_len) {
+	    (rt->dst.dev->features & NETIF_F_UFO) && !rt->dst.header_len &&
+	    (sk->sk_type == SOCK_DGRAM))) {
 		err = ip_ufo_append_data(sk, queue, getfrag, from, length,
 					 hh_len, fragheaderlen, transhdrlen,
 					 maxfraglen, flags);
@@ -1025,7 +1031,8 @@ alloc_new_skb:
 		if (copy > length)
 			copy = length;
 
-		if (!(rt->dst.dev->features&NETIF_F_SG)) {
+		if (!(rt->dst.dev->features&NETIF_F_SG) &&
+		    skb_tailroom(skb) >= copy) {
 			unsigned int off;
 
 			off = skb->len;
@@ -1206,6 +1213,7 @@ ssize_t	ip_append_page(struct sock *sk, struct flowi4 *fl4, struct page *page,
 
 	cork->length += size;
 	if ((size + skb->len > mtu) &&
+	    (skb_queue_len(&sk->sk_write_queue) == 1) &&
 	    (sk->sk_protocol == IPPROTO_UDP) &&
 	    (rt->dst.dev->features & NETIF_F_UFO)) {
 		skb_shinfo(skb)->gso_size = mtu - fragheaderlen;
@@ -1506,23 +1514,8 @@ static int ip_reply_glue_bits(void *dptr, char *to, int offset,
 /*
  *	Generic function to send a packet as reply to another packet.
  *	Used to send some TCP resets/acks so far.
- *
- *	Use a fake percpu inet socket to avoid false sharing and contention.
  */
-static DEFINE_PER_CPU(struct inet_sock, unicast_sock) = {
-	.sk = {
-		.__sk_common = {
-			.skc_refcnt = ATOMIC_INIT(1),
-		},
-		.sk_wmem_alloc	= ATOMIC_INIT(1),
-		.sk_allocation	= GFP_ATOMIC,
-		.sk_flags	= (1UL << SOCK_USE_WRITE_QUEUE),
-	},
-	.pmtudisc	= IP_PMTUDISC_WANT,
-	.uc_ttl		= -1,
-};
-
-void ip_send_unicast_reply(struct net *net, struct sk_buff *skb,
+void ip_send_unicast_reply(struct sock *sk, struct sk_buff *skb,
 			   const struct ip_options *sopt,
 			   __be32 daddr, __be32 saddr,
 			   const struct ip_reply_arg *arg,
@@ -1532,9 +1525,8 @@ void ip_send_unicast_reply(struct net *net, struct sk_buff *skb,
 	struct ipcm_cookie ipc;
 	struct flowi4 fl4;
 	struct rtable *rt = skb_rtable(skb);
+	struct net *net = sock_net(sk);
 	struct sk_buff *nskb;
-	struct sock *sk;
-	struct inet_sock *inet;
 	int err;
 
 	if (__ip_options_echo(&replyopts.opt.opt, skb, sopt))
@@ -1559,21 +1551,18 @@ void ip_send_unicast_reply(struct net *net, struct sk_buff *skb,
 			   RT_SCOPE_UNIVERSE, ip_hdr(skb)->protocol,
 			   ip_reply_arg_flowi_flags(arg),
 			   daddr, saddr,
-			   tcp_hdr(skb)->source, tcp_hdr(skb)->dest);
+			   tcp_hdr(skb)->source, tcp_hdr(skb)->dest,
+			   arg->uid);
 	security_skb_classify_flow(skb, flowi4_to_flowi(&fl4));
 	rt = ip_route_output_key(net, &fl4);
 	if (IS_ERR(rt))
 		return;
 
-	inet = &get_cpu_var(unicast_sock);
+	inet_sk(sk)->tos = arg->tos;
 
-	inet->tos = arg->tos;
-	sk = &inet->sk;
 	sk->sk_priority = skb->priority;
 	sk->sk_protocol = ip_hdr(skb)->protocol;
 	sk->sk_bound_dev_if = arg->bound_dev_if;
-	sock_net_set(sk, net);
-	__skb_queue_head_init(&sk->sk_write_queue);
 	sk->sk_sndbuf = sysctl_wmem_default;
 	err = ip_append_data(sk, &fl4, ip_reply_glue_bits, arg->iov->iov_base,
 			     len, 0, &ipc, &rt, MSG_DONTWAIT);
@@ -1589,13 +1578,10 @@ void ip_send_unicast_reply(struct net *net, struct sk_buff *skb,
 			  arg->csumoffset) = csum_fold(csum_add(nskb->csum,
 								arg->csum));
 		nskb->ip_summed = CHECKSUM_NONE;
-		skb_orphan(nskb);
 		skb_set_queue_mapping(nskb, skb_get_queue_mapping(skb));
 		ip_push_pending_frames(sk, &fl4);
 	}
 out:
-	put_cpu_var(unicast_sock);
-
 	ip_rt_put(rt);
 }
 

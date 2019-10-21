@@ -217,11 +217,17 @@ void tty_wait_until_sent(struct tty_struct *tty, long timeout)
 #endif
 	if (!timeout)
 		timeout = MAX_SCHEDULE_TIMEOUT;
+
 	if (wait_event_interruptible_timeout(tty->write_wait,
-			!tty_chars_in_buffer(tty), timeout) >= 0) {
-		if (tty->ops->wait_until_sent)
-			tty->ops->wait_until_sent(tty, timeout);
+			!tty_chars_in_buffer(tty), timeout) < 0) {
+		return;
 	}
+
+	if (timeout == MAX_SCHEDULE_TIMEOUT)
+		timeout = 0;
+
+	if (tty->ops->wait_until_sent)
+		tty->ops->wait_until_sent(tty, timeout);
 }
 EXPORT_SYMBOL(tty_wait_until_sent);
 
@@ -321,7 +327,7 @@ speed_t tty_termios_baud_rate(struct ktermios *termios)
 		else
 			cbaud += 15;
 	}
-	return baud_table[cbaud];
+	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
 }
 EXPORT_SYMBOL(tty_termios_baud_rate);
 
@@ -357,7 +363,7 @@ speed_t tty_termios_input_baud_rate(struct ktermios *termios)
 		else
 			cbaud += 15;
 	}
-	return baud_table[cbaud];
+	return cbaud >= n_baud_table ? 0 : baud_table[cbaud];
 #else
 	return tty_termios_baud_rate(termios);
 #endif

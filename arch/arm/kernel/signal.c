@@ -14,6 +14,7 @@
 #include <linux/uaccess.h>
 #include <linux/tracehook.h>
 #include <linux/uprobes.h>
+#include <linux/syscalls.h>
 
 #include <asm/elf.h>
 #include <asm/cacheflush.h>
@@ -191,7 +192,7 @@ asmlinkage int sys_sigreturn(struct pt_regs *regs)
 	struct sigframe __user *frame;
 
 	/* Always make any pending restarted system calls return -EINTR */
-	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+	current->restart_block.fn = do_no_restart_syscall;
 
 	/*
 	 * Since we stacked the signal on a 64-bit boundary,
@@ -221,7 +222,7 @@ asmlinkage int sys_rt_sigreturn(struct pt_regs *regs)
 	struct rt_sigframe __user *frame;
 
 	/* Always make any pending restarted system calls return -EINTR */
-	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+	current->restart_block.fn = do_no_restart_syscall;
 
 	/*
 	 * Since we stacked the signal on a 64-bit boundary,
@@ -354,12 +355,17 @@ setup_return(struct pt_regs *regs, struct ksignal *ksig,
 		 */
 		thumb = handler & 1;
 
-#if __LINUX_ARM_ARCH__ >= 7
+#if __LINUX_ARM_ARCH__ >= 6
 		/*
-		 * Clear the If-Then Thumb-2 execution state
-		 * ARM spec requires this to be all 000s in ARM mode
-		 * Snapdragon S4/Krait misbehaves on a Thumb=>ARM
-		 * signal transition without this.
+		 * Clear the If-Then Thumb-2 execution state.  ARM spec
+		 * requires this to be all 000s in ARM mode.  Snapdragon
+		 * S4/Krait misbehaves on a Thumb=>ARM signal transition
+		 * without this.
+		 *
+		 * We must do this whenever we are running on a Thumb-2
+		 * capable CPU, which includes ARMv6T2.  However, we elect
+		 * to do this whenever we're on an ARMv6 or later CPU for
+		 * simplicity.
 		 */
 		cpsr &= ~PSR_IT_MASK;
 #endif
@@ -633,4 +639,10 @@ struct page *get_signal_page(void)
 	flush_icache_range(ptr, ptr + sizeof(sigreturn_codes));
 
 	return page;
+}
+
+/* Defer to generic check */
+asmlinkage void addr_limit_check_failed(void)
+{
+	addr_limit_user_check();
 }

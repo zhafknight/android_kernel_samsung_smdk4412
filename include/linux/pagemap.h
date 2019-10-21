@@ -146,7 +146,7 @@ static inline int page_cache_get_speculative(struct page *page)
 
 #ifdef CONFIG_TINY_RCU
 # ifdef CONFIG_PREEMPT_COUNT
-	VM_BUG_ON(!in_atomic());
+	VM_BUG_ON(!in_atomic() && !irqs_disabled());
 # endif
 	/*
 	 * Preempt must be disabled here - we rely on rcu_read_lock doing
@@ -184,7 +184,7 @@ static inline int page_cache_add_speculative(struct page *page, int count)
 
 #if !defined(CONFIG_SMP) && defined(CONFIG_TREE_RCU)
 # ifdef CONFIG_PREEMPT_COUNT
-	VM_BUG_ON(!in_atomic());
+	VM_BUG_ON(!in_atomic() && !irqs_disabled());
 # endif
 	VM_BUG_ON_PAGE(page_count(page) == 0, page);
 	atomic_add(count, &page->_count);
@@ -251,7 +251,7 @@ pgoff_t page_cache_prev_hole(struct address_space *mapping,
 #define FGP_NOWAIT		0x00000020
 
 struct page *pagecache_get_page(struct address_space *mapping, pgoff_t offset,
-		int fgp_flags, gfp_t cache_gfp_mask, gfp_t radix_gfp_mask);
+		int fgp_flags, gfp_t cache_gfp_mask);
 
 /**
  * find_get_page - find and get a page reference
@@ -266,13 +266,13 @@ struct page *pagecache_get_page(struct address_space *mapping, pgoff_t offset,
 static inline struct page *find_get_page(struct address_space *mapping,
 					pgoff_t offset)
 {
-	return pagecache_get_page(mapping, offset, 0, 0, 0);
+	return pagecache_get_page(mapping, offset, 0, 0);
 }
 
 static inline struct page *find_get_page_flags(struct address_space *mapping,
 					pgoff_t offset, int fgp_flags)
 {
-	return pagecache_get_page(mapping, offset, fgp_flags, 0, 0);
+	return pagecache_get_page(mapping, offset, fgp_flags, 0);
 }
 
 /**
@@ -292,7 +292,7 @@ static inline struct page *find_get_page_flags(struct address_space *mapping,
 static inline struct page *find_lock_page(struct address_space *mapping,
 					pgoff_t offset)
 {
-	return pagecache_get_page(mapping, offset, FGP_LOCK, 0, 0);
+	return pagecache_get_page(mapping, offset, FGP_LOCK, 0);
 }
 
 /**
@@ -319,7 +319,7 @@ static inline struct page *find_or_create_page(struct address_space *mapping,
 {
 	return pagecache_get_page(mapping, offset,
 					FGP_LOCK|FGP_ACCESSED|FGP_CREAT,
-					gfp_mask, gfp_mask & GFP_RECLAIM_MASK);
+					gfp_mask);
 }
 
 /**
@@ -340,8 +340,7 @@ static inline struct page *grab_cache_page_nowait(struct address_space *mapping,
 {
 	return pagecache_get_page(mapping, index,
 			FGP_LOCK|FGP_CREAT|FGP_NOFS|FGP_NOWAIT,
-			mapping_gfp_mask(mapping),
-			GFP_NOFS);
+			mapping_gfp_mask(mapping));
 }
 
 struct page *find_get_entry(struct address_space *mapping, pgoff_t offset);
@@ -353,8 +352,16 @@ unsigned find_get_pages(struct address_space *mapping, pgoff_t start,
 			unsigned int nr_pages, struct page **pages);
 unsigned find_get_pages_contig(struct address_space *mapping, pgoff_t start,
 			       unsigned int nr_pages, struct page **pages);
-unsigned find_get_pages_tag(struct address_space *mapping, pgoff_t *index,
-			int tag, unsigned int nr_pages, struct page **pages);
+unsigned find_get_pages_range_tag(struct address_space *mapping, pgoff_t *index,
+			pgoff_t end, int tag, unsigned int nr_pages,
+			struct page **pages);
+static inline unsigned find_get_pages_tag(struct address_space *mapping,
+			pgoff_t *index, int tag, unsigned int nr_pages,
+			struct page **pages)
+{
+	return find_get_pages_range_tag(mapping, index, (pgoff_t)-1, tag,
+					nr_pages, pages);
+}
 
 struct page *grab_cache_page_write_begin(struct address_space *mapping,
 			pgoff_t index, unsigned flags);
@@ -595,56 +602,56 @@ static inline int fault_in_pages_readable(const char __user *uaddr, int size)
  */
 static inline int fault_in_multipages_writeable(char __user *uaddr, int size)
 {
-	int ret = 0;
 	char __user *end = uaddr + size - 1;
 
 	if (unlikely(size == 0))
-		return ret;
+		return 0;
 
+	if (unlikely(uaddr > end))
+		return -EFAULT;
 	/*
 	 * Writing zeroes into userspace here is OK, because we know that if
 	 * the zero gets there, we'll be overwriting it.
 	 */
-	while (uaddr <= end) {
-		ret = __put_user(0, uaddr);
-		if (ret != 0)
-			return ret;
+	do {
+		if (unlikely(__put_user(0, uaddr) != 0))
+			return -EFAULT;
 		uaddr += PAGE_SIZE;
-	}
+	} while (uaddr <= end);
 
 	/* Check whether the range spilled into the next page. */
 	if (((unsigned long)uaddr & PAGE_MASK) ==
 			((unsigned long)end & PAGE_MASK))
-		ret = __put_user(0, end);
+		return __put_user(0, end);
 
-	return ret;
+	return 0;
 }
 
 static inline int fault_in_multipages_readable(const char __user *uaddr,
 					       int size)
 {
 	volatile char c;
-	int ret = 0;
 	const char __user *end = uaddr + size - 1;
 
 	if (unlikely(size == 0))
-		return ret;
+		return 0;
 
-	while (uaddr <= end) {
-		ret = __get_user(c, uaddr);
-		if (ret != 0)
-			return ret;
+	if (unlikely(uaddr > end))
+		return -EFAULT;
+
+	do {
+		if (unlikely(__get_user(c, uaddr) != 0))
+			return -EFAULT;
 		uaddr += PAGE_SIZE;
-	}
+	} while (uaddr <= end);
 
 	/* Check whether the range spilled into the next page. */
 	if (((unsigned long)uaddr & PAGE_MASK) ==
 			((unsigned long)end & PAGE_MASK)) {
-		ret = __get_user(c, end);
-		(void)c;
+		return __get_user(c, end);
 	}
 
-	return ret;
+	return 0;
 }
 
 int add_to_page_cache_locked(struct page *page, struct address_space *mapping,

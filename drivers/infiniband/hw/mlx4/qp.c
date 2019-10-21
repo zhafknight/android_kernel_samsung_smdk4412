@@ -1465,7 +1465,7 @@ static int __mlx4_ib_modify_qp(struct ib_qp *ibqp,
 			context->mtu_msgmax = (IB_MTU_4096 << 5) |
 					      ilog2(dev->dev->caps.max_gso_sz);
 		else
-			context->mtu_msgmax = (IB_MTU_4096 << 5) | 12;
+			context->mtu_msgmax = (IB_MTU_4096 << 5) | 13;
 	} else if (attr_mask & IB_QP_PATH_MTU) {
 		if (attr->path_mtu < IB_MTU_256 || attr->path_mtu > IB_MTU_4096) {
 			pr_err("path MTU (%u) is invalid\n",
@@ -1669,8 +1669,10 @@ static int __mlx4_ib_modify_qp(struct ib_qp *ibqp,
 			    qp->mlx4_ib_qp_type == MLX4_IB_QPT_PROXY_GSI ||
 			    qp->mlx4_ib_qp_type == MLX4_IB_QPT_TUN_GSI) {
 				err = handle_eth_ud_smac_index(dev, qp, (u8 *)attr->smac, context);
-				if (err)
-					return -EINVAL;
+				if (err) {
+					err = -EINVAL;
+					goto out;
+				}
 				if (qp->mlx4_ib_qp_type == MLX4_IB_QPT_PROXY_GSI)
 					dev->qp1_proxy[qp->port - 1] = qp;
 			}
@@ -2557,8 +2559,7 @@ static int build_lso_seg(struct mlx4_wqe_lso_seg *wqe, struct ib_send_wr *wr,
 
 	memcpy(wqe->header, wr->wr.ud.header, wr->wr.ud.hlen);
 
-	*lso_hdr_sz  = cpu_to_be32((wr->wr.ud.mss - wr->wr.ud.hlen) << 16 |
-				   wr->wr.ud.hlen);
+	*lso_hdr_sz  = cpu_to_be32(wr->wr.ud.mss << 16 | wr->wr.ud.hlen);
 	*lso_seg_len = halign;
 	return 0;
 }

@@ -19,6 +19,7 @@
 #include <linux/wakelock.h>
 #include <linux/kmod.h>
 #include <trace/events/power.h>
+#include <linux/wakeup_reason.h>
 
 #include "power.h"
 
@@ -38,6 +39,9 @@ static int try_to_freeze_tasks(bool user_only)
 	unsigned int elapsed_msecs;
 	bool wakeup = false;
 	int sleep_usecs = USEC_PER_MSEC;
+#ifdef CONFIG_PM_SLEEP
+	char suspend_abort[MAX_SUSPEND_ABORT_LEN];
+#endif
 
 	do_gettimeofday(&start);
 
@@ -71,6 +75,11 @@ static int try_to_freeze_tasks(bool user_only)
 			break;
 
 		if (pm_wakeup_pending()) {
+#ifdef CONFIG_PM_SLEEP
+			pm_get_active_wakeup_sources(suspend_abort,
+				MAX_SUSPEND_ABORT_LEN);
+			log_suspend_abort_reason(suspend_abort);
+#endif
 			wakeup = true;
 			break;
 		}
@@ -104,7 +113,6 @@ static int try_to_freeze_tasks(bool user_only)
 				todo - wq_busy, wq_busy);
 		}
 
-		if (!wakeup) {
 			read_lock(&tasklist_lock);
 			for_each_process_thread(g, p) {
 				if (p != current && !freezer_should_skip(p)
@@ -113,7 +121,6 @@ static int try_to_freeze_tasks(bool user_only)
 					sched_show_task(p);
 			}
 			read_unlock(&tasklist_lock);
-		}
 	} else {
 		printk("(elapsed %d.%03d seconds) ", elapsed_msecs / 1000,
 			elapsed_msecs % 1000);

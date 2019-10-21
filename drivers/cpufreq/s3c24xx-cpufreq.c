@@ -144,11 +144,6 @@ static void s3c_cpufreq_setfvco(struct s3c_cpufreq_config *cfg)
 	(cfg->info->set_fvco)(cfg);
 }
 
-static inline void s3c_cpufreq_resume_clocks(void)
-{
-	cpu_cur.info->resume_clocks();
-}
-
 static inline void s3c_cpufreq_updateclk(struct clk *clk,
 					 unsigned int freq)
 {
@@ -369,7 +364,13 @@ struct clk *s3c_cpufreq_clk_get(struct device *dev, const char *name)
 static int s3c_cpufreq_init(struct cpufreq_policy *policy)
 {
 	policy->clk = clk_arm;
-	return cpufreq_generic_init(policy, ftab, cpu_cur.info->latency);
+
+	policy->cpuinfo.transition_latency = cpu_cur.info->latency;
+
+	if (ftab)
+		return cpufreq_table_validate_and_show(policy, ftab);
+
+	return 0;
 }
 
 static int __init s3c_cpufreq_initclks(void)
@@ -417,9 +418,6 @@ static int s3c_cpufreq_resume(struct cpufreq_policy *policy)
 
 	last_target = ~0;	/* invalidate last_target setting */
 
-	/* first, find out what speed we resumed at. */
-	s3c_cpufreq_resume_clocks();
-
 	/* whilst we will be called later on, we try and re-set the
 	 * cpu frequencies as soon as possible so that we do not end
 	 * up resuming devices and then immediately having to re-set
@@ -454,7 +452,7 @@ static struct cpufreq_driver s3c24xx_driver = {
 };
 
 
-int __init s3c_cpufreq_register(struct s3c_cpufreq_info *info)
+int s3c_cpufreq_register(struct s3c_cpufreq_info *info)
 {
 	if (!info || !info->name) {
 		printk(KERN_ERR "%s: failed to pass valid information\n",

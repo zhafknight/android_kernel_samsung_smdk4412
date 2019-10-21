@@ -13,6 +13,7 @@
 #include <linux/poll.h>
 #include <linux/uio.h>
 #include <linux/miscdevice.h>
+#include <linux/namei.h>
 #include <linux/pagemap.h>
 #include <linux/file.h>
 #include <linux/slab.h>
@@ -20,6 +21,7 @@
 #include <linux/swap.h>
 #include <linux/splice.h>
 #include <linux/aio.h>
+#include <linux/freezer.h>
 
 MODULE_ALIAS_MISCDEV(FUSE_MINOR);
 MODULE_ALIAS("devname:fuse");
@@ -464,7 +466,10 @@ __acquires(fc->lock)
 	 * Wait it out.
 	 */
 	spin_unlock(&fc->lock);
-	wait_event(req->waitq, req->state == FUSE_REQ_FINISHED);
+
+	while (req->state != FUSE_REQ_FINISHED)
+		wait_event_freezable(req->waitq,
+				     req->state == FUSE_REQ_FINISHED);
 	spin_lock(&fc->lock);
 
 	if (!req->aborted)
@@ -814,8 +819,8 @@ static int fuse_try_move_page(struct fuse_copy_state *cs, struct page **pagep)
 
 	newpage = buf->page;
 
-	if (WARN_ON(!PageUptodate(newpage)))
-		return -EIO;
+	if (!PageUptodate(newpage))
+		SetPageUptodate(newpage);
 
 	ClearPageMappedToDisk(newpage);
 
@@ -1645,7 +1650,6 @@ static int fuse_retrieve(struct fuse_conn *fc, struct inode *inode,
 	req->in.h.nodeid = outarg->nodeid;
 	req->in.numargs = 2;
 	req->in.argpages = 1;
-	req->page_descs[0].offset = offset;
 	req->end = fuse_retrieve_end;
 
 	index = outarg->offset >> PAGE_CACHE_SHIFT;
@@ -1660,6 +1664,7 @@ static int fuse_retrieve(struct fuse_conn *fc, struct inode *inode,
 
 		this_num = min_t(unsigned, num, PAGE_CACHE_SIZE - offset);
 		req->pages[req->num_pages] = page;
+		req->page_descs[req->num_pages].offset = offset;
 		req->page_descs[req->num_pages].length = this_num;
 		req->num_pages++;
 
@@ -1675,8 +1680,10 @@ static int fuse_retrieve(struct fuse_conn *fc, struct inode *inode,
 	req->in.args[1].size = total_len;
 
 	err = fuse_request_send_notify_reply(fc, req, outarg->notify_unique);
-	if (err)
+	if (err) {
 		fuse_retrieve_end(fc, req);
+		fuse_put_request(fc, req);
+	}
 
 	return err;
 }
@@ -1721,6 +1728,9 @@ copy_finish:
 static int fuse_notify(struct fuse_conn *fc, enum fuse_notify_code code,
 		       unsigned int size, struct fuse_copy_state *cs)
 {
+	/* Don't try to move pages (yet) */
+	cs->move_pages = 0;
+
 	switch (code) {
 	case FUSE_NOTIFY_POLL:
 		return fuse_notify_poll(fc, size, cs);
@@ -1861,6 +1871,12 @@ static ssize_t fuse_dev_do_write(struct fuse_conn *fc,
 	spin_unlock(&fc->lock);
 
 	err = copy_out_args(cs, &req->out, nbytes);
+	if (req->in.h.opcode == FUSE_CANONICAL_PATH) {
+		char *path = (char *)req->out.args[0].value;
+
+		path[req->out.args[0].size - 1] = 0;
+		req->out.h.error = kern_path(path, 0, req->canonical_path);
+	}
 	fuse_copy_finish(cs);
 
 	spin_lock(&fc->lock);
@@ -1910,11 +1926,14 @@ static ssize_t fuse_dev_splice_write(struct pipe_inode_info *pipe,
 	if (!fc)
 		return -EPERM;
 
-	bufs = kmalloc(pipe->buffers * sizeof(struct pipe_buffer), GFP_KERNEL);
-	if (!bufs)
-		return -ENOMEM;
-
 	pipe_lock(pipe);
+
+	bufs = kmalloc(pipe->buffers * sizeof(struct pipe_buffer), GFP_KERNEL);
+	if (!bufs) {
+		pipe_unlock(pipe);
+		return -ENOMEM;
+	}
+
 	nbuf = 0;
 	rem = 0;
 	for (idx = 0; idx < pipe->nrbufs && rem < len; idx++)
@@ -1963,10 +1982,13 @@ static ssize_t fuse_dev_splice_write(struct pipe_inode_info *pipe,
 
 	ret = fuse_dev_do_write(fc, &cs, len);
 
+	pipe_lock(pipe);
 	for (idx = 0; idx < nbuf; idx++) {
 		struct pipe_buffer *buf = &bufs[idx];
 		buf->ops->release(pipe, buf);
 	}
+	pipe_unlock(pipe);
+
 out:
 	kfree(bufs);
 	return ret;

@@ -47,6 +47,7 @@ struct sk_buff;
 
 struct audit_krule {
 	int			vers_ops;
+	u32			pflags;
 	u32			flags;
 	u32			listnr;
 	u32			action;
@@ -63,6 +64,9 @@ struct audit_krule {
 	struct list_head	list;	/* for AUDIT_LIST* purposes only */
 	u64			prio;
 };
+
+/* Flag to indicate legacy AUDIT_LOGINUID unset usage */
+#define AUDIT_LOGINUID_LEGACY		0x1
 
 struct audit_field {
 	u32				type;
@@ -269,6 +273,20 @@ static inline int audit_socketcall(int nargs, unsigned long *args)
 		return __audit_socketcall(nargs, args);
 	return 0;
 }
+
+static inline int audit_socketcall_compat(int nargs, u32 *args)
+{
+	unsigned long a[AUDITSC_ARGS];
+	int i;
+
+	if (audit_dummy_context())
+		return 0;
+
+	for (i = 0; i < nargs; i++)
+		a[i] = (unsigned long)args[i];
+	return __audit_socketcall(nargs, a);
+}
+
 static inline int audit_sockaddr(int len, void *addr)
 {
 	if (unlikely(!audit_dummy_context()))
@@ -394,6 +412,12 @@ static inline int audit_socketcall(int nargs, unsigned long *args)
 {
 	return 0;
 }
+
+static inline int audit_socketcall_compat(int nargs, u32 *args)
+{
+	return 0;
+}
+
 static inline void audit_fd_pair(int fd1, int fd2)
 { }
 static inline int audit_sockaddr(int len, void *addr)

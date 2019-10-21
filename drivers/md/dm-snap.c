@@ -19,6 +19,9 @@
 #include <linux/vmalloc.h>
 #include <linux/log2.h>
 #include <linux/dm-kcopyd.h>
+#include <linux/semaphore.h>
+
+#include "dm.h"
 
 #include "dm-exception-store.h"
 
@@ -96,6 +99,9 @@ struct dm_snapshot {
 	/* The on disk metadata handler */
 	struct dm_exception_store *store;
 
+	/* Maximum number of in-flight COW jobs. */
+	struct semaphore cow_count;
+
 	struct dm_kcopyd_client *kcopyd_client;
 
 	/* Wait for events based on state_bits */
@@ -135,6 +141,19 @@ struct dm_snapshot {
  */
 #define RUNNING_MERGE          0
 #define SHUTDOWN_MERGE         1
+
+/*
+ * Maximum number of chunks being copied on write.
+ *
+ * The value was decided experimentally as a trade-off between memory
+ * consumption, stalling the kernel's workqueues and maintaining a high enough
+ * throughput.
+ */
+#define DEFAULT_COW_THRESHOLD 2048
+
+static int cow_threshold = DEFAULT_COW_THRESHOLD;
+module_param_named(snapshot_cow_threshold, cow_threshold, int, 0644);
+MODULE_PARM_DESC(snapshot_cow_threshold, "Maximum number of chunks being copied on write");
 
 DECLARE_DM_KCOPYD_THROTTLE_WITH_MODULE_PARM(snapshot_copy_throttle,
 		"A percentage of time allocated for copy on write");
@@ -291,12 +310,23 @@ struct origin {
 };
 
 /*
+ * This structure is allocated for each origin target
+ */
+struct dm_origin {
+	struct dm_dev *dev;
+	struct dm_target *ti;
+	unsigned split_boundary;
+	struct list_head hash_list;
+};
+
+/*
  * Size of the hash table for origin volumes. If we make this
  * the size of the minors list then it should be nearly perfect
  */
 #define ORIGIN_HASH_SIZE 256
 #define ORIGIN_MASK      0xFF
 static struct list_head *_origins;
+static struct list_head *_dm_origins;
 static struct rw_semaphore _origins_lock;
 
 static DECLARE_WAIT_QUEUE_HEAD(_pending_exceptions_done);
@@ -310,12 +340,22 @@ static int init_origin_hash(void)
 	_origins = kmalloc(ORIGIN_HASH_SIZE * sizeof(struct list_head),
 			   GFP_KERNEL);
 	if (!_origins) {
-		DMERR("unable to allocate memory");
+		DMERR("unable to allocate memory for _origins");
 		return -ENOMEM;
 	}
-
 	for (i = 0; i < ORIGIN_HASH_SIZE; i++)
 		INIT_LIST_HEAD(_origins + i);
+
+	_dm_origins = kmalloc(ORIGIN_HASH_SIZE * sizeof(struct list_head),
+			      GFP_KERNEL);
+	if (!_dm_origins) {
+		DMERR("unable to allocate memory for _dm_origins");
+		kfree(_origins);
+		return -ENOMEM;
+	}
+	for (i = 0; i < ORIGIN_HASH_SIZE; i++)
+		INIT_LIST_HEAD(_dm_origins + i);
+
 	init_rwsem(&_origins_lock);
 
 	return 0;
@@ -324,6 +364,7 @@ static int init_origin_hash(void)
 static void exit_origin_hash(void)
 {
 	kfree(_origins);
+	kfree(_dm_origins);
 }
 
 static unsigned origin_hash(struct block_device *bdev)
@@ -348,6 +389,30 @@ static void __insert_origin(struct origin *o)
 {
 	struct list_head *sl = &_origins[origin_hash(o->bdev)];
 	list_add_tail(&o->hash_list, sl);
+}
+
+static struct dm_origin *__lookup_dm_origin(struct block_device *origin)
+{
+	struct list_head *ol;
+	struct dm_origin *o;
+
+	ol = &_dm_origins[origin_hash(origin)];
+	list_for_each_entry (o, ol, hash_list)
+		if (bdev_equal(o->dev->bdev, origin))
+			return o;
+
+	return NULL;
+}
+
+static void __insert_dm_origin(struct dm_origin *o)
+{
+	struct list_head *sl = &_dm_origins[origin_hash(o->dev->bdev)];
+	list_add_tail(&o->hash_list, sl);
+}
+
+static void __remove_dm_origin(struct dm_origin *o)
+{
+	list_del(&o->hash_list);
 }
 
 /*
@@ -1125,6 +1190,8 @@ static int snapshot_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 		goto bad_hash_tables;
 	}
 
+	sema_init(&s->cow_count, (cow_threshold > 0) ? cow_threshold : INT_MAX);
+
 	s->kcopyd_client = dm_kcopyd_client_create(&dm_kcopyd_throttle);
 	if (IS_ERR(s->kcopyd_client)) {
 		r = PTR_ERR(s->kcopyd_client);
@@ -1380,8 +1447,9 @@ static void __invalidate_snapshot(struct dm_snapshot *s, int err)
 	dm_table_event(s->ti->table);
 }
 
-static void pending_complete(struct dm_snap_pending_exception *pe, int success)
+static void pending_complete(void *context, int success)
 {
+	struct dm_snap_pending_exception *pe = context;
 	struct dm_exception *e;
 	struct dm_snapshot *s = pe->snap;
 	struct bio *origin_bios = NULL;
@@ -1432,8 +1500,6 @@ out:
 		full_bio->bi_private = pe->full_bio_private;
 		atomic_inc(&full_bio->bi_remaining);
 	}
-	free_pending_exception(pe);
-
 	increment_pending_exceptions_done_count();
 
 	up_write(&s->lock);
@@ -1450,26 +1516,17 @@ out:
 	}
 
 	retry_origin_bios(s, origin_bios);
-}
 
-static void commit_callback(void *context, int success)
-{
-	struct dm_snap_pending_exception *pe = context;
-
-	pending_complete(pe, success);
+	free_pending_exception(pe);
 }
 
 static void complete_exception(struct dm_snap_pending_exception *pe)
 {
 	struct dm_snapshot *s = pe->snap;
 
-	if (unlikely(pe->copy_error))
-		pending_complete(pe, 0);
-
-	else
-		/* Update the metadata if we are persistent */
-		s->store->type->commit_exception(s->store, &pe->e,
-						 commit_callback, pe);
+	/* Update the metadata if we are persistent */
+	s->store->type->commit_exception(s->store, &pe->e, !pe->copy_error,
+					 pending_complete, pe);
 }
 
 /*
@@ -1507,6 +1564,7 @@ static void copy_callback(int read_err, unsigned long write_err, void *context)
 		}
 		list_add(&pe->out_of_order_entry, lh);
 	}
+	up(&s->cow_count);
 }
 
 /*
@@ -1530,6 +1588,7 @@ static void start_copy(struct dm_snap_pending_exception *pe)
 	dest.count = src.count;
 
 	/* Hand over to kcopyd */
+	down(&s->cow_count);
 	dm_kcopyd_copy(s->kcopyd_client, &src, 1, &dest, 0, copy_callback, pe);
 }
 
@@ -1550,6 +1609,7 @@ static void start_full_bio(struct dm_snap_pending_exception *pe,
 	pe->full_bio_end_io = bio->bi_end_io;
 	pe->full_bio_private = bio->bi_private;
 
+	down(&s->cow_count);
 	callback_data = dm_kcopyd_prepare_callback(s->kcopyd_client,
 						   copy_callback, pe);
 
@@ -1840,9 +1900,40 @@ static int snapshot_preresume(struct dm_target *ti)
 static void snapshot_resume(struct dm_target *ti)
 {
 	struct dm_snapshot *s = ti->private;
-	struct dm_snapshot *snap_src = NULL, *snap_dest = NULL;
+	struct dm_snapshot *snap_src = NULL, *snap_dest = NULL, *snap_merging = NULL;
+	struct dm_origin *o;
+	struct mapped_device *origin_md = NULL;
+	bool must_restart_merging = false;
 
 	down_read(&_origins_lock);
+
+	o = __lookup_dm_origin(s->origin->bdev);
+	if (o)
+		origin_md = dm_table_get_md(o->ti->table);
+	if (!origin_md) {
+		(void) __find_snapshots_sharing_cow(s, NULL, NULL, &snap_merging);
+		if (snap_merging)
+			origin_md = dm_table_get_md(snap_merging->ti->table);
+	}
+	if (origin_md == dm_table_get_md(ti->table))
+		origin_md = NULL;
+	if (origin_md) {
+		if (dm_hold(origin_md))
+			origin_md = NULL;
+	}
+
+	up_read(&_origins_lock);
+
+	if (origin_md) {
+		dm_internal_suspend(origin_md);
+		if (snap_merging && test_bit(RUNNING_MERGE, &snap_merging->state_bits)) {
+			must_restart_merging = true;
+			stop_merge(snap_merging);
+		}
+	}
+
+	down_read(&_origins_lock);
+
 	(void) __find_snapshots_sharing_cow(s, &snap_src, &snap_dest, NULL);
 	if (snap_src && snap_dest) {
 		down_write(&snap_src->lock);
@@ -1851,7 +1942,15 @@ static void snapshot_resume(struct dm_target *ti)
 		up_write(&snap_dest->lock);
 		up_write(&snap_src->lock);
 	}
+
 	up_read(&_origins_lock);
+
+	if (origin_md) {
+		if (must_restart_merging)
+			start_merge(snap_merging);
+		dm_internal_resume(origin_md);
+		dm_put(origin_md);
+	}
 
 	/* Now we have correct chunk size, reregister */
 	reregister_snapshot(s);
@@ -2133,11 +2232,6 @@ static int origin_write_extent(struct dm_snapshot *merging_snap,
  * Origin: maps a linear range of a device, with hooks for snapshotting.
  */
 
-struct dm_origin {
-	struct dm_dev *dev;
-	unsigned split_boundary;
-};
-
 /*
  * Construct an origin mapping: <dev_path>
  * The context for an origin is merely a 'struct dm_dev *'
@@ -2166,6 +2260,7 @@ static int origin_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 		goto bad_open;
 	}
 
+	o->ti = ti;
 	ti->private = o;
 	ti->num_flush_bios = 1;
 
@@ -2180,6 +2275,7 @@ bad_alloc:
 static void origin_dtr(struct dm_target *ti)
 {
 	struct dm_origin *o = ti->private;
+
 	dm_put_device(ti, o->dev);
 	kfree(o);
 }
@@ -2216,6 +2312,19 @@ static void origin_resume(struct dm_target *ti)
 	struct dm_origin *o = ti->private;
 
 	o->split_boundary = get_origin_minimum_chunksize(o->dev->bdev);
+
+	down_write(&_origins_lock);
+	__insert_dm_origin(o);
+	up_write(&_origins_lock);
+}
+
+static void origin_postsuspend(struct dm_target *ti)
+{
+	struct dm_origin *o = ti->private;
+
+	down_write(&_origins_lock);
+	__remove_dm_origin(o);
+	up_write(&_origins_lock);
 }
 
 static void origin_status(struct dm_target *ti, status_type_t type,
@@ -2258,12 +2367,13 @@ static int origin_iterate_devices(struct dm_target *ti,
 
 static struct target_type origin_target = {
 	.name    = "snapshot-origin",
-	.version = {1, 8, 1},
+	.version = {1, 9, 0},
 	.module  = THIS_MODULE,
 	.ctr     = origin_ctr,
 	.dtr     = origin_dtr,
 	.map     = origin_map,
 	.resume  = origin_resume,
+	.postsuspend = origin_postsuspend,
 	.status  = origin_status,
 	.merge	 = origin_merge,
 	.iterate_devices = origin_iterate_devices,
@@ -2271,7 +2381,7 @@ static struct target_type origin_target = {
 
 static struct target_type snapshot_target = {
 	.name    = "snapshot",
-	.version = {1, 12, 0},
+	.version = {1, 13, 0},
 	.module  = THIS_MODULE,
 	.ctr     = snapshot_ctr,
 	.dtr     = snapshot_dtr,
@@ -2285,7 +2395,7 @@ static struct target_type snapshot_target = {
 
 static struct target_type merge_target = {
 	.name    = dm_snapshot_merge_target_name,
-	.version = {1, 2, 0},
+	.version = {1, 3, 0},
 	.module  = THIS_MODULE,
 	.ctr     = snapshot_ctr,
 	.dtr     = snapshot_dtr,

@@ -283,7 +283,8 @@ static inline struct rmap_item *alloc_rmap_item(void)
 {
 	struct rmap_item *rmap_item;
 
-	rmap_item = kmem_cache_zalloc(rmap_item_cache, GFP_KERNEL);
+	rmap_item = kmem_cache_zalloc(rmap_item_cache, GFP_KERNEL |
+						__GFP_NORETRY | __GFP_NOWARN);
 	if (rmap_item)
 		ksm_rmap_items++;
 	return rmap_item;
@@ -376,7 +377,7 @@ static int break_ksm(struct vm_area_struct *vma, unsigned long addr)
 		else
 			ret = VM_FAULT_WRITE;
 		put_page(page);
-	} while (!(ret & (VM_FAULT_WRITE | VM_FAULT_SIGBUS | VM_FAULT_OOM)));
+	} while (!(ret & (VM_FAULT_WRITE | VM_FAULT_SIGBUS | VM_FAULT_SIGSEGV | VM_FAULT_OOM)));
 	/*
 	 * We must loop because handle_mm_fault() may back out if there's
 	 * any difficulty e.g. if pte accessed bit gets updated concurrently.
@@ -1474,8 +1475,22 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 	tree_rmap_item =
 		unstable_tree_search_insert(rmap_item, page, &tree_page);
 	if (tree_rmap_item) {
+		bool split;
+
 		kpage = try_to_merge_two_pages(rmap_item, page,
 						tree_rmap_item, tree_page);
+		/*
+		 * If both pages we tried to merge belong to the same compound
+		 * page, then we actually ended up increasing the reference
+		 * count of the same compound page twice, and split_huge_page
+		 * failed.
+		 * Here we set a flag if that happened, and we use it later to
+		 * try split_huge_page again. Since we call put_page right
+		 * afterwards, the reference count will be correct and
+		 * split_huge_page should succeed.
+		 */
+		split = PageTransCompound(page)
+			&& compound_head(page) == compound_head(tree_page);
 		put_page(tree_page);
 		if (kpage) {
 			/*
@@ -1500,6 +1515,20 @@ static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
 				break_cow(tree_rmap_item);
 				break_cow(rmap_item);
 			}
+		} else if (split) {
+			/*
+			 * We are here if we tried to merge two pages and
+			 * failed because they both belonged to the same
+			 * compound page. We will split the page now, but no
+			 * merging will take place.
+			 * We do not want to add the cost of a full lock; if
+			 * the page is locked, it is better to skip it and
+			 * perhaps try again later.
+			 */
+			if (!trylock_page(page))
+				return;
+			split_huge_page(page);
+			unlock_page(page);
 		}
 	}
 }

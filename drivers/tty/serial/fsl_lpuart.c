@@ -506,9 +506,6 @@ static inline void lpuart_prepare_rx(struct lpuart_port *sport)
 
 	spin_lock_irqsave(&sport->port.lock, flags);
 
-	init_timer(&sport->lpuart_timer);
-	sport->lpuart_timer.function = lpuart_timer_func;
-	sport->lpuart_timer.data = (unsigned long)sport;
 	sport->lpuart_timer.expires = jiffies + sport->dma_rx_timeout;
 	add_timer(&sport->lpuart_timer);
 
@@ -758,18 +755,18 @@ out:
 static irqreturn_t lpuart_int(int irq, void *dev_id)
 {
 	struct lpuart_port *sport = dev_id;
-	unsigned char sts;
+	unsigned char sts, crdma;
 
 	sts = readb(sport->port.membase + UARTSR1);
+	crdma = readb(sport->port.membase + UARTCR5);
 
-	if (sts & UARTSR1_RDRF) {
+	if (sts & UARTSR1_RDRF && !(crdma & UARTCR5_RDMAS)) {
 		if (sport->lpuart_dma_use)
 			lpuart_prepare_rx(sport);
 		else
 			lpuart_rxint(irq, dev_id);
 	}
-	if (sts & UARTSR1_TDRE &&
-		!(readb(sport->port.membase + UARTCR5) & UARTCR5_TDMAS)) {
+	if (sts & UARTSR1_TDRE && !(crdma & UARTCR5_TDMAS)) {
 		if (sport->lpuart_dma_use)
 			lpuart_pio_tx(sport);
 		else
@@ -916,6 +913,12 @@ static void lpuart_setup_watermark(struct lpuart_port *sport)
 	/* flush Tx and Rx FIFO */
 	writeb(UARTCFIFO_TXFLUSH | UARTCFIFO_RXFLUSH,
 			sport->port.membase + UARTCFIFO);
+
+	/* explicitly clear RDRF */
+	if (readb(sport->port.membase + UARTSR1) & UARTSR1_RDRF) {
+		readb(sport->port.membase + UARTDR);
+		writeb(UARTSFIFO_RXUF, sport->port.membase + UARTSFIFO);
+	}
 
 	writeb(0, sport->port.membase + UARTTWFIFO);
 	writeb(1, sport->port.membase + UARTRWFIFO);
@@ -1098,6 +1101,8 @@ static int lpuart_startup(struct uart_port *port)
 	sport->txfifo_size = 0x1 << (((temp >> UARTPFIFO_TXSIZE_OFF) &
 		UARTPFIFO_FIFOSIZE_MASK) + 1);
 
+	sport->port.fifosize = sport->txfifo_size;
+
 	sport->rxfifo_size = 0x1 << (((temp >> UARTPFIFO_RXSIZE_OFF) &
 		UARTPFIFO_FIFOSIZE_MASK) + 1);
 
@@ -1106,7 +1111,10 @@ static int lpuart_startup(struct uart_port *port)
 		sport->lpuart_dma_use = false;
 	} else {
 		sport->lpuart_dma_use = true;
+		setup_timer(&sport->lpuart_timer, lpuart_timer_func,
+			    (unsigned long)sport);
 		temp = readb(port->membase + UARTCR5);
+		temp &= ~UARTCR5_RDMAS;
 		writeb(temp | UARTCR5_TDMAS, port->membase + UARTCR5);
 	}
 
@@ -1180,6 +1188,8 @@ static void lpuart_shutdown(struct uart_port *port)
 	devm_free_irq(port->dev, port->irq, sport);
 
 	if (sport->lpuart_dma_use) {
+		del_timer_sync(&sport->lpuart_timer);
+
 		lpuart_dma_tx_free(port);
 		lpuart_dma_rx_free(port);
 	}
@@ -1274,6 +1284,8 @@ lpuart_set_termios(struct uart_port *port, struct ktermios *termios,
 			else
 				cr1 &= ~UARTCR1_PT;
 		}
+	} else {
+		cr1 &= ~UARTCR1_PE;
 	}
 
 	/* ask the core to calculate the divisor */
@@ -1409,10 +1421,12 @@ lpuart32_set_termios(struct uart_port *port, struct ktermios *termios,
 			else
 				ctrl &= ~UARTCTRL_PT;
 		}
+	} else {
+		ctrl &= ~UARTCTRL_PE;
 	}
 
 	/* ask the core to calculate the divisor */
-	baud = uart_get_baud_rate(port, termios, old, 50, port->uartclk / 16);
+	baud = uart_get_baud_rate(port, termios, old, 50, port->uartclk / 4);
 
 	spin_lock_irqsave(&sport->port.lock, flags);
 
@@ -1783,6 +1797,10 @@ static int lpuart_probe(struct platform_device *pdev)
 	if (ret < 0) {
 		dev_err(&pdev->dev, "failed to get alias id, errno %d\n", ret);
 		return ret;
+	}
+	if (ret >= ARRAY_SIZE(lpuart_ports)) {
+		dev_err(&pdev->dev, "serial%d out of range\n", ret);
+		return -EINVAL;
 	}
 	sport->port.line = ret;
 	sport->lpuart32 = of_device_is_compatible(np, "fsl,ls1021a-lpuart");

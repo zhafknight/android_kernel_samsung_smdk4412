@@ -195,6 +195,7 @@ struct xenvif_queue { /* Per-queue data for xenvif */
 	unsigned long   remaining_credit;
 	struct timer_list credit_timeout;
 	u64 credit_window_start;
+	bool rate_limited;
 
 	/* Statistics */
 	struct xenvif_stats stats;
@@ -230,6 +231,8 @@ struct xenvif {
 	 */
 	bool disabled;
 	unsigned long status;
+	unsigned long drain_timeout;
+	unsigned long stall_timeout;
 
 	/* Queues */
 	struct xenvif_queue *queues;
@@ -328,7 +331,7 @@ irqreturn_t xenvif_interrupt(int irq, void *dev_id);
 extern bool separate_tx_rx_irq;
 
 extern unsigned int rx_drain_timeout_msecs;
-extern unsigned int rx_drain_timeout_jiffies;
+extern unsigned int rx_stall_timeout_msecs;
 extern unsigned int xenvif_max_queues;
 
 #ifdef CONFIG_DEBUG_FS

@@ -33,6 +33,7 @@
 #include <linux/console.h>
 #include <linux/leds.h>
 #include <linux/reboot.h>
+#include <linux/console.h>
 
 #include <asm/cacheflush.h>
 #include <asm/idmap.h>
@@ -42,6 +43,8 @@
 #include <asm/system_misc.h>
 #include <asm/mach/time.h>
 #include <asm/tls.h>
+#include <asm/vdso.h>
+#include "reboot.h"
 
 #ifdef CONFIG_CC_STACKPROTECTOR
 #include <linux/stackprotector.h>
@@ -59,6 +62,18 @@ static const char *processor_modes[] __maybe_unused = {
 static const char *isa_modes[] __maybe_unused = {
   "ARM" , "Thumb" , "Jazelle", "ThumbEE"
 };
+
+#ifdef CONFIG_SMP
+void arch_trigger_all_cpu_backtrace(void)
+{
+	smp_send_all_cpu_backtrace();
+}
+#else
+void arch_trigger_all_cpu_backtrace(void)
+{
+	dump_stack();
+}
+#endif
 
 extern void call_with_stack(void (*fn)(void *), void *arg, void *sp);
 typedef void (*phys_reset_t)(unsigned long);
@@ -121,7 +136,7 @@ static void __soft_restart(void *addr)
 	BUG();
 }
 
-void soft_restart(unsigned long addr)
+void _soft_restart(unsigned long addr, bool disable_l2)
 {
 	u64 *stack = soft_restart_stack + ARRAY_SIZE(soft_restart_stack);
 
@@ -130,7 +145,7 @@ void soft_restart(unsigned long addr)
 	local_fiq_disable();
 
 	/* Disable the L2 if we're the last man standing. */
-	if (num_online_cpus() == 1)
+	if (disable_l2)
 		outer_disable();
 
 	/* Change to the new stack and continue with the reset. */
@@ -138,6 +153,11 @@ void soft_restart(unsigned long addr)
 
 	/* Should never get here. */
 	BUG();
+}
+
+void soft_restart(unsigned long addr)
+{
+	_soft_restart(addr, num_online_cpus() == 1);
 }
 
 /*
@@ -174,6 +194,7 @@ void arch_cpu_idle_prepare(void)
 
 void arch_cpu_idle_enter(void)
 {
+	idle_notifier_call_chain(IDLE_START);
 	ledtrig_cpu(CPU_LED_IDLE_START);
 #ifdef CONFIG_PL310_ERRATA_769419
 	wmb();
@@ -183,6 +204,7 @@ void arch_cpu_idle_enter(void)
 void arch_cpu_idle_exit(void)
 {
 	ledtrig_cpu(CPU_LED_IDLE_END);
+	idle_notifier_call_chain(IDLE_END);
 }
 
 #ifdef CONFIG_HOTPLUG_CPU
@@ -203,6 +225,16 @@ void arch_cpu_idle_dead(void)
  */
 void machine_shutdown(void)
 {
+#ifdef CONFIG_SMP
+	/*
+	 * Disable preemption so we're guaranteed to
+	 * run to power off or reboot and prevent
+	 * the possibility of switching to another
+	 * thread that might wind up blocking on
+	 * one of the stopped CPUs.
+	 */
+	preempt_disable();
+#endif
 	disable_nonboot_cpus();
 }
 
@@ -250,6 +282,7 @@ void machine_restart(char *cmd)
 {
 	local_irq_disable();
 	smp_send_stop();
+
 
 	/* Flush the console to make sure all the relevant messages make it
 	 * out to the console drivers */
@@ -371,12 +404,36 @@ void __show_regs(struct pt_regs *regs)
 	buf[4] = '\0';
 
 #ifndef CONFIG_CPU_V7M
-	printk("Flags: %s  IRQs o%s  FIQs o%s  Mode %s  ISA %s  Segment %s\n",
-		buf, interrupts_enabled(regs) ? "n" : "ff",
-		fast_interrupts_enabled(regs) ? "n" : "ff",
-		processor_modes[processor_mode(regs)],
-		isa_modes[isa_mode(regs)],
-		get_fs() == get_ds() ? "kernel" : "user");
+	{
+		unsigned int domain = get_domain();
+		const char *segment;
+
+#ifdef CONFIG_CPU_SW_DOMAIN_PAN
+		/*
+		 * Get the domain register for the parent context. In user
+		 * mode, we don't save the DACR, so lets use what it should
+		 * be. For other modes, we place it after the pt_regs struct.
+		 */
+		if (user_mode(regs))
+			domain = DACR_UACCESS_ENABLE;
+		else
+			domain = *(unsigned int *)(regs + 1);
+#endif
+
+		if ((domain & domain_mask(DOMAIN_USER)) ==
+		    domain_val(DOMAIN_USER, DOMAIN_NOACCESS))
+			segment = "none";
+		else if (get_fs() == get_ds())
+			segment = "kernel";
+		else
+			segment = "user";
+
+		printk("Flags: %s  IRQs o%s  FIQs o%s  Mode %s  ISA %s  Segment %s\n",
+			buf, interrupts_enabled(regs) ? "n" : "ff",
+			fast_interrupts_enabled(regs) ? "n" : "ff",
+			processor_modes[processor_mode(regs)],
+			isa_modes[isa_mode(regs)], segment);
+	}
 #else
 	printk("xPSR: %08lx\n", regs->ARM_cpsr);
 #endif
@@ -388,10 +445,9 @@ void __show_regs(struct pt_regs *regs)
 		buf[0] = '\0';
 #ifdef CONFIG_CPU_CP15_MMU
 		{
-			unsigned int transbase, dac;
+			unsigned int transbase, dac = get_domain();
 			asm("mrc p15, 0, %0, c2, c0\n\t"
-			    "mrc p15, 0, %1, c3, c0\n"
-			    : "=r" (transbase), "=r" (dac));
+			    : "=r" (transbase));
 			snprintf(buf, sizeof(buf), "  Table: %08x  DAC: %08x",
 			  	transbase, dac);
 		}
@@ -453,6 +509,16 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 	struct pt_regs *childregs = task_pt_regs(p);
 
 	memset(&thread->cpu_context, 0, sizeof(struct cpu_context_save));
+
+#ifdef CONFIG_CPU_USE_DOMAINS
+	/*
+	 * Copy the initial value of the domain access control register
+	 * from the current thread: thread->addr_limit will have been
+	 * copied from the current thread via setup_thread_stack() in
+	 * kernel/fork.c
+	 */
+	thread->cpu_domain = get_domain();
+#endif
 
 	if (likely(!(p->flags & PF_KTHREAD))) {
 		*childregs = *current_pt_regs();
@@ -578,7 +644,7 @@ const char *arch_vma_name(struct vm_area_struct *vma)
 }
 
 /* If possible, provide a placement hint at a random offset from the
- * stack for the signal page.
+ * stack for the sigpage and vdso pages.
  */
 static unsigned long sigpage_addr(const struct mm_struct *mm,
 				  unsigned int npages)
@@ -622,6 +688,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
+	unsigned long npages;
 	unsigned long addr;
 	unsigned long hint;
 	int ret = 0;
@@ -631,9 +698,12 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 	if (!signal_page)
 		return -ENOMEM;
 
+	npages = 1; /* for sigpage */
+	npages += vdso_total_pages;
+
 	down_write(&mm->mmap_sem);
-	hint = sigpage_addr(mm, 1);
-	addr = get_unmapped_area(NULL, hint, PAGE_SIZE, 0, 0);
+	hint = sigpage_addr(mm, npages);
+	addr = get_unmapped_area(NULL, hint, npages << PAGE_SHIFT, 0, 0);
 	if (IS_ERR_VALUE(addr)) {
 		ret = addr;
 		goto up_fail;
@@ -649,6 +719,12 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
 	}
 
 	mm->context.sigpage = addr;
+
+	/* Unlike the sigpage, failure to install the vdso is unlikely
+	 * to be fatal to the process, so no error check needed
+	 * here.
+	 */
+	arm_install_vdso(mm, addr + PAGE_SIZE);
 
  up_fail:
 	up_write(&mm->mmap_sem);

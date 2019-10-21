@@ -12,6 +12,7 @@
  * Copyright (C) 2012 Olivier Sobrie <olivier@sobrie.be>
  */
 
+#include <linux/kernel.h>
 #include <linux/completion.h>
 #include <linux/module.h>
 #include <linux/netdevice.h>
@@ -403,12 +404,19 @@ static int kvaser_usb_wait_msg(const struct kvaser_usb *dev, u8 id,
 		while (pos <= actual_len - MSG_HEADER_LEN) {
 			tmp = buf + pos;
 
-			if (!tmp->len)
-				break;
+			/* Handle messages crossing the USB endpoint max packet
+			 * size boundary. Check kvaser_usb_read_bulk_callback()
+			 * for further details.
+			 */
+			if (tmp->len == 0) {
+				pos = round_up(pos,
+					       dev->bulk_in->wMaxPacketSize);
+				continue;
+			}
 
 			if (pos + tmp->len > actual_len) {
-				dev_err(dev->udev->dev.parent,
-					"Format error\n");
+				dev_err_ratelimited(dev->udev->dev.parent,
+						    "Format error\n");
 				break;
 			}
 
@@ -587,7 +595,7 @@ static int kvaser_usb_simple_msg_async(struct kvaser_usb_net_priv *priv,
 			  usb_sndbulkpipe(dev->udev,
 					  dev->bulk_out->bEndpointAddress),
 			  buf, msg->len,
-			  kvaser_usb_simple_msg_callback, priv);
+			  kvaser_usb_simple_msg_callback, netdev);
 	usb_anchor_urb(urb, &priv->tx_submitted);
 
 	err = usb_submit_urb(urb, GFP_ATOMIC);
@@ -662,11 +670,6 @@ static void kvaser_usb_rx_error(const struct kvaser_usb *dev,
 	priv = dev->nets[channel];
 	stats = &priv->netdev->stats;
 
-	if (status & M16C_STATE_BUS_RESET) {
-		kvaser_usb_unlink_tx_urbs(priv);
-		return;
-	}
-
 	skb = alloc_can_err_skb(priv->netdev, &cf);
 	if (!skb) {
 		stats->rx_dropped++;
@@ -677,7 +680,7 @@ static void kvaser_usb_rx_error(const struct kvaser_usb *dev,
 
 	netdev_dbg(priv->netdev, "Error status: 0x%02x\n", status);
 
-	if (status & M16C_STATE_BUS_OFF) {
+	if (status & (M16C_STATE_BUS_OFF | M16C_STATE_BUS_RESET)) {
 		cf->can_id |= CAN_ERR_BUSOFF;
 
 		priv->can.can_stats.bus_off++;
@@ -703,9 +706,7 @@ static void kvaser_usb_rx_error(const struct kvaser_usb *dev,
 		}
 
 		new_state = CAN_STATE_ERROR_PASSIVE;
-	}
-
-	if (status == M16C_STATE_BUS_ERROR) {
+	} else if (status & M16C_STATE_BUS_ERROR) {
 		if ((priv->can.state < CAN_STATE_ERROR_WARNING) &&
 		    ((txerr >= 96) || (rxerr >= 96))) {
 			cf->can_id |= CAN_ERR_CRTL;
@@ -715,7 +716,8 @@ static void kvaser_usb_rx_error(const struct kvaser_usb *dev,
 
 			priv->can.can_stats.error_warning++;
 			new_state = CAN_STATE_ERROR_WARNING;
-		} else if (priv->can.state > CAN_STATE_ERROR_ACTIVE) {
+		} else if ((priv->can.state > CAN_STATE_ERROR_ACTIVE) &&
+			   ((txerr < 96) && (rxerr < 96))) {
 			cf->can_id |= CAN_ERR_PROT;
 			cf->data[2] = CAN_ERR_PROT_ACTIVE;
 
@@ -848,7 +850,7 @@ static void kvaser_usb_rx_can_msg(const struct kvaser_usb *dev,
 
 	skb = alloc_can_skb(priv->netdev, &cf);
 	if (!skb) {
-		stats->tx_dropped++;
+		stats->rx_dropped++;
 		return;
 	}
 
@@ -978,6 +980,8 @@ static void kvaser_usb_read_bulk_callback(struct urb *urb)
 	case 0:
 		break;
 	case -ENOENT:
+	case -EPIPE:
+	case -EPROTO:
 	case -ESHUTDOWN:
 		return;
 	default:
@@ -986,19 +990,30 @@ static void kvaser_usb_read_bulk_callback(struct urb *urb)
 		goto resubmit_urb;
 	}
 
-	while (pos <= urb->actual_length - MSG_HEADER_LEN) {
+	while (pos <= (int)(urb->actual_length - MSG_HEADER_LEN)) {
 		msg = urb->transfer_buffer + pos;
 
-		if (!msg->len)
-			break;
+		/* The Kvaser firmware can only read and write messages that
+		 * does not cross the USB's endpoint wMaxPacketSize boundary.
+		 * If a follow-up command crosses such boundary, firmware puts
+		 * a placeholder zero-length command in its place then aligns
+		 * the real command to the next max packet size.
+		 *
+		 * Handle such cases or we're going to miss a significant
+		 * number of events in case of a heavy rx load on the bus.
+		 */
+		if (msg->len == 0) {
+			pos = round_up(pos, dev->bulk_in->wMaxPacketSize);
+			continue;
+		}
 
 		if (pos + msg->len > urb->actual_length) {
-			dev_err(dev->udev->dev.parent, "Format error\n");
+			dev_err_ratelimited(dev->udev->dev.parent,
+					    "Format error\n");
 			break;
 		}
 
 		kvaser_usb_handle_message(dev, msg);
-
 		pos += msg->len;
 	}
 
@@ -1239,12 +1254,16 @@ static int kvaser_usb_close(struct net_device *netdev)
 	if (err)
 		netdev_warn(netdev, "Cannot flush queue, error %d\n", err);
 
-	if (kvaser_usb_send_simple_msg(dev, CMD_RESET_CHIP, priv->channel))
+	err = kvaser_usb_send_simple_msg(dev, CMD_RESET_CHIP, priv->channel);
+	if (err)
 		netdev_warn(netdev, "Cannot reset card, error %d\n", err);
 
 	err = kvaser_usb_stop_chip(priv);
 	if (err)
 		netdev_warn(netdev, "Cannot stop device, error %d\n", err);
+
+	/* reset tx contexts */
+	kvaser_usb_unlink_tx_urbs(priv);
 
 	priv->can.state = CAN_STATE_STOPPED;
 	close_candev(priv->netdev);
@@ -1294,12 +1313,14 @@ static netdev_tx_t kvaser_usb_start_xmit(struct sk_buff *skb,
 	if (!urb) {
 		netdev_err(netdev, "No memory left for URBs\n");
 		stats->tx_dropped++;
-		goto nourbmem;
+		dev_kfree_skb(skb);
+		return NETDEV_TX_OK;
 	}
 
 	buf = kmalloc(sizeof(struct kvaser_msg), GFP_ATOMIC);
 	if (!buf) {
 		stats->tx_dropped++;
+		dev_kfree_skb(skb);
 		goto nobufmem;
 	}
 
@@ -1334,6 +1355,7 @@ static netdev_tx_t kvaser_usb_start_xmit(struct sk_buff *skb,
 		}
 	}
 
+	/* This should never happen; it implies a flow control bug */
 	if (!context) {
 		netdev_warn(netdev, "cannot find free context\n");
 		ret =  NETDEV_TX_BUSY;
@@ -1364,9 +1386,6 @@ static netdev_tx_t kvaser_usb_start_xmit(struct sk_buff *skb,
 	if (unlikely(err)) {
 		can_free_echo_skb(netdev, context->echo_index);
 
-		skb = NULL; /* set to NULL to avoid double free in
-			     * dev_kfree_skb(skb) */
-
 		atomic_dec(&priv->active_tx_urbs);
 		usb_unanchor_urb(urb);
 
@@ -1388,8 +1407,6 @@ releasebuf:
 	kfree(buf);
 nobufmem:
 	usb_free_urb(urb);
-nourbmem:
-	dev_kfree_skb(skb);
 	return ret;
 }
 
@@ -1502,6 +1519,10 @@ static int kvaser_usb_init_one(struct usb_interface *intf,
 	struct kvaser_usb_net_priv *priv;
 	int i, err;
 
+	err = kvaser_usb_send_simple_msg(dev, CMD_RESET_CHIP, channel);
+	if (err)
+		return err;
+
 	netdev = alloc_candev(sizeof(*priv), MAX_TX_URBS);
 	if (!netdev) {
 		dev_err(&intf->dev, "Cannot alloc candev\n");
@@ -1588,7 +1609,7 @@ static int kvaser_usb_probe(struct usb_interface *intf,
 {
 	struct kvaser_usb *dev;
 	int err = -ENOMEM;
-	int i;
+	int i, retry = 3;
 
 	dev = devm_kzalloc(&intf->dev, sizeof(*dev), GFP_KERNEL);
 	if (!dev)
@@ -1606,10 +1627,15 @@ static int kvaser_usb_probe(struct usb_interface *intf,
 
 	usb_set_intfdata(intf, dev);
 
-	for (i = 0; i < MAX_NET_DEVICES; i++)
-		kvaser_usb_send_simple_msg(dev, CMD_RESET_CHIP, i);
+	/* On some x86 laptops, plugging a Kvaser device again after
+	 * an unplug makes the firmware always ignore the very first
+	 * command. For such a case, provide some room for retries
+	 * instead of completely exiting the driver.
+	 */
+	do {
+		err = kvaser_usb_get_software_info(dev);
+	} while (--retry && err == -ETIMEDOUT);
 
-	err = kvaser_usb_get_software_info(dev);
 	if (err) {
 		dev_err(&intf->dev,
 			"Cannot get software infos, error %d\n", err);

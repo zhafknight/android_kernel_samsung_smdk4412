@@ -402,7 +402,7 @@ static struct sk_buff *cdc_mbim_process_dgram(struct usbnet *dev, u8 *buf, size_
 
 	/* map MBIM session to VLAN */
 	if (tci)
-		vlan_put_tag(skb, htons(ETH_P_8021Q), tci);
+		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), tci);
 err:
 	return skb;
 }
@@ -550,7 +550,7 @@ err:
 
 static const struct driver_info cdc_mbim_info = {
 	.description = "CDC MBIM",
-	.flags = FLAG_NO_SETINT | FLAG_MULTI_PACKET | FLAG_WWAN,
+	.flags = FLAG_NO_SETINT | FLAG_MULTI_PACKET | FLAG_WWAN | FLAG_SEND_ZLP,
 	.bind = cdc_mbim_bind,
 	.unbind = cdc_mbim_unbind,
 	.manage_power = cdc_mbim_manage_power,
