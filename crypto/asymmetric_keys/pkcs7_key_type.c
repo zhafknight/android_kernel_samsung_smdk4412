@@ -18,9 +18,9 @@
 #include "pkcs7_parser.h"
 
 /*
- * Instantiate a PKCS#7 wrapped and validated key.
+ * Preparse a PKCS#7 wrapped and validated data blob.
  */
-int pkcs7_instantiate(struct key *key, struct key_preparsed_payload *prep)
+static int pkcs7_preparse(struct key_preparsed_payload *prep)
 {
 	struct pkcs7_message *pkcs7;
 	const void *data, *saved_prep_data;
@@ -54,7 +54,7 @@ int pkcs7_instantiate(struct key *key, struct key_preparsed_payload *prep)
 
 	prep->data = data;
 	prep->datalen = datalen;
-	ret = user_instantiate(key, prep);
+	ret = user_preparse(prep);
 	prep->data = saved_prep_data;
 	prep->datalen = saved_prep_datalen;
 
@@ -72,7 +72,9 @@ error:
 struct key_type key_type_pkcs7 = {
 	.name			= "pkcs7_test",
 	.def_lookup_type	= KEYRING_SEARCH_LOOKUP_DIRECT,
-	.instantiate		= pkcs7_instantiate,
+	.preparse		= pkcs7_preparse,
+	.free_preparse		= user_free_preparse,
+	.instantiate		= generic_key_instantiate,
 	.match			= user_match,
 	.revoke			= user_revoke,
 	.destroy		= user_destroy,
