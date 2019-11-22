@@ -5,6 +5,7 @@
 #include <linux/stat.h>
 #include <linux/uaccess.h>
 #include <linux/proc_fs.h>
+#include <linux/seq_file.h>
 
 #include <mach/sec_debug.h>
 #include <plat/map-base.h>
@@ -153,7 +154,7 @@ static void __init sec_log_save_old(void)
 		       __func__, last_kmsg_size, last_kmsg_buffer);
 }
 
-static ssize_t sec_log_read_old(struct file *file, char __user *buf,
+ssize_t last_kmsg_seq_read(struct file *file, char __user *buf,
 				size_t len, loff_t *offset)
 {
 	loff_t pos = *offset;
@@ -170,9 +171,11 @@ static ssize_t sec_log_read_old(struct file *file, char __user *buf,
 	return count;
 }
 
-static const struct file_operations last_kmsg_file_ops = {
-	.owner = THIS_MODULE,
-	.read = sec_log_read_old,
+static const struct file_operations last_kmsg_proc_fops = {
+	.open		= seq_open,
+	.read		= last_kmsg_seq_read,
+	.llseek		= seq_lseek,
+	.release	= seq_release,
 };
 
 static int __init sec_log_late_init(void)
@@ -182,14 +185,11 @@ static int __init sec_log_late_init(void)
 	if (last_kmsg_buffer == NULL)
 		return 0;
 
-	entry = create_proc_entry("last_kmsg", S_IFREG | S_IRUGO, NULL);
+	entry = proc_create("last_kmsg", S_IFREG | S_IRUGO, NULL, &last_kmsg_proc_fops);
 	if (!entry) {
 		pr_err("%s: failed to create proc entry\n", __func__);
 		return 0;
 	}
-
-	entry->proc_fops = &last_kmsg_file_ops;
-	entry->size = last_kmsg_size;
 	return 0;
 }
 
