@@ -1685,7 +1685,7 @@ static struct miscdevice srp_ctrl_miscdev = {
 };
 
 #ifdef CONFIG_FB
-void srp_fb_suspend()
+void srp_fb_suspend(void)
 {
 	s5pdbg("fb_suspend\n");
 
@@ -1699,7 +1699,7 @@ void srp_fb_suspend()
 	}
 }
 
-void srp_fb_resume()
+void srp_fb_resume(void)
 {
 	s5pdbg("fb_resume\n");
 
@@ -1784,7 +1784,7 @@ static int __init srp_probe(struct platform_device *pdev)
 	srp.icache = srp.sram + SRP_ICACHE;
 	srp.cmem = srp.sram + SRP_CMEM;
 
-	ret = request_irq(IRQ_AUDIO_SS, srp_irq, 0, "samsung-rp", pdev);
+	ret = request_irq(EXYNOS4_IRQ_AUDIO_SS, srp_irq, 0, "samsung-rp", pdev);
 	if (ret < 0) {
 		printk(KERN_ERR "SRP: Fail to claim SRP(AUDIO_SS) irq\n");
 		goto err4;
@@ -1865,7 +1865,7 @@ err7:
 err6:
 	srp_remove_fw_buff();
 err5:
-	free_irq(IRQ_AUDIO_SS, pdev);
+	free_irq(EXYNOS4_IRQ_AUDIO_SS, pdev);
 err4:
 	iounmap(srp.special);
 err3:
@@ -1882,7 +1882,7 @@ static int srp_remove(struct platform_device *pdev)
 {
 	s5pdbg("srp_remove() called !\n");
 
-	free_irq(IRQ_AUDIO_SS, pdev);
+	free_irq(EXYNOS4_IRQ_AUDIO_SS, pdev);
 	srp_remove_fw_buff();
 
 	misc_deregister(&srp_miscdev);
