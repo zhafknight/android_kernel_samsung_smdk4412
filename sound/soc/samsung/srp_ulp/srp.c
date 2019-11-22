@@ -868,7 +868,8 @@ static ssize_t srp_write(struct file *file, const char *buffer,
 
 		/* Sleep until IBUF empty interrupt */
 		s5pdbg("srp_write() enter to sleep until IBUF empty INT\n");
-		interruptible_sleep_on_timeout(&WaitQueue_Write, HZ / 2);
+
+		wait_event_interruptible_timeout(WaitQueue_Write, false, HZ / 2);
 		s5pdbg("srp_write() wake up\n");
 		/* not ready? */
 		if (!srp.ibuf_empty[srp.ibuf_next])
