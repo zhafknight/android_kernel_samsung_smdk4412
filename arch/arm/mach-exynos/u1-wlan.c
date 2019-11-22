@@ -10,7 +10,7 @@
 #include <plat/sdhci.h>
 #include <plat/gpio-cfg.h>
 #include <mach/regs-gpio.h>
-#include <mach/gpio.h>
+#include <linux/gpio.h>
 
 #ifdef CONFIG_BROADCOM_WIFI_RESERVED_MEM
 
