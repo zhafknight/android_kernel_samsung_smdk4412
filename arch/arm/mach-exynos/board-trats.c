@@ -5785,7 +5785,7 @@ static void __init exynos_init_reserve(void)
 
 MACHINE_START(TRATS, "TRATS")
 	/* Maintainer: Kyungmin Park <kyungmin.park@samsung.com> */
-	.boot_params	= S5P_PA_SDRAM + 0x100,
+	.atag_offset	= S5P_PA_SDRAM + 0x100,
 	.init_irq	= exynos4_init_irq,
 	.map_io		= trats_map_io,
 	.init_machine	= trats_machine_init,
@@ -5799,7 +5799,7 @@ MACHINE_END
  */
 MACHINE_START(U1HD, "U1HD")
 	/* Maintainer: Kyungmin Park <kyungmin.park@samsung.com> */
-	.boot_params	= S5P_PA_SDRAM + 0x100,
+	.atag_offset	= S5P_PA_SDRAM + 0x100,
 	.init_irq	= exynos4_init_irq,
 	.map_io		= trats_map_io,
 	.init_machine	= trats_machine_init,

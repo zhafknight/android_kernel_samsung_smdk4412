@@ -1305,7 +1305,7 @@ static void __init exynos_c2c_reserve(void)
 #endif
 
 MACHINE_START(SMDK5250, "SMDK5250")
-	.boot_params	= S5P_PA_SDRAM + 0x100,
+	.atag_offset	= S5P_PA_SDRAM + 0x100,
 	.init_irq	= exynos5_init_irq,
 	.map_io		= smdk5250_map_io,
 	.init_machine	= smdk5250_machine_init,

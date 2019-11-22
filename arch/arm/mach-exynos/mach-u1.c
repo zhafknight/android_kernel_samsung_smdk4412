@@ -8163,7 +8163,7 @@ static void __init exynos_init_reserve(void)
 
 MACHINE_START(SMDKC210, MODEL_NAME)
 	/* Maintainer: Kukjin Kim <kgene.kim@samsung.com> */
-	.boot_params	= S5P_PA_SDRAM + 0x100,
+	.atag_offset	= S5P_PA_SDRAM + 0x100,
 	.init_irq	= exynos4_init_irq,
 	.map_io		= smdkc210_map_io,
 	.init_machine	= smdkc210_machine_init,
