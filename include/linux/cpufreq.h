@@ -129,6 +129,13 @@ struct cpufreq_policy {
 #define CPUFREQ_SHARED_TYPE_ALL	 (2) /* All dependent CPUs should set freq */
 #define CPUFREQ_SHARED_TYPE_ANY	 (3) /* Freq can be set from any dependent CPU*/
 
+/******************** cpufreq transition notifiers *******************/
+
+#define CPUFREQ_PRECHANGE	(0)
+#define CPUFREQ_POSTCHANGE	(1)
+#define CPUFREQ_RESUMECHANGE	(8)
+#define CPUFREQ_SUSPENDCHANGE	(9)
+
 #ifdef CONFIG_CPU_FREQ
 struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
 void cpufreq_cpu_put(struct cpufreq_policy *policy);
