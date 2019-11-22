@@ -450,12 +450,13 @@ declare_store(hotplug_on) {
 	if (!hotplug_on && strcmp(buf, "on\n") == 0) {
 		hotplug_on = 1;
 		// restart worker thread.
-		hotpluging_rate = CHECK_DELAY;
-		queue_delayed_work_on(0, hotplug_wq, &hotplug_work, hotpluging_rate);
+		hotpluging_rate = CHECK_DELAY_ON;
+		queue_delayed_work_on(0	, hotplug_wq, &hotplug_work, hotpluging_rate);
 		printk("second_core: hotplug is on!\n");
 	}
 	else if (hotplug_on && strcmp(buf, "off\n") == 0) {
 		hotplug_on = 0;
+		hotpluging_rate = CHECK_DELAY_OFF;
 		second_core_on = 1;
 		if (cpu_online(1) == 0) {
 			cpu_up(1);
