@@ -80,10 +80,8 @@ static const char *const bt_slock_key_strings[BT_MAX_PROTO] = {
 	"slock-AF_BLUETOOTH-BTPROTO_AVDTP",
 };
 
-static inline void bt_sock_reclassify_lock(struct socket *sock, int proto)
+void bt_sock_reclassify_lock(struct sock *sk, int proto)
 {
-	struct sock *sk = sock->sk;
-
 	if (!sk)
 		return;
 
@@ -183,7 +181,7 @@ static int bt_sock_create(struct net *net, struct socket *sock, int proto,
 
 	if (bt_proto[proto] && try_module_get(bt_proto[proto]->owner)) {
 		err = bt_proto[proto]->create(net, sock, proto, kern);
-		bt_sock_reclassify_lock(sock, proto);
+		bt_sock_reclassify_lock(sock->sk, proto);
 		module_put(bt_proto[proto]->owner);
 	}
 
