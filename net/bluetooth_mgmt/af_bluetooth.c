@@ -242,7 +242,7 @@ struct sock *bt_accept_dequeue(struct sock *parent, struct socket *newsock)
 		}
 
 		if (sk->sk_state == BT_CONNECTED || !newsock ||
-						bt_sk(parent)->defer_setup) {
+						(test_bit(BT_SK_DEFER_SETUP, &bt_sk(parent)->flags))) {
 			bt_accept_unlink(sk);
 			if (newsock)
 				sock_graft(sk, newsock);
@@ -418,7 +418,7 @@ static inline unsigned int bt_accept_poll(struct sock *parent)
 	list_for_each_safe(p, n, &bt_sk(parent)->accept_q) {
 		sk = (struct sock *) list_entry(p, struct bt_sock, accept_q);
 		if (sk->sk_state == BT_CONNECTED ||
-					(bt_sk(parent)->defer_setup &&
+					(test_bit(BT_SK_DEFER_SETUP, &bt_sk(parent)->flags) &&
 						sk->sk_state == BT_CONNECT2))
 			return POLLIN | POLLRDNORM;
 	}
