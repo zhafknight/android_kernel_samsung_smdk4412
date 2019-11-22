@@ -8167,6 +8167,6 @@ MACHINE_START(SMDKC210, MODEL_NAME)
 	.init_irq	= exynos4_init_irq,
 	.map_io		= smdkc210_map_io,
 	.init_machine	= smdkc210_machine_init,
-	.timer		= &exynos4_timer,
+	.init_time	= exynos4_timer_init,
 	.init_early	= &exynos_init_reserve,
 MACHINE_END
