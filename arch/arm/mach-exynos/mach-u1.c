@@ -155,6 +155,7 @@
 
 #include <../../../drivers/video/samsung/s3cfb.h>
 #include "u1.h"
+#include "common.h"
 
 #include <mach/sec_debug.h>
 
