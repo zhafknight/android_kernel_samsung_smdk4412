@@ -11,6 +11,9 @@
  * published by the Free Software Foundation.
  */
 
+#include <asm/system_info.h>
+
+#include <linux/gpio.h>
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/platform_device.h>
