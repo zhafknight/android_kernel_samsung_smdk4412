@@ -3,6 +3,10 @@
 
 /* see Documentation/gpio.txt */
 
+#define GPIO_LEVEL_LOW		0
+#define GPIO_LEVEL_HIGH		1
+#define GPIO_LEVEL_NONE		2
+
 /* make these flag values available regardless of GPIO kconfig options */
 #define GPIOF_DIR_OUT	(0 << 0)
 #define GPIOF_DIR_IN	(1 << 0)
