@@ -380,8 +380,8 @@ void g2d_pagetable_clean(const void *start_addr, unsigned long size, unsigned lo
 int g2d_check_need_dst_cache_clean(g2d_params * params);
 
 #ifdef CONFIG_FB
-void g2d_fb_suspend();
-void g2d_fb_resume();
+void g2d_fb_suspend(void);
+void g2d_fb_resume(void);
 static int fb_notifier_callback(struct notifier_block *self,
 				unsigned long event, void *data);
 #endif
