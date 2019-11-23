@@ -557,46 +557,40 @@ static ssize_t kone_sysfs_set_startup_profile(struct device *dev,
 	return size;
 }
 
-static struct device_attribute kone_attributes[] = {
-	/*
-	 * Read actual dpi settings.
-	 * Returns raw value for further processing. Refer to enum
-	 * kone_polling_rates to get real value.
-	 */
-	__ATTR(actual_dpi, 0440, kone_sysfs_show_actual_dpi, NULL),
-	__ATTR(actual_profile, 0440, kone_sysfs_show_actual_profile, NULL),
+/*
+ * Read actual dpi settings.
+ * Returns raw value for further processing. Refer to enum
+ * kone_polling_rates to get real value.
+ */
+static DEVICE_ATTR(actual_dpi, 0440, kone_sysfs_show_actual_dpi, NULL);
+static DEVICE_ATTR(actual_profile, 0440, kone_sysfs_show_actual_profile, NULL);
 
-	/*
-	 * The mouse can be equipped with one of four supplied weights from 5
-	 * to 20 grams which are recognized and its value can be read out.
-	 * This returns the raw value reported by the mouse for easy evaluation
-	 * by software. Refer to enum kone_weights to get corresponding real
-	 * weight.
-	 */
-	__ATTR(weight, 0440, kone_sysfs_show_weight, NULL),
+/*
+ * The mouse can be equipped with one of four supplied weights from 5
+ * to 20 grams which are recognized and its value can be read out.
+ * This returns the raw value reported by the mouse for easy evaluation
+ * by software. Refer to enum kone_weights to get corresponding real
+ * weight.
+ */
+static DEVICE_ATTR(weight, 0440, kone_sysfs_show_weight, NULL);
 
-	/*
-	 * Prints firmware version stored in mouse as integer.
-	 * The raw value reported by the mouse is returned for easy evaluation,
-	 * to get the real version number the decimal point has to be shifted 2
-	 * positions to the left. E.g. a value of 138 means 1.38.
-	 */
-	__ATTR(firmware_version, 0440,
-			kone_sysfs_show_firmware_version, NULL),
+/*
+ * Prints firmware version stored in mouse as integer.
+ * The raw value reported by the mouse is returned for easy evaluation,
+ * to get the real version number the decimal point has to be shifted 2
+ * positions to the left. E.g. a value of 138 means 1.38.
+ */
+static DEVICE_ATTR(firmware_version, 0440, kone_sysfs_show_firmware_version, NULL);
 
-	/*
-	 * Prints state of Tracking Control Unit as number where 0 = off and
-	 * 1 = on. Writing 0 deactivates tcu and writing 1 calibrates and
-	 * activates the tcu
-	 */
-	__ATTR(tcu, 0660, kone_sysfs_show_tcu, kone_sysfs_set_tcu),
+/*
+ * Prints state of Tracking Control Unit as number where 0 = off and
+ * 1 = on. Writing 0 deactivates tcu and writing 1 calibrates and
+ * activates the tcu
+ */
+static DEVICE_ATTR(tcu, 0660, kone_sysfs_show_tcu, kone_sysfs_set_tcu);
 
-	/* Prints and takes the number of the profile the mouse starts with */
-	__ATTR(startup_profile, 0660,
-			kone_sysfs_show_startup_profile,
-			kone_sysfs_set_startup_profile),
-	__ATTR_NULL
-};
+/* Prints and takes the number of the profile the mouse starts with */
+static DEVICE_ATTR(startup_profile, 0660, kone_sysfs_show_startup_profile, kone_sysfs_set_startup_profile);
 
 static struct bin_attribute kone_bin_attributes[] = {
 	{
@@ -641,6 +635,26 @@ static struct bin_attribute kone_bin_attributes[] = {
 		.private = &profile_numbers[4]
 	},
 	__ATTR_NULL
+};
+
+static struct attribute *kone_attributes[] = {
+	&dev_attr_actual_dpi.attr,
+	&dev_attr_actual_profile.attr,
+	&dev_attr_weight.attr,
+	&dev_attr_firmware_version.attr,
+	&dev_attr_tcu.attr,
+	&dev_attr_startup_profile.attr,
+	NULL,
+};
+
+static const struct attribute_group kone_group = {
+	.attrs = kone_attributes,
+	.bin_attrs = kone_bin_attributes
+};
+
+static const struct attribute_group *kone_groups[] = {
+	&kone_group,
+	NULL,
 };
 
 static int kone_init_kone_device_struct(struct usb_device *usb_dev,
@@ -877,8 +891,7 @@ static int __init kone_init(void)
 	kone_class = class_create(THIS_MODULE, "kone");
 	if (IS_ERR(kone_class))
 		return PTR_ERR(kone_class);
-	kone_class->dev_attrs = kone_attributes;
-	kone_class->dev_bin_attrs = kone_bin_attributes;
+	kone_class->dev_groups = kone_groups;
 
 	retval = hid_register_driver(&kone_driver);
 	if (retval)
