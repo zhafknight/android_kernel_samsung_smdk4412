@@ -57,10 +57,8 @@ _mali_osk_errcode_t mali_mem_validation_add_range(u32 start, u32 size)
 		MALI_PRINT_ERROR(("Failed to get framebuffer information from CMA\n"));
 		return _MALI_OSK_ERR_FAULT;
 	} else {
-#endif
 		start = mem_info.lower_bound;
 		size = mem_info.total_size - mem_info.free_size;
-#ifdef CONFIG_EXYNOS_DEV_PD
 	}
 #endif
 #endif
