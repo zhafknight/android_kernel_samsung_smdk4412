@@ -11,6 +11,8 @@
 */
 
 #include <linux/kernel.h>
+#include <linux/sched.h>
+#include <linux/wait.h>
 
 #include "jpeg_core.h"
 #include "jpeg_regs.h"
@@ -86,7 +88,7 @@ int jpeg_exe_dec(struct jpeg_control *ctrl)
 
 	jpeg_start_decode(ctrl->reg_base);
 
-	if (interruptible_sleep_on_timeout(&ctrl->wq, INT_TIMEOUT) == 0)
+	if (wait_event_interruptible_timeout(ctrl->wq, false, INT_TIMEOUT) == 0)
 		jpeg_err("waiting for interrupt is timeout\n");
 
 
@@ -111,7 +113,7 @@ int jpeg_exe_enc(struct jpeg_control *ctrl)
 
 	jpeg_start_encode(ctrl->reg_base);
 
-	if (interruptible_sleep_on_timeout(&ctrl->wq, INT_TIMEOUT) == 0)
+	if (wait_event_interruptible_timeout(ctrl->wq, false, INT_TIMEOUT) == 0)
 		jpeg_err("waiting for interrupt is timeout\n");
 
 	if (ctrl->irq_ret != OK_ENC_OR_DEC) {
