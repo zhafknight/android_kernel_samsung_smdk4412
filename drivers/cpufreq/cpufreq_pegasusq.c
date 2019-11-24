@@ -182,7 +182,7 @@ static int hotplug_freq[4][2] = {
 	{200000, 500000},
 	{200000, 0}
 };
-#elif CONFIG_MACH_SMDK4210
+#elif defined CONFIG_MACH_SMDK4210
 static int hotplug_rq[2][2] = {
 	{0, 100}, {100, 0}
 };
@@ -1518,7 +1518,7 @@ static struct notifier_block fb_notif;
 static bool fb_suspended = false;
 unsigned int prev_freq_step;
 unsigned int prev_sampling_rate;
-static void cpufreq_pegasusq_fb_suspend()
+static void cpufreq_pegasusq_fb_suspend(void)
 {
 	if (fb_suspended)
 		return;
@@ -1538,7 +1538,7 @@ static void cpufreq_pegasusq_fb_suspend()
 #endif
 	fb_suspended = true;
 }
-static void cpufreq_pegasusq_fb_resume()
+static void cpufreq_pegasusq_fb_resume(void)
 {
 	if (!fb_suspended)
 		return;
