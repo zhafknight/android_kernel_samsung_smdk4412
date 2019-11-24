@@ -43,7 +43,6 @@
 #define DOMAIN_USER	1
 #define DOMAIN_IO	0
 #endif
-#define DOMAIN_VECTORS	3
 
 /*
  * Domain types
@@ -63,8 +62,7 @@
 	(domain_val(DOMAIN_USER, DOMAIN_CLIENT) | \
 	 domain_val(DOMAIN_KERNEL, DOMAIN_MANAGER) | \
 	 domain_val(DOMAIN_TABLE, DOMAIN_MANAGER) | \
-	 domain_val(DOMAIN_IO, DOMAIN_CLIENT) | \
-	 domain_val(DOMAIN_VECTORS, DOMAIN_CLIENT))
+	 domain_val(DOMAIN_IO, DOMAIN_CLIENT))
 
 #ifndef __ASSEMBLY__
 
