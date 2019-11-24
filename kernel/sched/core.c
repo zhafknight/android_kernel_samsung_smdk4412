@@ -8668,6 +8668,14 @@ static struct cftype cpu_files[] = {
 	{ }	/* terminate */
 };
 
+unsigned long get_cpu_nr_running(unsigned int cpu)
+{
+    if(cpu < NR_CPUS)
+        return cpu_rq(cpu)->nr_running;
+    else
+        return 0;
+}
+
 struct cgroup_subsys cpu_cgrp_subsys = {
 	.css_alloc	= cpu_cgroup_css_alloc,
 	.css_free	= cpu_cgroup_css_free,
