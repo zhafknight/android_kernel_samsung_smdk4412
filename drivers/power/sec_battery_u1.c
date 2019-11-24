@@ -21,6 +21,7 @@
 #include <linux/jiffies.h>
 #include <linux/platform_device.h>
 #include <linux/power_supply.h>
+#include <linux/seq_file.h>
 #include <linux/slab.h>
 #include <linux/wakelock.h>
 #include <linux/workqueue.h>
@@ -28,6 +29,7 @@
 #include <linux/android_alarm.h>
 #include <plat/adc.h>
 #include <linux/power/sec_battery_u1.h>
+#include <asm/system_info.h>
 #include "charge_current.h"
 
 #if defined(CONFIG_TARGET_LOCALE_NA) || defined(CONFIG_TARGET_LOCALE_NAATT)
@@ -3064,18 +3066,15 @@ static int sec_bat_is_charging(struct sec_bat_info *info)
 	return value.intval;
 }
 
-static int sec_bat_read_proc(char *buf, char **start,
-			     off_t offset, int count, int *eof, void *data)
+static int sec_bat_read_proc(struct seq_file *m, void *v)
 {
-	struct sec_bat_info *info = data;
+	struct sec_bat_info *info = m->private;
 	struct timespec cur_time;
-	ktime_t ktime;
-	int len = 0;
-
+	
         get_monotonic_boottime(&cur_time);
 
 #ifdef CONFIG_TARGET_LOCALE_NA
-	len = sprintf(buf,
+	seq_printf(m,
 		      "%lu, %u, %u, %u, %u, %u, %d, %d, %d, %u, %u, %u, %u, %u, %u, %u, %d, %lu\n",
 		      cur_time.tv_sec,
 		      info->batt_raw_soc,
@@ -3096,10 +3095,10 @@ static int sec_bat_read_proc(char *buf, char **start,
 		      info->present,
 		      info->cable_type, info->charging_passed_time);
 
-	return len;
+	return 0;
 }
 #else
-	len = sprintf(buf,
+	seq_printf(m,
 		      "%lu, %u, %u, %u, %u, %u, %d, %d, %d, %u, %u, %u, %u, %u, %u, %d, %lu\n",
 		      cur_time.tv_sec,
 		      info->batt_raw_soc,
@@ -3118,9 +3117,21 @@ static int sec_bat_read_proc(char *buf, char **start,
 		      info->present,
 		      info->cable_type, info->charging_passed_time);
 
-	return len;
+	return 0;
 }
 #endif
+
+static int sec_bat_proc_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, &sec_bat_read_proc, PDE_DATA(inode));
+}
+
+static const struct file_operations sec_bat_proc_fops = {
+	.open		= sec_bat_proc_open,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= seq_release,
+};
 
 static int sec_bat_probe(struct platform_device *pdev)
 {
@@ -3293,14 +3304,10 @@ static int sec_bat_probe(struct platform_device *pdev)
 	/* create sec detail attributes */
 	sec_bat_create_attrs(info->psy_bat.dev);
 
-	info->entry = create_proc_entry("batt_info_proc", S_IRUGO, NULL);
+	info->entry = proc_create_data("batt_info_proc", S_IRUGO, NULL, &sec_bat_proc_fops, (struct sec_bat_info *)info);
 	if (!info->entry)
 		dev_err(info->dev, "%s: failed to create proc_entry\n",
 			__func__);
-	else {
-		info->entry->read_proc = sec_bat_read_proc;
-		info->entry->data = (struct sec_bat_info *)info;
-	}
 
 	info->monitor_wqueue = create_freezable_workqueue(dev_name(&pdev->dev));
 	if (!info->monitor_wqueue) {
