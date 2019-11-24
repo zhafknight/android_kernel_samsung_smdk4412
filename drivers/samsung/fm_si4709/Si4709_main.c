@@ -16,7 +16,9 @@
 #include <linux/stat.h>
 #include <linux/ioctl.h>
 #include <linux/delay.h>
+#include <asm/system_info.h>
 
+#include <linux/gpio.h>
 #include <plat/gpio-cfg.h>
 #include <mach/gpio.h>
 

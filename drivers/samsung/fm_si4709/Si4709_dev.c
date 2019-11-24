@@ -5,7 +5,9 @@
 #include <linux/time.h>
 #include <linux/workqueue.h>
 #include <linux/interrupt.h>
+#include <asm/system_info.h>
 
+#include <linux/gpio.h>
 #include <mach/gpio.h>
 #include <plat/gpio-cfg.h>
 
