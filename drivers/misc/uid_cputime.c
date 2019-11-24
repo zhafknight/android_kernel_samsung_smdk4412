@@ -32,6 +32,12 @@ DECLARE_HASHTABLE(hash_table, UID_HASH_BITS);
 static DEFINE_MUTEX(uid_lock);
 static struct proc_dir_entry *parent;
 
+static void task_times(struct task_struct *p, cputime_t *ut, cputime_t *st)
+{
+	*ut = p->utime;
+	*st = p->stime;
+}
+
 struct uid_entry {
 	uid_t uid;
 	cputime_t utime;
@@ -46,9 +52,8 @@ struct uid_entry {
 static struct uid_entry *find_uid_entry(uid_t uid)
 {
 	struct uid_entry *uid_entry;
-	struct hlist_node *node;
 
-	hash_for_each_possible(hash_table, uid_entry, node, hash, uid) {
+	hash_for_each_possible(hash_table, uid_entry, hash, uid) {
 		if (uid_entry->uid == uid)
 			return uid_entry;
 	}
@@ -78,14 +83,13 @@ static int uid_stat_show(struct seq_file *m, void *v)
 {
 	struct uid_entry *uid_entry;
 	struct task_struct *task, *temp;
-	struct hlist_node *node;
 	cputime_t utime;
 	cputime_t stime;
 	unsigned long bkt;
 
 	mutex_lock(&uid_lock);
 
-	hash_for_each(hash_table, bkt, node, uid_entry, hash) {
+	hash_for_each(hash_table, bkt, uid_entry, hash) {
 		uid_entry->active_stime = 0;
 		uid_entry->active_utime = 0;
 		uid_entry->active_power = 0;
@@ -93,12 +97,12 @@ static int uid_stat_show(struct seq_file *m, void *v)
 
 	read_lock(&tasklist_lock);
 	do_each_thread(temp, task) {
-		uid_entry = find_or_register_uid(task_uid(task));
+		uid_entry = find_or_register_uid(task_uid(task).val);
 		if (!uid_entry) {
 			read_unlock(&tasklist_lock);
 			mutex_unlock(&uid_lock);
 			pr_err("%s: failed to find the uid_entry for uid %d\n",
-						__func__, task_uid(task));
+						__func__, task_uid(task).val);
 			return -ENOMEM;
 		}
 		/* if this task is exiting, we have already accounted for the
@@ -116,7 +120,7 @@ static int uid_stat_show(struct seq_file *m, void *v)
 	} while_each_thread(temp, task);
 	read_unlock(&tasklist_lock);
 
-	hash_for_each(hash_table, bkt, node, uid_entry, hash) {
+	hash_for_each(hash_table, bkt, uid_entry, hash) {
 		cputime_t total_utime = uid_entry->utime +
 							uid_entry->active_utime;
 		cputime_t total_stime = uid_entry->stime +
@@ -137,7 +141,7 @@ static int uid_stat_show(struct seq_file *m, void *v)
 
 static int uid_stat_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, uid_stat_show, PDE(inode)->data);
+	return single_open(file, uid_stat_show, PDE_DATA(inode));
 }
 
 static const struct file_operations uid_stat_fops = {
@@ -156,7 +160,7 @@ static ssize_t uid_remove_write(struct file *file,
 			const char __user *buffer, size_t count, loff_t *ppos)
 {
 	struct uid_entry *uid_entry;
-	struct hlist_node *node, *tmp;
+	struct hlist_node *tmp;
 	char uids[128];
 	char *start_uid, *end_uid = NULL;
 	long int uid_start = 0, uid_end = 0;
@@ -182,7 +186,7 @@ static ssize_t uid_remove_write(struct file *file,
 	mutex_lock(&uid_lock);
 
 	for (; uid_start <= uid_end; uid_start++) {
-		hash_for_each_possible_safe(hash_table, uid_entry, node, tmp,
+		hash_for_each_possible_safe(hash_table, uid_entry, tmp,
 							hash, uid_start) {
 			hash_del(&uid_entry->hash);
 			kfree(uid_entry);
@@ -211,7 +215,7 @@ static int process_notifier(struct notifier_block *self,
 		return NOTIFY_OK;
 
 	mutex_lock(&uid_lock);
-	uid = task_uid(task);
+	uid = task_uid(task).val;
 	uid_entry = find_or_register_uid(uid);
 	if (!uid_entry) {
 		pr_err("%s: failed to find uid %d\n", __func__, uid);
