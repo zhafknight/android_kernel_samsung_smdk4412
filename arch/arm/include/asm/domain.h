@@ -55,8 +55,7 @@
 #define DOMAIN_MANAGER	1
 #endif
 
-#define domain_mask(dom)	((3) << (2 * (dom)))
-#define domain_val(dom,type)	((type) << (2 * (dom)))
+#define domain_val(dom,type)	((type) << (2*(dom)))
 
 #ifndef __ASSEMBLY__
 
@@ -83,7 +82,7 @@ static inline void set_domain(unsigned val)
 #define modify_domain(dom,type)					\
 	do {							\
 		unsigned int domain = get_domain();		\
-		domain &= ~domain_mask(dom);			\
+		domain &= ~domain_val(dom, DOMAIN_MANAGER);	\
 		domain = domain | domain_val(dom, type);	\
 		set_domain(domain);				\
 	} while (0)
