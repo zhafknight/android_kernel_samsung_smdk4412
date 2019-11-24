@@ -61,6 +61,9 @@ enum {
 	MAX8997_ENVICHG,
 	MAX8997_ESAFEOUT1,
 	MAX8997_ESAFEOUT2,
+	MAX8997_CHARGER_CV, /* control MBCCV of MBCCTRL3 */
+	MAX8997_CHARGER, /* charger current, MBCCTRL4 */
+	MAX8997_CHARGER_TOPOFF, /* MBCCTRL5 */
 	MAX8997_FLASH_CUR,
 	MAX8997_MOVIE_CUR,
 #ifdef MAX8997_SUPPORT_TORCH
@@ -226,7 +229,6 @@ struct max8997_platform_data {
 	int				irq_base;
 	int				ono;
 	int				wakeup;
-	bool				buck1_gpiodvs;
 	unsigned int			buck1_max_vol;
 	unsigned int			buck2_max_vol;
 	unsigned int			buck5_max_vol;
@@ -238,6 +240,26 @@ struct max8997_platform_data {
 	int				buck_ramp_delay;
 	int				flash_cntl_val;
 	int				mr_debounce_time;
+
+/*
+	 * SET1~3 DVS GPIOs control Buck1, 2, and 5 simultaneously. Therefore,
+	 * With buckx_gpiodvs enabled, the buckx cannot be controlled
+	 * independently. To control buckx (of 1, 2, and 5) independently,
+	 * disable buckx_gpiodvs and control with BUCKxDVS1 register.
+	 *
+	 * When buckx_gpiodvs and bucky_gpiodvs are both enabled, set_voltage
+	 * on buckx will change the voltage of bucky at the same time.
+	 *
+	 */
+	bool ignore_gpiodvs_side_effect;
+	int buck125_gpios[3]; 		/* GPIO of [0]SET1, [1]SET2, [2]SET3 */
+	int buck125_default_idx; 	/* Default value of SET1, 2, 3 */
+	unsigned int buck1_voltage[8];	/* buckx_voltage in uV */
+	bool buck1_gpiodvs;
+	unsigned int buck2_voltage[8];
+	bool buck2_gpiodvs;
+	unsigned int buck5_voltage[8];
+	bool buck5_gpiodvs;
 	struct max8997_power_data	*power;
 	struct max8997_muic_data	*muic;
 #ifdef CONFIG_VIBETONZ
