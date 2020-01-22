@@ -74,6 +74,7 @@ enum {
 };
 #define POLICYDB_CAPABILITY_MAX (__POLICYDB_CAPABILITY_MAX - 1)
 
+extern int selinux_android_netlink_route;
 extern int selinux_policycap_netpeer;
 extern int selinux_policycap_openperm;
 
@@ -247,6 +248,7 @@ struct selinux_kernel_status {
 
 extern void selinux_status_update_setenforce(int enforcing);
 extern void selinux_status_update_policyload(int seqno);
+extern void selinux_nlmsg_init(void);
 
 #endif /* _SELINUX_SECURITY_H_ */
 
