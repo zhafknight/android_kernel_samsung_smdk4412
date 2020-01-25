@@ -50,6 +50,9 @@
 /* skip iterating emit_dots when dir is empty */
 #define ITER_POS_FILLED_DOTS	(2)
 
+/* Custom Linux 3.0.101 mixed version */
+#define LINUX_MIXED_3_0_101_VERSION 1
+
 static struct kset *exfat_kset;
 static struct kmem_cache *exfat_inode_cachep;
 
@@ -418,7 +421,9 @@ static inline void __exfat_set_bio_iterate(struct bio *bio, sector_t sector,
 	iter->bi_sector = sector;
 	iter->bi_size = size;
 	iter->bi_idx = idx;
+#if !LINUX_MIXED_3_0_101_VERSION
 	iter->bi_bvec_done = done;
+#endif
 }
 
 static void __exfat_truncate_pagecache(struct inode *inode,
@@ -539,15 +544,27 @@ out_unlocked:
 #else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0) */
 static inline sector_t __exfat_bio_sector(struct bio *bio)
 {
+#if LINUX_MIXED_3_0_101_VERSION
+	return bio->bi_iter.bi_sector;
+#else
 	return bio->bi_sector;
+#endif
 }
 
 static inline void __exfat_set_bio_iterate(struct bio *bio, sector_t sector,
 		unsigned int size, unsigned int idx, unsigned int done)
 {
+#if LINUX_MIXED_3_0_101_VERSION
+	struct bvec_iter *iter = &(bio->bi_iter);
+
+	iter->bi_sector = sector;
+	iter->bi_size = size;
+	iter->bi_idx = idx;
+#else
 	bio->bi_sector = sector;
 	bio->bi_idx = idx;
 	bio->bi_size = size; //PAGE_SIZE;
+#endif
 }
 
 static void __exfat_truncate_pagecache(struct inode *inode,
@@ -882,6 +899,8 @@ static struct dentry *exfat_lookup(struct inode *dir, struct dentry *dentry,
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
 	/* NOTHING NOW */
+#elif LINUX_MIXED_3_0_101_VERSION
+	/* NOTHING */
 #else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0) */
 #define GLOBAL_ROOT_UID (0)
 #define GLOBAL_ROOT_GID (0)
