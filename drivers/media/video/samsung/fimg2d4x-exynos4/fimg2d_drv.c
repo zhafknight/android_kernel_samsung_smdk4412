@@ -219,6 +219,7 @@ static long fimg2d_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 	switch (cmd) {
 	case FIMG2D_BITBLT_BLIT:
+
 		if (info->secure)
 			return -EFAULT;
 
@@ -229,7 +230,7 @@ static long fimg2d_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				return -EFAULT;
 
 #ifdef CONFIG_BUSFREQ_OPP
-#if defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
+#if defined(CONFIG_CPU_EXYNOS4210) || defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
 #if defined(CONFIG_BUSFREQ_ELEVATION)
 			dev_lock(info->bus_dev, info->dev, 267160);
 #else
@@ -259,7 +260,7 @@ static long fimg2d_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			up_write(&page_alloc_slow_rwsem);
 
 #ifdef CONFIG_BUSFREQ_OPP
-#if defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
+#if defined(CONFIG_CPU_EXYNOS4210) || defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
 			dev_unlock(info->bus_dev, info->dev);
 #endif
 #endif
@@ -450,7 +451,7 @@ static int fimg2d_probe(struct platform_device *pdev)
 #endif
 
 #ifdef CONFIG_BUSFREQ_OPP
-#if defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
+#if defined(CONFIG_CPU_EXYNOS4210) || defined(CONFIG_CPU_EXYNOS4212) || defined(CONFIG_CPU_EXYNOS4412)
 	/* To lock bus frequency in OPP mode */
 	info->bus_dev = dev_get("exynos-busfreq");
 #endif
