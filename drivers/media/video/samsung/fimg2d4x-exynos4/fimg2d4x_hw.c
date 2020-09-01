@@ -511,6 +511,7 @@ void fimg2d4x_set_msk_repeat(struct fimg2d_control *info,
 void fimg2d4x_set_rotation(struct fimg2d_control *info, enum rotation rot)
 {
 	int rev_rot90;	/* counter clockwise, 4.1 specific */
+	unsigned long cur_cfg;
 	unsigned long cfg;
 	enum addressing dirx, diry;
 
@@ -518,13 +519,13 @@ void fimg2d4x_set_rotation(struct fimg2d_control *info, enum rotation rot)
 	dirx = diry = FORWARD_ADDRESSING;
 
 	switch (rot) {
-	case ROT_90:	/* -270 degree */
+	case ROT_270:	/* -270 degree */
 		rev_rot90 = 1;	/* fall through */
 	case ROT_180:
 		dirx = REVERSE_ADDRESSING;
 		diry = REVERSE_ADDRESSING;
 		break;
-	case ROT_270:	/* -90 degree */
+	case ROT_90:	/* -90 degree */
 		rev_rot90 = 1;
 		break;
 	case XFLIP:
@@ -539,24 +540,27 @@ void fimg2d4x_set_rotation(struct fimg2d_control *info, enum rotation rot)
 	}
 
 	/* destination direction */
+	cur_cfg = rd(FIMG2D_DST_PAT_DIRECT_REG);
+	cfg = ~(~cur_cfg | FIMG2D_DST_X_DIR_NEGATIVE | FIMG2D_DST_Y_DIR_NEGATIVE);
 	if (dirx == REVERSE_ADDRESSING || diry == REVERSE_ADDRESSING) {
-		cfg = rd(FIMG2D_DST_PAT_DIRECT_REG);
-
 		if (dirx == REVERSE_ADDRESSING)
 			cfg |= FIMG2D_DST_X_DIR_NEGATIVE;
 
 		if (diry == REVERSE_ADDRESSING)
 			cfg |= FIMG2D_DST_Y_DIR_NEGATIVE;
-
+	}
+	if (cfg != cur_cfg) {
 		wr(cfg, FIMG2D_DST_PAT_DIRECT_REG);
 	}
 
 	/* rotation -90 */
+	cur_cfg = rd(FIMG2D_ROTATE_REG);
+	cfg = ~(~cur_cfg | FIMG2D_SRC_ROTATE_90 | FIMG2D_SRC_ROTATE_90);
 	if (rev_rot90) {
-		cfg = rd(FIMG2D_ROTATE_REG);
 		cfg |= FIMG2D_SRC_ROTATE_90;
 		cfg |= FIMG2D_MSK_ROTATE_90;
-
+	}
+	if (cfg != cur_cfg) {
 		wr(cfg, FIMG2D_ROTATE_REG);
 	}
 }

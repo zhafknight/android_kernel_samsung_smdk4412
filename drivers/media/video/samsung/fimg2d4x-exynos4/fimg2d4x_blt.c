@@ -290,8 +290,7 @@ static int fimg2d4x_configure(struct fimg2d_control *info,
 		fimg2d4x_set_bluescreen(info, &p->bluscr);
 
 	/* rotation */
-	if (p->rotate)
-		fimg2d4x_set_rotation(info, p->rotate);
+	fimg2d4x_set_rotation(info, p->rotate);
 
 	/* dithering */
 	if (p->dither)
