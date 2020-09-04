@@ -706,7 +706,6 @@ static struct platform_driver fimg2d_driver = {
 
 int __init g2d_init(void)
 {
-   		FIMG2D_ERROR("=========================== \n");
  	if(platform_driver_register(&fimg2d_driver)!=0) {
    		FIMG2D_ERROR("platform device register Failed \n");
    		return -1;

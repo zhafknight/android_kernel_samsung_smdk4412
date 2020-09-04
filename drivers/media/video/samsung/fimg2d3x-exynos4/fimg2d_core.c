@@ -179,20 +179,16 @@ int g2d_do_blit(struct g2d_global *g2d_dev, g2d_params *params)
 
 	if (params->flag.memory_type == G2D_MEMORY_KERNEL) {
 #if defined(CONFIG_S5P_MEM_CMA)
-int res = 0;
-		printk(KERN_ERR "[%s] SRC Surface %p size:%d\n", __func__, params->src_rect.addr, GET_RECT_SIZE(params->src_rect));
 		if (!cma_is_registered_region((unsigned int)params->src_rect.addr,
 				GET_RECT_SIZE(params->src_rect))) {
 			printk(KERN_ERR "[%s] SRC Surface is not included in CMA region\n", __func__);
-res = -1;
+			return -1;
 		}
-		printk(KERN_ERR "[%s] DST Surface %p size:%d\n", __func__, params->dst_rect.addr, GET_RECT_SIZE(params->dst_rect));
 		if (!cma_is_registered_region((unsigned int)params->dst_rect.addr,
 				GET_RECT_SIZE(params->dst_rect))) {
 			printk(KERN_ERR "[%s] DST Surface is not included in CMA region\n", __func__);
-res = -1;
+			return -1;
 		}
-		//if (res <0) return res;
 #endif
 		params->src_rect.addr = (unsigned char *)phys_to_virt((unsigned long)params->src_rect.addr);
 		params->dst_rect.addr = (unsigned char *)phys_to_virt((unsigned long)params->dst_rect.addr);
