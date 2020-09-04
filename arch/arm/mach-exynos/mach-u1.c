@@ -7678,7 +7678,7 @@ static void __init exynos4_reserve_mem(void)
 			.start = 0,
 		},
 #endif
-#ifdef CONFIG_VIDEO_SAMSUNG_MEMSIZE_FIMG2D
+#ifdef CONFIG_VIDEO_SAMSUNG_MEMSIZE_FIMG2D__
 		{
 			.name = "fimg2d",
 			.size = CONFIG_VIDEO_SAMSUNG_MEMSIZE_FIMG2D * SZ_1K,
@@ -7715,7 +7715,7 @@ static void __init exynos4_reserve_mem(void)
 #ifdef CONFIG_VIDEO_EXYNOS_FIMC_IS
 		"exynos4-fimc-is=fimc_is;"
 #endif
-		"s5p-fimg2d=fimg2d;"
+		"s5p-fimg2d=fimd,ion;"
 		"s5p-tvout=tvout";
 
 	cma_set_defaults(regions, map);

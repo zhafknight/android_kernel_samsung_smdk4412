@@ -314,7 +314,7 @@ enum fimg2d_log {
 };
 
 /* debug macro */
-#define FIMG2D_LOG_DEFAULT	(FIMG2D_LOG_WARN | FIMG2D_LOG_ERR)
+#define FIMG2D_LOG_DEFAULT	(FIMG2D_LOG_INFO | FIMG2D_LOG_DEBUG | FIMG2D_LOG_WARN | FIMG2D_LOG_ERR)
 
 #define FIMG2D_DEBUG(fmt, ...)						\
 	do {								\
