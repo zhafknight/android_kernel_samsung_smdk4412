@@ -41,6 +41,8 @@
 #error EXFAT only supports linux kernel version 3.0 or higher
 #endif
 
+#define BACKPORTED 1
+
 #include "version.h"
 #include "config.h"
 
@@ -49,9 +51,6 @@
 
 /* skip iterating emit_dots when dir is empty */
 #define ITER_POS_FILLED_DOTS	(2)
-
-/* Custom Linux 3.0.101 mixed version */
-#define LINUX_MIXED_3_0_101_VERSION 1
 
 static struct kset *exfat_kset;
 static struct kmem_cache *exfat_inode_cachep;
@@ -421,9 +420,7 @@ static inline void __exfat_set_bio_iterate(struct bio *bio, sector_t sector,
 	iter->bi_sector = sector;
 	iter->bi_size = size;
 	iter->bi_idx = idx;
-#if !LINUX_MIXED_3_0_101_VERSION
 	iter->bi_bvec_done = done;
-#endif
 }
 
 static void __exfat_truncate_pagecache(struct inode *inode,
@@ -544,27 +541,15 @@ out_unlocked:
 #else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0) */
 static inline sector_t __exfat_bio_sector(struct bio *bio)
 {
-#if LINUX_MIXED_3_0_101_VERSION
-	return bio->bi_iter.bi_sector;
-#else
 	return bio->bi_sector;
-#endif
 }
 
 static inline void __exfat_set_bio_iterate(struct bio *bio, sector_t sector,
 		unsigned int size, unsigned int idx, unsigned int done)
 {
-#if LINUX_MIXED_3_0_101_VERSION
-	struct bvec_iter *iter = &(bio->bi_iter);
-
-	iter->bi_sector = sector;
-	iter->bi_size = size;
-	iter->bi_idx = idx;
-#else
 	bio->bi_sector = sector;
 	bio->bi_idx = idx;
 	bio->bi_size = size; //PAGE_SIZE;
-#endif
 }
 
 static void __exfat_truncate_pagecache(struct inode *inode,
@@ -899,8 +884,6 @@ static struct dentry *exfat_lookup(struct inode *dir, struct dentry *dentry,
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
 	/* NOTHING NOW */
-#elif LINUX_MIXED_3_0_101_VERSION
-	/* NOTHING */
 #else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 5, 0) */
 #define GLOBAL_ROOT_UID (0)
 #define GLOBAL_ROOT_GID (0)
@@ -937,24 +920,18 @@ static inline gid_t make_kgid(struct user_namespace *from, gid_t gid)
 #endif
 
 
-//#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0) || BACKPORTED
 static struct dentry *__d_make_root(struct inode *root_inode)
 {
 	return d_make_root(root_inode);
 }
 
-//static void __exfat_do_truncate(struct inode *inode, loff_t old, loff_t new)
-//{
-//	down_write(&EXFAT_I(inode)->truncate_lock);
-//	truncate_setsize(inode, new);
-//	exfat_truncate(inode, old);
-//	up_write(&EXFAT_I(inode)->truncate_lock);
-//}
-
 static void __exfat_do_truncate(struct inode *inode, loff_t old, loff_t new)
 {
-		truncate_setsize(inode, new);
-		exfat_truncate(inode, old);
+	down_write(&EXFAT_I(inode)->truncate_lock);
+	truncate_setsize(inode, new);
+	exfat_truncate(inode, old);
+	up_write(&EXFAT_I(inode)->truncate_lock);
 }
 
 static sector_t exfat_aop_bmap(struct address_space *mapping, sector_t block)
@@ -973,51 +950,53 @@ static int exfat_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 	return __exfat_mkdir(dir, dentry);
 }
 
+#else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0) */
+static inline void set_nlink(struct inode *inode, unsigned int nlink)
+{
+	inode->i_nlink = nlink;
+}
+
+static struct dentry *__d_make_root(struct inode *root_inode)
+{
+	return d_alloc_root(root_inode);
+}
+
+static void __exfat_do_truncate(struct inode *inode, loff_t old, loff_t new)
+{
+		truncate_setsize(inode, new);
+		exfat_truncate(inode, old);
+}
+
+static sector_t exfat_aop_bmap(struct address_space *mapping, sector_t block)
+{
+	sector_t blocknr;
+
+	/* exfat_get_cluster() assumes the requested blocknr isn't truncated. */
+	down_read(mapping->host->i_alloc_sem);
+	blocknr = generic_block_bmap(mapping, block, exfat_get_block);
+	up_read(mapping->host->i_alloc_sem);
+	return blocknr;
+}
+
+static int exfat_mkdir(struct inode *dir, struct dentry *dentry, int mode)
+{
+	return __exfat_mkdir(dir, dentry);
+}
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0) || BACKPORTED
 static int exfat_show_options(struct seq_file *m, struct dentry *root)
 {
 	return __exfat_show_options(m, root->d_sb);
 }
-//#else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0) */
-//static inline void set_nlink(struct inode *inode, unsigned int nlink)
-//{
-//	inode->i_nlink = nlink;
-//}
+#else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0) */
+static int exfat_show_options(struct seq_file *m, struct vfsmount *mnt)
+{
+	return __exfat_show_options(m, mnt->mnt_sb);
+}
+#endif
 
-//static struct dentry *__d_make_root(struct inode *root_inode)
-//{
-//	return d_alloc_root(root_inode);
-//}
-
-//static void __exfat_do_truncate(struct inode *inode, loff_t old, loff_t new)
-//{
-//		truncate_setsize(inode, new);
-//		exfat_truncate(inode, old);
-//}
-
-//static sector_t exfat_aop_bmap(struct address_space *mapping, sector_t block)
-//{
-//	sector_t blocknr;
-
-	/* exfat_get_cluster() assumes the requested blocknr isn't truncated. */
-//	down_read(mapping->host->i_alloc_sem);
-//	blocknr = generic_block_bmap(mapping, block, exfat_get_block);
-//	up_read(mapping->host->i_alloc_sem);
-//	return blocknr;
-//}
-
-//static int exfat_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-//{
-//	return __exfat_mkdir(dir, dentry);
-//}
-
-//static int exfat_show_options(struct seq_file *m, struct vfsmount *mnt)
-//{
-//	return __exfat_show_options(m, mnt->mnt_sb);
-//}
-//#endif
-
-
-//#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 1, 0) || BACKPORTED
 #define __exfat_generic_file_fsync(filp, start, end, datasync) \
 		generic_file_fsync(filp, start, end, datasync)
 
@@ -1025,14 +1004,14 @@ static int exfat_file_fsync(struct file *filp, loff_t start, loff_t end, int dat
 {
 	return __exfat_file_fsync(filp, start, end, datasync);
 }
-//#else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 1, 0) */
-//#define __exfat_generic_file_fsync(filp, start, end, datasync) \
-//		generic_file_fsync(filp, datasync)
-//static int exfat_file_fsync(struct file *filp, int datasync)
-//{
-//	return __exfat_file_fsync(filp, 0, 0, datasync);
-//}
-//#endif
+#else /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 1, 0) */
+#define __exfat_generic_file_fsync(filp, start, end, datasync) \
+		generic_file_fsync(filp, datasync)
+static int exfat_file_fsync(struct file *filp, int datasync)
+{
+	return __exfat_file_fsync(filp, 0, 0, datasync);
+}
+#endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 static void exfat_writepage_end_io(struct bio *bio)
