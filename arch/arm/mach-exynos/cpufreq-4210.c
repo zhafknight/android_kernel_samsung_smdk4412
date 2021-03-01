@@ -24,8 +24,6 @@
 
 #include <plat/clock.h>
 
-#define CPUFREQ_LEVEL_END	L14
-
 static int max_support_idx;
 static int min_support_idx = (CPUFREQ_LEVEL_END - 1);
 static struct clk *cpu_clk;
