@@ -28,7 +28,6 @@
 #include <linux/nsproxy.h>
 #include <linux/slab.h>
 
-#include <asm/system.h>
 #include <asm/uaccess.h>
 
 #include <net/protocol.h>
@@ -46,17 +45,12 @@
 static __inline__ int scm_check_creds(struct ucred *creds)
 {
 	const struct cred *cred = current_cred();
-	kuid_t uid = make_kuid(cred->user_ns, creds->uid);
-	kgid_t gid = make_kgid(cred->user_ns, creds->gid);
 
-	if (!uid_valid(uid) || !gid_valid(gid))
-		return -EINVAL;
-
-	if ((creds->pid == task_tgid_vnr(current) || nsown_capable(CAP_SYS_ADMIN)) &&
-	    ((uid_eq(uid, cred->uid)   || uid_eq(uid, cred->euid) ||
-	      uid_eq(uid, cred->suid)) || nsown_capable(CAP_SETUID)) &&
-	    ((gid_eq(gid, cred->gid)   || gid_eq(gid, cred->egid) ||
-	      gid_eq(gid, cred->sgid)) || nsown_capable(CAP_SETGID))) {
+	if ((creds->pid == task_tgid_vnr(current) || capable(CAP_SYS_ADMIN)) &&
+	    ((creds->uid == cred->uid   || creds->uid == cred->euid ||
+	      creds->uid == cred->suid) || capable(CAP_SETUID)) &&
+	    ((creds->gid == cred->gid   || creds->gid == cred->egid ||
+	      creds->gid == cred->sgid) || capable(CAP_SETGID))) {
 	       return 0;
 	}
 	return -EPERM;
@@ -85,6 +79,7 @@ static int scm_fp_copy(struct cmsghdr *cmsg, struct scm_fp_list **fplp)
 		*fplp = fpl;
 		fpl->count = 0;
 		fpl->max = SCM_MAX_FD;
+		fpl->user = NULL;
 	}
 	fpp = &fpl->fp[fpl->count];
 
@@ -105,6 +100,10 @@ static int scm_fp_copy(struct cmsghdr *cmsg, struct scm_fp_list **fplp)
 		*fpp++ = file;
 		fpl->count++;
 	}
+
+	if (!fpl->user)
+		fpl->user = get_uid(current_user());
+
 	return num;
 }
 
@@ -129,6 +128,7 @@ void __scm_destroy(struct scm_cookie *scm)
 				list_del(&fpl->list);
 				for (i=fpl->count-1; i>=0; i--)
 					fput(fpl->fp[i]);
+				free_uid(fpl->user);
 				kfree(fpl);
 			}
 
@@ -171,9 +171,6 @@ int __scm_send(struct socket *sock, struct msghdr *msg, struct scm_cookie *p)
 				goto error;
 			break;
 		case SCM_CREDENTIALS:
-		{
-			kuid_t uid;
-			kgid_t gid;
 			if (cmsg->cmsg_len != CMSG_LEN(sizeof(struct ucred)))
 				goto error;
 			memcpy(&p->creds, CMSG_DATA(cmsg), sizeof(struct ucred));
@@ -191,29 +188,22 @@ int __scm_send(struct socket *sock, struct msghdr *msg, struct scm_cookie *p)
 				p->pid = pid;
 			}
 
-			err = -EINVAL;
-			uid = make_kuid(current_user_ns(), p->creds.uid);
-			gid = make_kgid(current_user_ns(), p->creds.gid);
-			if (!uid_valid(uid) || !gid_valid(gid))
-				goto error;
-
 			if (!p->cred ||
-			    !uid_eq(p->cred->euid, uid) ||
-			    !gid_eq(p->cred->egid, gid)) {
+			    (p->cred->euid != p->creds.uid) ||
+			    (p->cred->egid != p->creds.gid)) {
 				struct cred *cred;
 				err = -ENOMEM;
 				cred = prepare_creds();
 				if (!cred)
 					goto error;
 
-				cred->uid = cred->euid = uid;
-				cred->gid = cred->egid = gid;
+				cred->uid = cred->euid = p->creds.uid;
+				cred->gid = cred->egid = p->creds.gid;
 				if (p->cred)
 					put_cred(p->cred);
 				p->cred = cred;
 			}
 			break;
-		}
 		default:
 			goto error;
 		}
@@ -355,6 +345,7 @@ struct scm_fp_list *scm_fp_dup(struct scm_fp_list *fpl)
 		for (i = 0; i < fpl->count; i++)
 			get_file(fpl->fp[i]);
 		new_fpl->max = new_fpl->count;
+		new_fpl->user = get_uid(fpl->user);
 	}
 	return new_fpl;
 }
