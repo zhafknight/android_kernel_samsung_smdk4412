@@ -317,64 +317,64 @@ static int get_backlight_level_from_brightness(unsigned int brightness)
 	 * But in this driver, brightness is only supported from 0 to 24 */
 
 	switch (brightness) {
-	case 0 ... 1:
+	case 0 ... 2:
 		backlightlevel = GAMMA_30CD;
 		break;
-	case 2:
+	case 3 ... 4:
 		backlightlevel = GAMMA_40CD;
 		break;
-	case 3:
+	case 5 ... 10:
 		backlightlevel = GAMMA_70CD;
 		break;
-	case 4:
+	case 11 ... 24:
 		backlightlevel = GAMMA_90CD;
 		break;
-	case 5:
+	case 25 ... 32:
 		backlightlevel = GAMMA_100CD;
 		break;
-	case 6:
+	case 33 ... 38:
 		backlightlevel = GAMMA_110CD;
 		break;
-	case 7 ... 9:
+	case 39 ... 43:
 		backlightlevel = GAMMA_120CD;
 		break;
-	case 10 ... 11:
+	case 44 ... 47:
 		backlightlevel = GAMMA_130CD;
 		break;
-	case 12 ... 14:
+	case 48 ... 54:
 		backlightlevel = GAMMA_140CD;
 		break;
-	case 15 ... 18:
+	case 55 ... 64:
 		backlightlevel = GAMMA_150CD;
 		break;
-	case 19 ... 23:
+	case 65 ... 74:
 		backlightlevel = GAMMA_160CD;
 		break;
-	case 24 ... 29: 
+	case 75 ... 84:
 		backlightlevel = GAMMA_170CD;
 		break;
-	case 30 ... 36:
+	case 94 ... 102:
 		backlightlevel = GAMMA_180CD;
 		break;
-	case 37 ... 45:
+	case 103 ... 116:
 		backlightlevel = GAMMA_190CD;
 		break;
-	case 46 ... 58:
+	case 117 ... 131:
 		backlightlevel = GAMMA_200CD;
 		break;
-	case 59 ... 73:
+	case 132 ... 149:
 		backlightlevel = GAMMA_210CD;
 		break;
-	case 74 ... 99:
+	case 150 ... 173:
 		backlightlevel = GAMMA_220CD;
 		break;
-	case 100 ... 129:
+	case 174 ... 199:
 		backlightlevel = GAMMA_230CD;
 		break;
-	case 130 ... 169:
+	case 200 ... 224:
 		backlightlevel = GAMMA_240CD;
 		break;
-	case 170 ... 239:
+	case 225 ... 239:
 		backlightlevel = GAMMA_250CD;
 		break;
 	case 240 ... 255:
