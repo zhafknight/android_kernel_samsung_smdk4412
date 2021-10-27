@@ -27,7 +27,8 @@
 #include <linux/alarmtimer.h>
 #include <asm/mach-types.h>
 #include <mach/hardware.h>
-#include <linux/earlysuspend.h>
+#include <linux/fb.h>
+#include <linux/notifier.h>
 #include <linux/io.h>
 #include <mach/gpio.h>
 #include <linux/power/sec_battery_px.h>
