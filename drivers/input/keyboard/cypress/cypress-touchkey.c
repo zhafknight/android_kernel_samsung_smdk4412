@@ -1934,10 +1934,15 @@ static DEVICE_ATTR(autocal_stat, S_IRUGO | S_IWUSR | S_IWGRP,
 		   autocalibration_status, NULL);
 #endif
 
+static ssize_t touchkey_enabled_read( struct device *dev, struct device_attribute *attr, char *buf );
+static ssize_t touchkey_enabled_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size );
+static DEVICE_ATTR(touchkey_enabled, S_IRUGO | S_IWUGO, touchkey_enabled_read, touchkey_enabled_write);
+
 static struct attribute *touchkey_attributes[] = {
 	&dev_attr_recommended_version.attr,
 	&dev_attr_updated_version.attr,
 	&dev_attr_brightness.attr,
+	&dev_attr_touchkey_enabled.attr,
 	&dev_attr_touchkey_menu.attr,
 	&dev_attr_touchkey_back.attr,
 #if defined(TK_USE_4KEY)
@@ -2655,6 +2660,18 @@ static struct attribute_group led_notification_group = {
         .attrs = led_notification_attributes,
 };
 #endif
+
+static ssize_t touchkey_enabled_read( struct device *dev, struct device_attribute *attr, char *buf )
+{
+	return sprintf(buf,"%d\n", touchkey_enable);
+}
+
+static ssize_t touchkey_enabled_write( struct device *dev, struct device_attribute *attr, const char *buf, size_t size )
+{
+	if (!strncmp(buf, "1", 1)) touchkey_activate();
+	else if (!strncmp(buf, "0", 1)) touchkey_deactivate();
+	return size;
+}
 
 static int i2c_touchkey_probe(struct i2c_client *client,
 	const struct i2c_device_id *id)
